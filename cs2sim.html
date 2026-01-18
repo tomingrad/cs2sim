@@ -1,0 +1,1625 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CS2 Otevírací Simulátor</title>
+<link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B0D10; --panel: #0F1316; --text: #E6E6E6; --muted: #B5B5B5;
+    --accent: #00aeff; --glass: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.08); --radius: 14px;
+    --r-consumer: #B0C3D9; --r-industrial: #5E98D9; --r-blue: #4B69FF; --r-purple: #8847FF; --r-pink: #D32CE6; --r-red: #EB4B4B; --r-gold: #FFD700;
+  }
+
+  * { box-sizing: border-box; outline: none; }
+  body { 
+    margin: 0; font-family: 'Radio Canada Big', sans-serif; background: var(--bg); color: var(--text);
+    padding-top: 60px; overflow-x: hidden;
+  }
+
+  /* 7) TOP HISTORY BAR */
+  .top-history {
+    position: fixed; top: 0; left: 0; right: 0; height: 50px;
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px; z-index: 1000;
+    overflow-x: auto; gap: 12px; scrollbar-width: none;
+  }
+  .top-history::-webkit-scrollbar { display: none; }
+  .history-node {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
+    background: var(--glass); padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; border: 1px solid var(--border);
+    animation: slideInTop 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    box-shadow: 0 0 0 rgba(255, 106, 0, 0);
+    transition: box-shadow 0.3s;
+  }
+  @keyframes slideInTop { 
+    from { transform: translateY(-100%); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+  }
+
+  /* Layout */
+  .page-container { width: 85%; margin: 0 auto; padding-bottom: 50px; }
+
+  .case-card {
+  position: relative;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+              border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+              box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .case-card:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
+              0 0 20px rgba(0, 174, 255, 0.5);
+  border: 2px solid rgba(0, 174, 255, 0.7);
+  }
+
+  .drop-card:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), 
+              0 0 16px var(--card-color);
+  }
+
+  .btn:enabled:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
+              0 0 24px rgba(0, 174, 255, 0.75);
+  }
+
+  .filter-chip {
+    cursor: pointer;
+  }
+
+  .filter-chip input {
+    display: none; /* Skryje ošklivý systémový checkbox */
+  }
+
+  .chip-label {
+    display: inline-block;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+
+  .filter-chip input:checked + .chip-label {
+    background: rgba(0, 174, 255, 0.15);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .filter-chip:hover .chip-label {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .spinners-container { 
+    width: 100%; margin: 24px auto; display: flex; flex-direction: column; gap: 12px; 
+  }
+  .spinner-instance { 
+    position: relative; background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); height: 130px; overflow: hidden; width: 100%;
+    box-shadow: 0 0 120px rgba(0, 174, 255, 0.075);
+  }
+  .spinner-marker {
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 3px;
+    background: var(--accent); transform: translateX(-50%); z-index: 5;
+    box-shadow: 0 0 15px var(--accent);
+  }
+  canvas.spin-canvas { width: 100%; height: 100%; }
+
+  .controls-row { display: flex; justify-content: center; align-items: center; gap: 20px; margin: 30px 0; }
+  .spin-counter {
+    display: flex; align-items: center; background: var(--glass); 
+    border: 1px solid var(--border); border-radius: 12px; padding: 6px; gap: 12px;
+  }
+  .counter-btn {
+    width: 36px; height: 36px; border-radius: 8px; border: none;
+    background: var(--panel); color: #fff; cursor: pointer; font-weight: 800; transition: 0.3s;
+  }
+    
+  .counter-btn:enabled:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
+              0 0 10px rgba(102, 102, 102, 0.3);
+  }
+  
+  .btn {
+    background: var(--accent); color: #fff; border: none; padding: 14px 30px;
+    border-radius: var(--radius); font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.3s;
+  }
+  .btn:disabled, .counter-btn:disabled { opacity: 0.25; filter: grayscale(0.5); cursor: not-allowed;}
+
+  .case-content-area { margin-top: 40px; border-top: 1px solid var(--border); padding-top: 30px; }
+  .drop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+  .drop-card {
+    background: var(--panel); padding: 15px; border-radius: var(--radius);
+    border: 1px solid var(--border); border-left: 4px solid var(--muted);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)
+  }
+
+  .backBtn:hover{
+    text-shadow: 0 12px 24px rgba(0, 0, 0, 0.5), 
+                0 0 8px rgb(0, 174, 255);
+    color: var(--accent);
+  }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(15px);
+    display: none; align-items: center; justify-content: center; z-index: 2000;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .modal-overlay.closing {
+    opacity: 0;
+    transform: translateY(50px);
+  pointer-events: none;
+  }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 24px;
+    width: 100%; max-width: 700px; padding: 30px; text-align: center;
+    max-height: 95vh; overflow-y: auto;
+    box-shadow: 0 0 60px rgba(0, 174, 255, 0.1);
+  }
+  .results-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+  .result-row {
+    display: flex; align-items: center; gap: 15px; padding: 12px;
+    background: var(--glass); border-radius: 12px; border: 1px solid var(--border);
+    text-align: left;
+  }
+
+  #particlesCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 2500; }
+</style>
+</head>
+<body>
+
+<div class="history-container" style="margin-bottom: 20px; width: 100%;">
+  <div class="top-history" id="topHistory" role="status" aria-live="polite" style="min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 10px; overflow-x: auto; width: 100%;">
+    
+    <div id="historyPlaceholder" style="color: var(--muted); font-size: 13px; font-style: italic; white-space: nowrap;">
+      — tady se zobrazí historie otevřených předmětů —
+    </div>
+
+  </div>
+</div>
+
+<canvas id="particlesCanvas"></canvas>
+
+<div class="page-container">
+  <header style="display:flex; justify-content:space-between; align-items:center; margin: 20px 0">
+    <h1 style="margin:0; font-size: 36px; ">CS2 Otevírací Simulátor <span style="font-weight:400; font-size:18px; color:var(--accent)">XD gamba</span></h1>
+    <button onclick="router.go('home')" class="btn" id="backBtn" style="background:var(--glass); border:1px solid var(--border)">⏪ Zpět na výběr beden</button>
+    <button id="muteBtn" class="btn" style="background:var(--glass); border:1px solid var(--border)">🔈 Zvuk zapnutý</button>
+  </header>
+
+  <main id="view-home">
+    <div style="margin-bottom:20px">
+      <input type="text" id="searchInput" placeholder="Vyhledat bednu, skin nebo samolepku..." style="width:100%; padding:15px; border-radius:12px; border:1px solid var(--border); background:var(--panel); color:#fff">
+    </div>
+    <div class="filter-container" style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
+  <label class="filter-chip">
+    <input type="checkbox" id="filterAll" checked onchange="handleAllFilterChange()">
+    <span class="chip-label">✔️ Vše</span>
+  </label>
+  <label class="filter-chip">
+    <input type="checkbox" value="case" checked onchange="handleFilterChange()">
+    <span class="chip-label">🧰 Bedny</span>
+  </label>
+  <label class="filter-chip">
+    <input type="checkbox" value="package" checked onchange="handleFilterChange()">
+    <span class="chip-label">📦 Balíčky</span>
+  </label>
+  <label class="filter-chip">
+    <input type="checkbox" value="capsule" checked onchange="handleFilterChange()">
+    <span class="chip-label">✉️ Kapsle</span>
+  </label>
+  <label class="filter-chip">
+    <input type="checkbox" value="collection" checked onchange="handleFilterChange()">
+    <span class="chip-label">🎁 Kolekce</span>
+  </label>
+    <button id="sortBtn" onclick="toggleSort()" class="btn" style="background:var(--glass); border:1px solid var(--border); padding: 8px 16px; margin-left: auto;">
+    📅 Seřazeno od nejnovějších
+  </button>
+    </div>
+    <div id="casesGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:20px"></div>
+  </main>
+
+  <main id="view-case" style="display:none">
+    <h1 id="caseTitle" style="margin:0;text-align:center;">Jméno bedny</h1>
+    <p id="caseSubtitle" style="color:var(--muted);margin-bottom:20px;text-align:center;">Popisek bedny</p>
+
+    <div id="spinnersContainer" class="spinners-container"></div>
+
+    <div class="controls-row">
+      <div class="spin-counter" id="counterGroup">
+        <button class="counter-btn" id="decBtn" disabled>−</button>
+        <span style="font-weight:800; min-width:20px; text-align:center" id="countVal">1</span>
+        <button class="counter-btn" id="incBtn">+</button>
+      </div>
+      <button id="openBtn" class="btn">Otevřít bednu</button>
+    </div>
+
+    <div class="case-content-area">
+      <h2 style="margin-bottom:20px">Obsahuje jeden z následujících předmětů:</h2>
+      <div id="dropGrid" class="drop-grid"></div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 style="margin-top:0; font-size: 32px;">Získané předměty</h2>
+    <div id="resultsList" class="results-list"></div>
+    <button onclick="closeModal()" class="btn" style="width:100%; margin-top:10px">Zavřít</button>
+  </div>
+</div>
+
+<script>
+/** -------------------------
+ * AUDIO & PARTICLES
+ * ------------------------- */
+const audio = {
+  ctx: null,
+  muted: localStorage.getItem('muted') === 'true',
+  lastTick: 0,
+  cache: {},
+
+  init() {
+  if (!this.ctx) {
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  const sounds = {
+    case_tick: 'https://docs.google.com/uc?export=download&id=1e8OcP1u4ShkX4NwFvt8sWf6WOrRanUXw',
+    item_open: 'https://docs.google.com/uc?export=download&id=1x_KVv9jIOnME9PxwproU9_Q-AEg5Vizk',
+    capsule_tick: 'https://docs.google.com/uc?export=download&id=13HhBaHS-KDsCKhaypw0glstyny8NHUqE',
+    capsule_start: 'https://docs.google.com/uc?export=download&id=11B1Apvho3Th4gV6LDsFrtEoKtVVVc3Ga',
+    menu_case_open: 'https://docs.google.com/uc?export=download&id=1YfdVI3ekixXNCh6Xl4nY4K71JvDOjLjO',
+    menu_back: 'https://docs.google.com/uc?export=download&id=1XioO0QQMHoSnNPQKOabzO9aFUyMRNkaq',
+    menu_filter_change: 'https://docs.google.com/uc?export=download&id=1bzQuFuKBu-SJSJaXLRLgI820TT7CEnsK'
+  };
+
+  for (const [key, path] of Object.entries(sounds)) {
+    if (!this.cache[key]) {
+      const a = new Audio();
+      // Povolení stahování z jiného serveru
+      a.crossOrigin = "anonymous"; 
+      a.src = path;
+      a.volume = 0.4;
+      a.load();
+      this.cache[key] = a;
+    }
+  }
+},
+
+  playMenuSelect() {
+    if (this.muted) return;
+    
+    if (!this.ctx) this.init();
+
+    const sound = this.cache['menu_case_open'];
+    if (sound) {
+      const s = sound.cloneNode();
+      s.volume = 0.15; 
+      s.play().catch(() => {});
+    }
+  },
+
+  playMenuBack() {
+    if (this.muted) return;
+    if (!this.ctx) this.init();
+
+    const sound = this.cache['menu_back'];
+    if (sound) {
+      const s = sound.cloneNode();
+      s.volume = 0.2;
+      s.play().catch(() => {});
+    }
+  },
+
+  playMenuFilterChange() {
+    if (this.muted) return;
+    if (!this.ctx) this.init();
+
+    const sound = this.cache['menu_filter_change'];
+    if (sound) {
+      const s = sound.cloneNode();
+      s.volume = 0.2;
+      s.play().catch(() => {});
+    }
+  },
+
+  playStart() {
+    if (this.muted) return;
+    
+    const soundKey = 'capsule_start';
+
+    const sound = this.cache[soundKey];
+    if (sound) {
+      const s = sound.cloneNode();
+      s.volume = 0.2;
+      s.play().catch(() => {});
+    }
+  },
+
+  playTick() {
+    if (this.muted) return;
+    const now = Date.now();
+    if (now - this.lastTick < 40) return; 
+    this.lastTick = now;
+
+    // Výběr zvuku podle typu bedny
+    let soundKey = 'case_tick';
+    if (state.activeCase && state.activeCase.type === 'capsule' || state.activeCase.type === 'collection') {
+      soundKey = 'capsule_tick';
+    }
+
+    const sound = this.cache[soundKey];
+    if (sound) {
+      //cloneNode() - umožní přehrát zvuk vícekrát přes sebe (důležité pro rychlé tikání)
+      const playClone = sound.cloneNode();
+      playClone.volume = 0.1;
+      playClone.play().catch(() => {});
+    }
+  },
+
+  playReveal() {
+    if (this.muted) return;
+
+    const soundKey = 'item_open';
+
+    const sound = this.cache[soundKey];
+    if (sound) {
+      const playClone = sound.cloneNode();
+      playClone.volume = 0.2;
+      playClone.play().catch(() => {});
+    }
+  }
+};
+
+// Logika particles
+const particles = {
+  canvas: document.getElementById('particlesCanvas'),
+  ctx: document.getElementById('particlesCanvas').getContext('2d'),
+  list: [],
+  init() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+    this.loop();
+  },
+  spinBurst(x, y, w, h) {
+  const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00aeff';
+  
+  for (let i = 0; i < 250; i++) {
+    this.list.push({
+      x: x + (Math.random() - 0.5) * w * 5,
+      y: y + (Math.random() - 0.5) * h * 1.5,
+      color: accentColor,
+      vx: -(Math.random() * 25 + 10), 
+      vy: (Math.random() - 0.5) * 0.5,
+      size: Math.random() * 2 + 4,
+      life: 3.0, 
+      decay: Math.random() * 0.02 + 0.01,
+      noGravity: true 
+    });
+  }
+},
+  burst(x, y, color, count) {
+    for (let i = 0; i < count; i++) {
+      this.list.push({
+        x, y, color,
+        vx: (Math.random() - 0.5) * 24,
+        vy: (Math.random() - 0.5) * 12 - 4,
+        size: Math.random() * 6 + 4,
+        life: 10,
+        decay: Math.random() * 0.02 + 0.01,
+        noGravity: false
+      });
+    }
+  },
+  loop() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.list = this.list.filter(p => {
+      p.x += p.vx; 
+      p.y += p.vy; 
+      if (!p.noGravity) p.vy += 0.1;
+      p.life -= p.decay;
+
+      if (p.life <= 0) return false;
+      this.ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+      this.ctx.fillStyle = p.color;
+      this.ctx.fillRect(p.x, p.y, p.size, p.size);
+      return true;
+    });
+    requestAnimationFrame(() => this.loop());
+  }
+};
+
+/** -------------------------
+ * DATA & SPINNER
+ * ------------------------- */
+const DATA = {
+  cases: [
+    { id: 'weaponcase1', name: 'CS:GO Weapon Case', series: '1', release: '14. srpna 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bji61XxRCKg0MSz_nUDvPb-OPFvdKTFDzbAkbp16bY5Gn6wkx9ysj7Xntf9IC6WZgA-Sswnnj45WXo', items: [
+        { name: 'MP7 | Skulls', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf9Ttk_Pm7ZKh-H_yaCW-Ej7l35OBoTCrmzUQht2mDwon7cHuWPFUlDcFxQ7EDtxbpx4W1Y-LltAfAy9USYNky6pY', minFloat: 0.1, maxFloat: 0.26, odds: 0.26641 },
+        { name: 'AUG | Wings', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf9Ttk6fevfKxoMuOsD3KX_uJ_t-l9AX7qzE5_sGmEw9uoJCrBOgMoDsN2ReMI4EPrm4fvY-m04ASPgt8Uz3_gznQePzx-iqc', minFloat: 0.0, maxFloat: 0.14, odds: 0.26641 },
+        { name: 'SG 553 | Ultraviolet', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1I4M2-fbZ9LPWsAm6Xyfo44bQ-Tn7gwRt-t2uAw96tIn7FOAF1CsckQLUJ4xXskdO2NLzrtAyIi5UFk3tU_MwgmA', minFloat: 0.06, maxFloat: 0.8, odds: 0.26641 },
+        { name: 'Glock-18 | Dragon Tattoo', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1a4s2qeqVqL_6sCWufwuVJvOhuRz39xUl-6miDzI37dHyXOlIkA8MmROVfshO9w9G1Ye-ztgPX34tEyi74jjQJsHi_DRfxVg', minFloat: 0.0, maxFloat: 0.08, odds: 0.05328 },
+        { name: 'USP-S | Dark Water', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSIf2sFGKS0-9JtOB7RBa_nBovp3OHy9v8J3vFbgIhC5UmQ7UIsxm7wNDnNr_rswOMiNlGmCWoiH9Juis9_a9cBl2xnYuj', minFloat: 0.1, maxFloat: 0.26, odds: 0.05328 },
+        { name: 'M4A1-S | Dark Water', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_GeMX2Vw_x3j-VoXSKMmRQguynLzI6td3-TPQAlD5slR-EJ5hDux9XmMe7i71CI2t8UzSuthi9OvSlo6vFCD_TltxSe0A', minFloat: 0.1, maxFloat: 0.26, odds: 0.05329 },
+        { name: 'AK-47 | Case Hardened', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiNK0P2nZKFpH_yaCW-Ej7sk5bE8Sn-2lEpz4zndzoyvdHuUPwFzWZYiE7EK4Bi4k9TlY-y24FbAy9USGSiZd5Q', minFloat: 0.0, maxFloat: 0.08, odds: 0.015985 },
+        { name: 'Desert Eagle | Hypnotic', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7vORfqF_NPmUAVicyOl-pK9qSyyywxgjtmnVytyocnLGPA4iWcYmRLYIu0S-xtbuMLjg51DXjoJC02yg2VjGnh4J', minFloat: 0., maxFloat: 0.08, odds: 0.015985 },
+        { name: 'AWP | Lightning Strike', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_C9k4_upYLBjKf6UMWaH0dF6ueZhW2frwU1_sW2EmNyvc32RZwMpCpcjQ-EJ4xbtmt3gYezk4wzb3tpAy3mrkGoXubsGIfVN', odds: 0.00639 },
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 } 
+    ]},
+    { id: 'esports13', name: 'eSports 2013 Case', series: '2', release: '14. srpna 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-UnoUwniocSwrHEV7KaobPdud6HEWjXGmbYl6LIwHn2ywhgh5GzXzdmsc3yRalAkD5R3FvlK7Ed7JoXDRQ', items: [
+        { name: 'M4A4 | Faded Zebra', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFL0OirarZsI_GeMWWH_uJ_t-l9AXu3zBkhsDyHz4z9dXmVagJzW8MiQbFetBfrkNHhZbjr51CMiN8TyS_gznQeEoYBjXk', minFloat: 0.06, maxFloat: 0.8, odds: 0.26641 },
+        { name: 'MAG-7 | Memento', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wipC0PutZ7dsKPWXHGie_uJ_t-l9ASjlzRl34WnUzN6tJy-eOg50C5N1TLYLthaxm4HlZbiz4AXXjNpDmCXgznQeeQk0p-w', minFloat: 0.02, maxFloat: 0.18, odds: 0.26641 },
+        { name: 'FAMAS | Doomkitty', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1T9s2qZ6tgK_mHGn6vzedxuPUnTHrmxk1x6jmBmdb4Jy6QZw8jW8RwR-9esUHsltXnNu3n5VPXiY5AzTK-0H2q4sGvpw', minFloat: 0.08, maxFloat: 0.22, odds: 0.26641 },
+        { name: 'Galil AR | Orange DDPAT', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0Pq3V6BpMPGHMWiCwOBxtd5lRi67gVN-4WzRwomqeHKQOwEoAsdzRrENskK7wIXiM-m341feg44TzXr33C0Y8G81tE9ebY28', minFloat: 0.06, maxFloat: 0.8, odds: 0.05328 },
+        { name: 'Upilovaná brokovnice | Orange DDPAT', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2mcZtpJOCSGlif0-94t-RWQyC0nQlp4GyAzoqsdSmWaFJyD5UhEeFcsBm-ktK0M7nj7wKI394Xn3-vhisfujErvbhk58vgGA', minFloat: 0.06, maxFloat: 0.8, odds: 0.05328 },
+        { name: 'P250 | Splash', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwjFL0OG-ZKV-KM-DXDLA_uJ_t-l9AXDrxh4i62vTzNyrc3zEP1MpWJN2EOMN5kTpl9K2Zb62slTdi4NMzC7gznQe9E-5MVM', minFloat: 0.06, maxFloat: 0.18, odds: 0.05329 },
+        { name: 'AK-47 | Red Laminate', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wipC0POlPPNhIf2sAm6Xyfo4tucxS3rjwRx_42zRwo6pdSnCPwAmX5ohFOIJsUTqwdThNOi0s1TajZUFk3t5vdi_Cw', minFloat: 0.06, maxFloat: 0.8, odds: 0.015985 },
+        { name: 'AWP | BOOM', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf9Ttk7f6vZZt-Kf2DAmKvzedxuPUnTX7mkxhy62iDzYqhdiqXbw4oWZEkE-IDsRa9lIXlMejktFOMi49MmDK-0H2AgUnw_w', minFloat: 0.06, maxFloat: 0.28, odds: 0.015985 },
+        { name: 'P90 | Death by Kitty', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk7PO6e694LPyAMXfJkdF6ueZhW2fgkUh042jUnN2geSqTaFN2CcQmQuRfsBXtxtfkN7mztASIg91Bniv8kGoXucYQxgOQ', minFloat: 0.08, maxFloat: 0.32, odds: 0.00639 },
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'bravocase', name: 'Operation Bravo Case', series: '3', release: '19. září 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj7-lz1QAn4kZjf9CsVuvf7OfQ5IabBVzbHlb915bcwHCjikEp_sTnTn4z6eH6RblQlC8RwFPlK7EdXSP0Ibg', items: [
+        { name: 'SG 553 | Wave Spray', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1I_829eLZsOc-ED3GV0tF0ouB_QBa_nBovp3PcwoqtdC3BOwQkCZB3QOIIsxm_kNyyZuzg7w3f2YNEnn6qjS0Y6Clq_a9cBmkkHSs4', minFloat: 0.06, maxFloat: 0.8, odds: 0.133205 },
+        { name: 'Dual Berettas | Black Limba', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1Y-s29baV-L_6sC2uZ1etlj-N7Tj-8qhEutDWR1NyuJC6SPQQoC8N1TLYMthC_kNTmMOKw4gLe2osWmC6vhylB6C5i4OscEf1yNRLqhkE', minFloat: 0.06, maxFloat: 0.8, odds: 0.133205 },
+        { name: 'Nova | Tempest', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwipC0OGrabdkJPWsDHWR1-FJvOhuRz39xUUk4jiHyt_9cXzGZwV2CJJyQbYN4Ua9wdPiZr6x4FTcjIhMzXmsjjQJsHjYOlWGdQ', minFloat: 0.06, maxFloat: 0.22, odds: 0.133205 },
+        { name: 'Galil AR | Shattered', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0Pq3V6d_Nf2DAmKvw_x3pu5WQyC0nQlpsm7dn96tcniROgMoX8RzFuIJtRPqxtXhMujjsgLYjIlEzS-ojiIa5jErvbio8HB-SQ', minFloat: 0.06, maxFloat: 0.8, odds: 0.133205 },
+        { name: 'UMP-45 | Bone Pile', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1I_829Y7FhLM-XB2aX0-97j-N7Tj-8qhEutDWR1I6rcX3GblRyD5V1TecIsxPukdbuYeqz4Q3ZjopMyiyrjHgfuCdqt-kcEf1yvOcVYJ0', minFloat: 0.06, maxFloat: 0.34, odds: 0.133205 },
+        { name: 'G3SG1 | Demeter', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1T9s2sZLFoMP-fF2Cfz9F0ouB_QBa_nBovp3OEnoz4cHnFZgMnD5R5TeQP40Swx4XgNLm34g3ei49FxC2qiXgbuy9t_a9cBh-mV6Cr', minFloat: 0.06, maxFloat: 0.8, odds: 0.133205 },
+        { name: 'USP-S | Overgrowth', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSKOmsHW6VxutJsvNoWSaMmRQguynLytyqdy2eaVUgAsB0QeIIsxfuldy2MO3gtFSI2ooRzSiq3HxA7SlvtfFCD_RGjmYWyQ', minFloat: 0.06, maxFloat: 0.8, odds: 0.0399625 },
+        { name: 'M4A4 | Zirka', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFL0OG6abZSIuKSGGivzedxuPUnSXnqkBwj62vTn9b8cyjBOlNxD8Z2Te8L5Ea8xtbkNe6z7lTajotCmDK-0H35HfkCFQ', minFloat: 0.06, maxFloat: 0.42, odds: 0.0399625 },
+        { name: 'MAC-10 | Graven', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1a_s2rfKdlJfSsA2aTkL5JsvNoWSaMmRQguynLztytdHieOA92W8N5Re4D4ELtk9O2Nbnq5FfWjIkRn333hn9O731j4_FCD_RXlm8jng', minFloat: 0.06, maxFloat: 0.8, odds: 0.0399625 },
+        { name: 'M4A1-S | Bright Water', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_iKMWiTxO94j-N7Tj-8qhEutDWR1N2scy2Sa1UkC8NyRbMPuhexx4fgYrziswHf395Az3-qiStK5i864-kcEf1ycufvRr8', minFloat: 0.1, maxFloat: 0.22, odds: 0.0399625 },
+        { name: 'P90 | Emerald Dragon', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk6-Cvb6tjH-DKXliS0-9gv95lRi67gVMm4m3Vzdmqci-SO1clX8Z1QeYO5xi5mtTuPu7l4FDc2o4TmH32jC1P8G81tLxM49od', minFloat: 0.06, maxFloat: 0.52, odds: 0.0106567 },
+        { name: 'P2000 | Ocean Foam', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0POjV6t-M_mVF1iSzftzj_E7H3njqh81siuKpYPwJiPTcA91W5N0EOMNskGwkt3gP-vh41GNiNpDn3r83ShL6itj4bsKA6Im-_XJz1aWVAZrXOc', minFloat: 0.0, maxFloat: 0.12, odds: 0.0106567 },
+        { name: 'AWP | Graphite', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_C9k7OC7ZbRhJc-RHGaGztF6ueZhW2e2k0l2sW_WzN7_cS6SbgV1CsF3TOEI4EOwloGzNLzg5g3fiIpHxC78kGoXuTqeOjwH', minFloat: 0.0, maxFloat: 0.12, odds: 0.0106566 },
+        { name: 'AK-47 | Fire Serpent', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0PSneqF-JeKDC2mE_u995LZWTTuygxIYvzSCkpu3cnvFPQB2DpUkROFY4Rntw93lP7i241DbiI1BxSuviHlKunk_6-sHU71lpPMTRLyP4Q', minFloat: 0.06, maxFloat: 0.76, odds: 0.003195 },
+        { name: 'Desert Eagle | Golden Koi', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7v-Re6dsLPWAMWWCwPh5j-1gSCGn20om6jyGw9qgJHmQaAcgC8MmR7IMthm5m4W2M7zj7wOIj4pGn32o23hXrnE8VHBG1O4', minFloat: 0.0, maxFloat: 0.12, odds: 0.003195 },
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'weaponcase2', name: 'CS:GO Weapon Case 2', series: '4', release: '8. listopadu 2013', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bji61XxRCKj0M-xr3IIvqP5PqI_c6LDCjWUkrdw5LUwTivgkE9wsGnUnNr8InzBP1c-SswnzDatg2g', items: [
+        { name: 'Tec-9 | Blue Titanium', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiNV0OanfKVjKeWeXTeG_uJ_t-l9AXnikBh-6mvTztz4eHvCOgIiCpFzQOAJ5xPulNK2Nr7q7gHcg9lEm3ngznQe7B1sAb0', minFloat: 0.0, maxFloat: 0.04, odds: 0.159846 },
+        { name: 'M4A1-S | Blood Tiger', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_iKMXWVxfp_t-R7cCW6khUz_WXWmdmpeXOWbA4jDJolQeMNthnrlIbiMO7m71TfjIpFxH-vjClO6CZ1o7FVlF3bnRA', minFloat: 0.0, maxFloat: 0.3, odds: 0.159846 },
+        { name: 'FAMAS | Hexane', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1T9s2sZLFoKPWLMWuZxuZi_udoFn-2wBh04GXXnIr6dS2RbwUnDZNxQ-8D50OwkdK1ZOzi41OPiI9bjXKpn0lbjaM/', minFloat: 0.0, maxFloat: 0.4, odds: 0.159846 },
+        { name: 'P250 | Hive', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwipC0OCrbKxoOM-fB2CY1aAu6LltFny1xRt2tjuAzoyoI33BOgQpX5ByTOVY5xXql4HvNbviswbelcsbmoYK4S35', minFloat: 0.0, maxFloat: 0.3, odds: 0.159846 },
+        { name: 'SCAR-20 | Crimson Web', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk5-uRf6FvM8-XD3WbxPxJvOhuRz39lEwhsGqBz9moJHmXawQhDsQhEOUNsBSwkdXiM-3k5AbZjo1MmSiojDQJsHiHhrZ4wA', minFloat: 0.06, maxFloat: 0.8, odds: 0.159846 },
+        { name: 'Five-SeveN | Case Hardened', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRabVSL_mfC2OvzedxuPUnH3C1kRsi4jiAw4qtdXjCO1V2WcZxF-EO5xLsxtHmMeKw5g3fit4TnDK-0H1W4XC76Q', odds: 0.0399625 },
+        { name: 'MP9 | Hypnotic', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_CNk-fe8fK1qL8-fB2CY1aAutbY-TXm2wkRz5zjdzNytIi3GbVQhW8ElRu8L5hK7mtfvNbu04lGMlcsbmn-Uk_5D', minFloat: 0.0, maxFloat: 0.08, odds: 0.0399625 },
+        { name: 'Nova | Graphite', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiNW0PG8fal9LPWsAm6Xyfo4teA5TSjnx05ztjnRz4v6dX2UZg8hW5B1EbMLtxW-k9XhMLjjslHbiZUFk3velnlINA', minFloat: 0.0, maxFloat: 0.12, odds: 0.0399625 },
+        { name: 'Dual Berettas | Hemoglobin', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1a4s2he7dkJumsHGKU_uJ_t-l9ASjjxEgm4mWHzYuhdi-RPVByD5pxF-ULshS6xofjMrzgs1eIiIxHnnrgznQe0T5dj0k', minFloat: 0.0, maxFloat: 0.20, odds: 0.0399625 },
+        { name: 'P90 | Cold Blooded', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_C9k_P6nfKxoMs-DVzevzedxuPUnSivqkBt_5m7Rw9v8cXmTZ1UjX5Z5EOEIuhK8koHuNe7r51fYjt4XyDK-0H2E4aJrDg', minFloat: 0.0, maxFloat: 0.08, odds: 0.015985 },
+        { name: 'USP-S | Serum', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSIf2sC2uVwvpkueJWXSy3qhEutDWR1I34J3uXOwFyCsF4TeAJt0bpw9OxNrzh7gyI3t1DmHiq3y5M6HxqsrwcEf1yfEp4lzc', minFloat: 0.0, maxFloat: 0.25, odds: 0.015985 },
+        { name: 'SSG 08 | Blood in the Water', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1Y-s29YKV_K8-fB2CY1aAmsbFtFnDilkUl5j7UzoqsInmVaFd0XMMlELYDshbuxNPvP-yxtlCMlcsbmlWiixNl', minFloat: 0.06, maxFloat: 0.20, odds: 0.00639 },
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'dh13package', name: 'DreamHack 2013 Souvenir Package', series: '6', release: '27. listopadu 2013', type: 'package', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjw4k62EiLhjJnt8mxevfSqbqVsJaHKWGWVmOwi5eJtGX7jzUsi6mTXzNb_d3rDPQZzW5okW6dU5dbJcrqx', items: [
+        { name: 'R8 Revolver | Bone Mask', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c29eJt5IeCWMWuZxuZi_rNtHX_hwh91sWjXm9qreSqfaAIgD5d3RLNbt0Pqx4e2Mrjn5wHbi99bjXKpUIbZI8w', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'AUG | Contractor', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf7i1k__-tV6hkJ_iHQGWWxOx04LlsGn7lwElytW3cnNihdnqTaFMhWJZxQeYLsUXpxoeyZOv8p1uJ4uPpmuk', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'PP-Bizon | Sand Dashed', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1I_826abRoH-ObAXWE_v13vuVWQyC0nQlp62XcyNygJCrDawR1WZIlQ7QL4xS_wNblPu_h7gOP3oJHynr8iHhK6zErvbioPrlsUA', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'SG 553 | Waves Perforated', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1I_826abRoH_ScGnSv1u9gtfJWQyC0nQlp4TyDnNr4c3yVPQcpX8FxQORZ5he5lYG1Mr-07wOMjt1Hyyv-3H5O5jErvbhvnntidg', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'XM1014 | Blue Spruce', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk_P2RZat-M8-fB2CY1aAg4OU7S3rkkE115WqEyN2rcnqXOwNyAsMhFuUP4UO4l920M-O0s1GNlcsbmkmuSLNg', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'Tec-9 | Groundwater', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wjFU0P2iYbJoH_yaCW-Ej7om4eQ6H3zrxEwk4T-HmN78dirCb1MmA8Z3Re8D5hS5x9KzYrvkslPAy9USDDHRuWI', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'P250 | Boreal Forest', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwipC0PSheqF-NM-RAXWVwOJJvOhuRz39wEsm4WXRz4urcXvEZw8pXJp1RrEIuhC_lNfiYeLj51TXg4JAyyT_jTQJsHgo2RMlUQ', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'Nova | Sand Dune', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwjFU0OGvZqBSLPmUBnPek75ysrZoHnnkw0V0tjndwo6tcnqSawEoWMQkR-Rf5hLul9S1M-vkthue1dyxC6rLqQ', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'FAMAS | Colony', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1I4M29eKVuJc-eD3WZz-tJvOhuRz39xExw5GXTw4qod3uUaQ91ApZ3QbMItxDrxtK2ZbuxtAaLg4hDxS76hjQJsHgze9LmZw', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'AUG | Storm', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf7i1k_OaheqlrMv-dGlicyOl-pK84GCzkxEkisDnUz42qc32WaVckW5AhQeVYs0W9wIfuP7i34laK2d9G02yg2S19fQbA', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'G3SG1 | Jungle Dashed', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1I_826abRoH-ObAXWE_uRjvuZlSha_nBovp3PRz92tJSrFOw4oAsYmFucLsxaxkdfiNejj5gPX349BmXmqhnlPun5i_a9cBim8k1Zw', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'MP7 | Army Recon', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf7jJk_OK8ab1SIeKeF1icyOl-pK84Sijhwk525z-AmN2rcC7GaVIgW5p3ROQLthe9ltGyMOKw5wHZjd5E02yg2bE0ycdT', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'SSG 08 | Blue Spruce', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1I4M2jZ7d-H_yaCW-Ej7sl6OVsHXHizUQksGyDyNn7dH-WZgEgXJshFOdZskO6xoC1Y-LjtVDAy9US2YFh0PQ', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'Galil AR | Sage Spray', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0OG-V7d9MvGKMWOV0utkpN56Ti62qhEutDWR1N6qcCqSOgEiCsMhQLZftxnpxtfkP-Ph71eMjYtDmCX3jytO5nlt5OkcEf1yc_oaZQU', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'Tec-9 | Army Mesh', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wjFL0P-re6xSIeKeF1icyOl-pK8xGnCxkR5_tWTQztepcHiWOwAlCpJ3Q7ML5BO-lNyxMuvl5wXYiY0Q02yg2eIzVY8M', minFloat: 0.0, maxFloat: 0.6, odds: 0.0470588 },
+        { name: 'SCAR-20 | Contractor', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk_P2ReKluH_yaCW-Ej7914-I_HHznx0lz4jmDwtaoJXOebgMlApt0EeJbt0W7xIG0Muzl5wTAy9USD_fgAo4', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'Dual Berettas | Contractor', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1I4M2-ZadSLPmUBnPekb8g5LI8Hyi2l01z42Tdmdj9cXiRaA4jXJp4E7YJ4Ra8lILmP-7itBue1dzkV1WWjA', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
+        { name: 'PP-Bizon | Night Ops', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1T9s24abZkI_GeAVieyOl-pN5lRi67gVMk4Gvdy439eS3DPFUgXpp3Qu5btESxm4LnZbmxtAPdg90WmySqinxN8G81tMa6T4nf', minFloat: 0.0, maxFloat: 0.6, odds: 0.0094118 },
+        { name: 'XM1014 | CaliCamo', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk5-uRfqV_KfOSA2ivxetltfN9cCW6khUz_TuGmI2odiqUaVN2A5IkFuJZtRjrldDkNLiw4ADc2o1Emyj72yxM5ix1o7FV5bllY3w', minFloat: 0.0, maxFloat: 0.6, odds: 0.0094118 },
+        { name: 'P2000 | Granite Marbleized', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0Pq3V6N_If6aGmKvzedxuPUnHyvhkUh2tmuBztupdi2fPwclDMN1F-JctUTuwYDgYu3rslPdj9lHnjK-0H1HqokLtA', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'UMP-45 | Gunsmoke', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1T9s2pbah9Jf6sAm6Xyfo4trM5GCzrkE5w42jVzYqgdijBalR2CMd4R-JeuhS8lNXjN7nj4gTa2pUFk3skeb6bFA', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'XM1014 | Blue Steel', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7uORaqh4JfSsAm6Xyfo4s7NrFnmylk114jiBnNn7cC7GaFcgC5pxEbZe5kTslYG0N7625laN2JUFk3tWvCSOkg', odds: 0.0094118 },
+        { name: 'Dual Berettas | Stained', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1a_s2oZ7ZuJfSsAm6Xyfo45LVtG3zgzEt-tmWHydutd3nFaVciDJIjFrZZt0OxmoXkMuuz7wbY2pUFk3vnrYa7Ww', odds: 0.0094118 },
+        { name: 'FAMAS | Cyanospatter', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1T9s28baFrH_yaCW-Ej7olsbNsG3rmzEoj5m6Hz9atJC2WOg8iDJchR7JeuhfuwIbnZO3k4FHAy9USioZeSPo', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'Galil AR | VariCamo', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0Pq3V7JsMvmQD2qf_uJ_t-l9AXzgwU0ktW6HnIr_cH7FO1R1CpFyTbQNtBHqkYHuM-iw5FDeid1NmCjgznQefGamZCs', minFloat: 0.0, maxFloat: 0.6, odds: 0.0094118 },
+        { name: 'AUG | Condemned', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf7jJk4ve9YJtrL-KWHXOvx-dktd5lRi67gVNztmXQz92qcyiWPQAiDZZ1ELUD5kG8wNW0P762tVaMjopBxCX3jiMc8G81tDi9HBdS', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'M249 | Gator Mesh', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8zMK5wjFL0P-re6xSMOmHBmie_uJ_t-l9ASrkwxxwtWrUyY79I3yUaA5xWcd2RO4C4BO6l4HkZbnj7lSM2YtDzC3gznQeaJe5pgI', minFloat: 0.0, maxFloat: 0.6, odds: 0.0094118 },
+        { name: 'Nova | Candy Apple', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwjFU0OCrbJthKfebGinHxepysuU_HCy3zRsm6jyHyNetIn-XZlQiWJojQ-QIskHqm9eyZezr-UWA3PfdNWrU', minFloat: 0.0, maxFloat: 0.3, odds: 0.0094118 },
+        { name: 'MP9 | Orange Peel', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f7jJk-_O-bZtiMvGdCWKvzedxuPUnGXnkzUwj5WnQzt2scXKSb1ciD8ZwEORb5xW_m9XiYe7gtAPXg4kQyTK-0H0u1pUr8A', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'G3SG1 | VariCamo', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1T9s24abZkI_GeAVicyOl-pK9qTn7gwUlwsWrVzd2sci3GZ1cnDpF0TeNe5kG9mt21Mrzq4VPYjdhA02yg2WVbe73u', minFloat: 0.0, maxFloat: 0.6, odds: 0.0094118 },
+        { name: 'USP-S | Forest Leaves', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSM-CsAmKR1-tlj-1gSCGn2xgh5W3Rwo2gcH6eP1IhWcYmTeYO4xTsw9TmY-mx5Q3a3ogQmSqsiCtXrnE8utrnVdI', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'M4A1-S | Boreal Forest', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_iKMWGf0-tlpN5rQDu2lBEYvzSCkpu3dyqVZgF1CJAhF7NYtULrlIa2M-Lh4wKMiYlDmyqrhygduCZs6-xXV71lpPMY7TF_eA', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'Desert Eagle | Mudder', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk5-uRZat5NPyWCliDwOByj-1gSCGn20gj4WrVyNiuJ3OfPVAjCpEmE7MKuxbqmtDmPuu0slDW3Y5GyS-tintXrnE8PKHjtHI', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'AWP | Safari Mesh', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf7jJk4ve9YJt5If6sAm6Xyfo45uU7HS_nzU914z_dzImtdXyQZlMjCJIkFOUI5ES9k9PkPriz71bdiJUFk3tlgygeXw', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'P90 | Teardown', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf7jJk4ve9YJtlL-SsD2mU_u15vOVWQyC0nQlp5mjWy4n9cX3FZ1UiApMkQbJZ4BK8ktXnM-zrsgzeg4wQyHr3iiMc5zErvbiseXdBZA', minFloat: 0.0, maxFloat: 0.6, odds: 0.0037033 },
+        { name: 'Upilovaná brokovnice | Full Stop', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2mcZt7IeKaDWadztFkteVWQyC0nQlp42yEyIr7cX6TaVN0XJsiQeYJ5BTplYDjYrnj7wPX3opHnHr93CJN7zErvbhNR0v1hQ', minFloat: 0.0, maxFloat: 0.6, odds: 0.0037033 },
+        { name: 'SG 553 | Anodized Navy', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1a4c2gabJ0H_yaCW-Ej7ons-AwG37hzUQj5z_Tw9esIHnCZ1UiW5ojQuYJtBO6kNzgNrjitQXAy9USYrEgg8s', minFloat: 0.0, maxFloat: 0.08, odds: 0.0037033 },
+        { name: 'MP7 | Anodized Navy', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_Cxk4fO4cZthKfebGinIw-0v5-cxS33kwEh2tz-HyYugJC7FZwVyXJZ2FO4CtBa4xtPkN-nn-UWA3HYryggq', minFloat: 0.0, maxFloat: 0.08, odds: 0.0037033 },
+        { name: 'USP-S | Night Ops', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSKOmsGGaCyO13ve5WQSC0nQkYvzSCkpu3cy-RbFciDJUlQ7Rc4xW6l4DuNLzi4gPdg41NzX6r3H8d7y5q5epTAr1lpPPHAcmmJQ', minFloat: 0.0, maxFloat: 0.6, odds: 0.0037033 },
+        { name: 'FAMAS | Teardown', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1I_82jbbdlH_icGliRz-pJs-5lSxa_nBovp3PQw9r9cXuQZwMjXMF0E7YN4ES9loflPu_htQTX3otGyS3_iCNP6ixq_a9cBmFkCHH9', minFloat: 0.0, maxFloat: 0.6, odds: 0.0037033 },
+        { name: 'Five-SeveN | Silver Quartz', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRaalSI-KKHXORzeJ_quRtcDq6mQsioQKJk4jxNWXCP1AmX8Z0EbIP5Be8w4fhNu7r5ATZ3t4Xzn782yJB63o-5bkLA_En5OSJ2KaCxRX6', minFloat: 0.0, maxFloat: 0.4, odds: 0.0037033 },
+        { name: 'SSG 08 | Acid Fade', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1a7s2oaaBoH_eBD3SDze94tN5lRi67gVN05G3QzI6pIn2UOAYhDJMjEeANsBbtlYC2ZbvltA2P2I5FyHmq2Hka8G81tCngBDgW', minFloat: 0.0, maxFloat: 0.03, odds: 0.0037033 },
+        { name: 'Glock-18 | Candy Apple', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1I4M28baBSLPmUBnPelb93teA-FivjzB5wsjzTyI2pIn_CPAMoW8N3ROJZshm5w9zgNbnk5xue1dyMA9ZU_Q', minFloat: 0.0, maxFloat: 0.3, odds: 0.0037033 },
+        { name: 'Dual Berettas | Cobalt Quartz', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1a4s2ter1-NPGfAm6KxOpJsu18Sha_nBovp3OGm92vdXyWOgN2Dcd2E7Zfsxa7kNe2Zbm2slSN2N1HnCmqi39MuCc6_a9cBtlhe-EA', minFloat: 0.0, maxFloat: 0.4, odds: 0.0022233 },
+        { name: 'AWP | Pit Viper', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf9Ttk_PyvY6F-K_mdMWuZxuZi_rQ_GS3mxRwk4jvTyNv6eC-RPQV1W5AlTOZb4xLtw9fuNriw51Hd3otbjXKp4cSTTIs', minFloat: 0.08, maxFloat: 0.5, odds: 0.0022233 },
+        { name: 'M4A1-S | Nitro', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H-OcMWiCwOBxtd5oTCq2mwk0jDGMnYftb3nFaVQgApQiQuEOukS-x4KxP-PjsQOLjt9HzS6t2CpB6C0_4LxWBaA7uvqANEieesU', minFloat: 0.06, maxFloat: 0.8, odds: 0.0022234 }
+    ]},
+    { id: 'winteroffensive', name: 'Winter Offensive Weapon Case', series: '7', release: '18. prosince 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frGxZvqX4avxuIabDXDPJxb534uQ-TH-3wk8isGqByIuoIHKRbQRyXpJ2W6dU5a9fuS_R', items: [
+        { name: 'Galil AR | Sandstorm', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0PG7V7dsLvSAGmiCzNF6ueZhW2exkx4m6mrcmd6heS-XZgB1ApZ3FLUI5xm6ktezMuzh7gTeiYpFnCr-kGoXuTw2UKiI', minFloat: 0.1, maxFloat: 0.6, odds: 0.1998075 },
+        { name: 'Five-SeveN | Kami', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRYL1SK_GeB1icyOl-pK9oGnHnk012sT_XzNv4eXuUawUlDpEkQOIN40XskIHmP-mx4wOLio1B02yg2SJzf1Vk', minFloat: 0.0, maxFloat: 0.3, odds: 0.1998075 },
+        { name: 'M249 | Magma', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8zMK5wiNK0P2se61pKfGdMWuZxuZi_rNrTC-wl0gh5WXXmIqpIyiSbVIoXJckEO9eukTrx4XkMbjh51bYjIJbjXKp9iAER2c', minFloat: 0.0, maxFloat: 0.7, odds: 0.1998075 },
+        { name: 'PP-Bizon | Cobalt Halftone', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1a4s26fbZ8L_mAC1iYwOJwpO5nSha_nBovp3PTnN79IH-fZw5xW5V4RrJYtRHpmtzkM-K04laIidlDz376jHhB5ixj_a9cBqXoycG_', minFloat: 0.05, maxFloat: 0.45, odds: 0.1998075 },
+        { name: 'FAMAS | Pulse', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1Y-s2oaalsM8-DG2uDxNF6ueZhW2flxBlxtm_WntqhJyiSbw90CpJyR-8DtRm6kdHkYuLj4QzY2INCzX-skGoXudLVHKnn', minFloat: 0.0, maxFloat: 0.4, odds: 0.0399625 },
+        { name: 'Dual Berettas | Marina', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1T9s2jabZkLvGsHXKe0-dltd5lRi67gVN34DuDyoytIH3EPwYnDMYjROde4RC9lIDnZO_i51TejdoRxSWrhn9B8G81tGB0zZHS', minFloat: 0.05, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'MP9 | Rose Iron', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_C9k-_qheqp0H-KcHWKvzP4vj-1gSCGn20h0423Wn9qoJH6QOwNxXpRxQOQLtEHumtTvP-i05wyMjN5Hz3qtiy1XrnE8Sl7QOgI', minFloat: 0.0, maxFloat: 0.3, odds: 0.0399625 },
+        { name: 'Nova | Rising Skull', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0OGlfahhH_6cGGavzedxuPUnSSy3wEV-4miHyt__eHKSOA4pA5JxE7UJ5kO9l4HmZuixtgHZgoMTyDK-0H1FVu2S0A', minFloat: 0.0, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'M4A1-S | Guardian', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_OGMWrEwL87o95sQyy0lBMzjDGMnYftb3-QPFUlWZJ1F7VbsBi7xoa0Y7vl5ACP2ohEzX-t2iJA7Xtv4ugKWaQ7uvqAAzqYQbE', minFloat: 0.0, maxFloat: 0.5, odds: 0.0106567 },
+        { name: 'P250 | Mehndi', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiFO0OL8PfRSMvWVB2mVxdF6ueZhW2eykERysj-GnNv7eHuTbAYjCpN4Q-ILsxGxw4DjM-rn5QTciIIRn36rkGoXuU7_dDjp', odds: 0.0106567 },
+        { name: 'AWP | Redline', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk7uW-V6diIuKSMWuZxuZi_rUxHS3lzUwm5DjWy976dSiRagd1WJB1RLQP4RK-mtazM-3itQeL2INbjXKpw2eVIZ0', minFloat: 0.1, maxFloat: 0.4, odds: 0.0106566 },
+        { name: 'M4A4 | Asiimov', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0P_6V6V-Kf2cGFicyOl-pK85H3i1wRgk42_Rm9f_In2QawAjXJojRLIP5kTsx9LiPujm71bbitlN02yg2TSwkYTY', minFloat: 0.18, maxFloat: 1.0, odds: 0.003195 },
+        { name: 'Upilovaná brokovnice | Kraken', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWCmiWx9F5s_VmXzy-hSIrujqNjsH_eXmWaVRyXpF3EOZe5Bm8w93gMbzn4waPg98Tzir8jHwbuC5p4uZUT-N7rZ8ILI16/', minFloat: 0.0, maxFloat: 0.4, odds: 0.003195 },
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'esports13winter', name: 'eSports 2013 Winter Case', series: '5', release: '18. prosince 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-UnoUwniocSwrHFkvqbgafw-JKHKWTGSw7wmtOMxTX2yw0ki5DyGm4ugcirGPQ4nC5B3EbNetw74zIMdBc4CJw', items: [
+        { name: 'Galil AR | Blue Titanium', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0POgV7BkNPGdB3Kdkr5gj-1gSCGn208jsDvRmNmqdn6fbw4iCJp5Q7Nb4xW8xNSzMenk7wbX341AzyitjitXrnE8X82UsFg', minFloat: 0.0, maxFloat: 0.04, odds: 0.133205 },
+        { name: 'Five-SeveN | Nightshade', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRYL1SJvycGWKC0tF6ueZhW2frl08m5mrXyd-seSmVOgUkX5MhReRcsRHsm9LjZe_htACI3oJEzHj6kGoXucu6NwSL', minFloat: 0.0, maxFloat: 0.5, odds: 0.133205 },
+        { name: 'PP-Bizon | Water Sigil', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1T9s25abBoMs-QHGKD1dF6ueZhW2frwRwh4j7VwoqpdHyWPQcgCpd2TbFYsxC-l4a0Pu2ztA2NgtkUzST-kGoXuZ4FYcbA', minFloat: 0.0, maxFloat: 0.5, odds: 0.133205 },
+        { name: 'Nova | Ghost Camo', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwjFL0PGvZatSN_-cCliSzftzj-1gSCGn2x9ytmXRzt36dH_EPw9yD5R1ROYCtBO_x4LhMO2wslfZiotMxX6viitXrnE8JeKdjD0', minFloat: 0.0, maxFloat: 0.4, odds: 0.133205 },
+        { name: 'G3SG1 | Azure Zebra', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1I_820baZ_IfOSA1iSzftzj-1gSCGn20tz6jjXnN-pJSiUOAIlD5FyR-FYuhbtwdSyMb_l4VPajI1FyCSo2iJXrnE87owZcUA', minFloat: 0.0, maxFloat: 0.28, odds: 0.133205 },
+        { name: 'P250 | Steel Disruption', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiNW0PaqeKV5JPWdHWKv0ud6puR7cCW6khUz_WmGzIqrc3mVOlN2CJF5Re4CskWwxoW0PuKzsVaL3o9Mn3762H5I53l1o7FVezFvgCM', minFloat: 0.0, maxFloat: 0.2, odds: 0.133205 },
+        { name: 'AK-47 | Blue Laminate', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wipC0POlPPNhIf2sDGuFxNF6ueZhW2fhzE5_5G7dnt_7JXufa1J0DZAkE-cKtBaxl9WzPuyz5lDY3YpAzCn9kGoXuZPu7T4u', minFloat: 0.02, maxFloat: 0.4, odds: 0.079925 },
+        { name: 'P90 | Blind Spot', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf9Ttk4v2qe7RiNOOsAm6Xyfo4seVsTn3ikU0jt2nQnIqqJ3KeOA4jDJV0EOMPt0S7xNLjM76w7gLd2ZUFk3vvaUMV8A', minFloat: 0.0, maxFloat: 0.5, odds: 0.079925 },
+        { name: 'FAMAS | Afterimage', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1Y-s2seqtmJf6sHmaEydFwsexoXBa_nBovp3PQn46ucH_COwcoCMchTe4CshG7loG2NrmztFTajoIXyiitiCpLvSk6_a9cBkMHi1qM', minFloat: 0.02, maxFloat: 0.4, odds: 0.0106567 },
+        { name: 'AWP | Electric Hive', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf9Ttk5_u4bZthKfebGinElLtytLVtG362x05wsWyByt2scHrGOgd1WZJ1ROBc4xi_ld3gNO7g-UWA3Kwc2RVq', minFloat: 0.0, maxFloat: 0.4, odds: 0.0106567 },
+        { name: 'Desert Eagle | Cobalt Disruption', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7v-RbKB9IeSXC2mDxNFmteBqQCq4qhEutDWR1I36c3OVbFQjDcRwR7EO4EW-x4HvMumzswfWjd8XnCn2iShM53s5t-0cEf1ycu8KccY', minFloat: 0.0, maxFloat: 0.2, odds: 0.0106566 },
+        { name: 'M4A4 | X-Ray', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0Oq8ab1SLaSsAm6Xyfo46LAxTHrgxU8lt2WHmNf7cS-Ub1JxDpQkQecO40OwxN2yZbvg41DciJUFk3vXysuZ3Q', minFloat: 0.0, maxFloat: 0.3, odds: 0.00639 },
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'stickercapsule', name: 'Sticker Capsule', series: '9', release: '5. února 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ikLvrz-PfRpcKeQCzPEk-p147M_SXrglx8l4m2EnoqvJS2eagchCZQiQeADrFDmxXUYlhnp', items: [
+        { name: 'Samolepka | Lucky 13', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu5P840vzRBj_0JPlqiYP6ff6OPM0cvLBDGORmbYhs7NsTii2zBt_tT_Qn9iscH3GO1A-SswnhsokpHo', odds: 0.080645 },
+        { name: 'Samolepka | Aces High', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu4b370rYSRT2ltjlriQMvPOrafI1c6mXXDCSlL515rg-Hi3gl0V052TTz9_8cHiTbVdxFNIuEvTpD7o7', odds: 0.080645 },
+        { name: 'Samolepka | I Conquered', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu4T75EjyRA_0mtjk_yZdtquqPqc-IaXGXjKTwOgj5rg7TXy3wh5152_Sy4ugdymWbgEiFNIuEt4TmcQ2', odds: 0.080645 },
+        { name: 'Samolepka | Seek & Destroy', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu4Px-U31TgS_m8-xqCAIuaX4OKI6dKPLWWPHwr905eM8G3mylE10tW_cmdb8IHyVOhhgVMXsEjxLBQ', odds: 0.080645 },
+        { name: 'Samolepka | Black Dog', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu4P9-UnmVR750MTm-yMCvfT_PPI1caXKVjTDxb1w5uNrF3zrlE0k6mSDntepcHjFaVQ-SswnqwuJhOA', odds: 0.080645 },
+        { name: 'Samolepka | Fearsome', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu4Hx60v0ThD00MDk_3IK7qT6PqFsI_OVCj_Bl7Z3s7FrSijrxxkl62WAyIn4dCmfP1c-SswnLVkRVWg', odds: 0.080645 },
+        { name: 'Samolepka | Cerberus', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmyMnTGtRl39YXt1VriUx_0jIPzwjJa__e8Jqc_I_PEXT_Hkuhz4eU7GX63zE5x5juBmYuscn-QO1UlD5R5FOUJs0Km0oqwrycrf-c', odds: 0.080645 },
+        { name: 'Samolepka | Easy Peasy', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu4vx51bpD0-mzMGwrnIPuaKsbvNoc_HACzCVk-gvs-NsSSu3wUR0t2XRzN-pc3uJLlh3__EBqhw', odds: 0.080645 },
+        { name: 'Samolepka | Luck Skill', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu4vh6VKpRBuinMPkridZtqH9O6U0c6bKVjHEk7oltOM9TS-2zRlx5mWBz42pJGXXMFG8bOpJZQ', odds: 0.080645 },
+        { name: 'Samolepka | Vigilance', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu5H97VDrQBPym9jhqCNYuvP8avM9JaSQCmaTx-su6bc5G33hxht-5D6Dy9n_I3ifbFcnFNIuEloXV6pw', odds: 0.080645 },
+        { name: 'Samolepka | Aces High (holografická)', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu4b370rYSRT2lqno8i5UoaH8OaU6c6SVX2bIx7lz6eAxTXnizUVx4GTXnompcSjEPQR1A5slEe4U8k7vp1iwRKc', odds: 0.0537633 },
+        { name: 'Samolepka | Fearsome (holografická)', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu4Hx60v0ThD0oZ7v8S0V6fb2PKI8dfbGWzSSxbcisbg6Siq1wU9y4T6DzoqpIy-Vbw8pApRyQ_lK7EcfSGVkVQ', odds: 0.0537633 },
+        { name: 'Samolepka | Vigilance (holografická)', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu5H97VDrQBPym6no8i5UofP9OfQ0JfGSDDTDlr8h4LVsTn7rxEt34mqAyYypIyrGZgMnXJBxFuIU8k7vtISZw6w', odds: 0.0537634 },
+        { name: 'Samolepka | Lucky 13 (speciální)', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu5P840vzRBj_oZDv9C4Vu_f6aaVvJvaQDGXAw7kh47M6SS3nxh905GzczNb4eHmWawQkWJdzE_lK7Ec5rlHnLA', odds: 0.01613 },
+        { name: 'Samolepka | Luck Skill (speciální)', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu4vh6VLYRxL4ktiz-HUKvPOtP6c_dPPCWD7Glb4ltec5Gnu3zEt04T6GzN2hdn-VOwJxFNIuEm3vzl3z', odds: 0.01613 }
+    ]},
+    { id: 'weaponcase3', name: 'CS:GO Weapon Case 3', series: '10', release: '12. února 2014', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bji61XxRCKi0JS0pCZYvaCvOPI0eaHKWjGVmbovs7ZrHH_nl0oj5mXSzNqqdS7BaAc-SswnOWLoN2Y', items: [
+        { name: 'CZ75-Auto | Crimson Web', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1T9s25baZ-H_yaCW-Ej-0u4-VsH3G2x0x-sGXQyY76JXPGOAQkCMAlR-YNsBDqxtHhZerjsgTAy9USIjIDnE8', minFloat: 0.06, maxFloat: 0.8, odds: 0.159846 },
+        { name: 'P2000 | Red FragCam', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0Pq3V7RiLOmsDWadztF6ueZhW2flkRsm52nQyNquJ3nBaw4lXMFzQLNf50bpl9GxMePm7wyM3YoWmC_2kGoXucluK1Fs', minFloat: 0.0, maxFloat: 0.7, odds: 0.159846 },
+        { name: 'Dual Berettas | Panther', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1I4M2-aap5KPWBMWuZxuZi_uA4Si-3kRx-sDzUn4r_cnPGa1AiApJwReRc4RXrwIHjMLu25AGP2otbjXKpeGQaAco', minFloat: 0.0, maxFloat: 0.58, odds: 0.159846 },
+        { name: 'USP-S | Stainless', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSIeGsG3SA_v1isehnQyyghiIrujqNjsGqcHuVa1VxCcciR7MP50a5ktLuP-rr5ATXioJNyij93y0a7nlstboAT-N7rU1N1uE6', minFloat: 0.0, maxFloat: 0.8, odds: 0.159846 },
+        { name: 'Glock-18 | Blue Fissure', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1T9s2teqV8NfWfG3WV_uJ_t-l9ASzixkp15W2Bntn4cnPGaFMkC8R1EeIL5hKxl9a0ZOLntQbd2IhBnijgznQeP57NAAc', minFloat: 0.06, maxFloat: 0.58, odds: 0.159846 },
+        { name: 'CZ75-Auto | Tread Plate', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a4s2qYaVgL_6XMXecwPpzj-1gSCGn20l_62-Bzd39cH2QaAYoD8ckE-9csxmxx9biML_q4w3Wi4gTmSyvjShXrnE8FqKNMu4', minFloat: 0.0, maxFloat: 0.2, odds: 0.0399625 },
+        { name: 'Tec-9 | Titanium Bit', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiNW0PSifbBoJM-HC2TJ_uJ_t-l9ASi3w0gm62qHzdz6Jy2WbAZxW8dyTOEIukawldfhY7zqtgKN2d9MyHngznQe9VU90c8', minFloat: 0.0, maxFloat: 0.2, odds: 0.0399625 },
+        { name: 'Desert Eagle | Heirloom', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7uORbapqMvGFC2Ovxet3t-1scCW6khUz_W3czNegeXueO1N2WZIkE-RY4EGxlNSxZLnn5gfai4oTniSoiStA6y91o7FVItTkIhw', minFloat: 0.0, maxFloat: 0.8, odds: 0.0399625 },
+        { name: 'Five-SeveN | Copper Galaxy', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRaalSI_-DHmKC_uh6teJiXBa_nBovp3OAnN_6cXvEOwFzDcFzQ7Vc4BPuwNy0M7jk5gWL39pCnC35jShN6S1p_a9cBt8cUyQh', minFloat: 0.0, maxFloat: 0.2, odds: 0.0399625 },
+        { name: 'CZ75-Auto | Fuchsia Is Now', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a4s2ofbduKPmSMWuZxuZi_uM-Sn_hlhgi4D_RnImrJC3COFIoApB3FLUP4RS9mtSzYu_r7wHZjopbjXKpFZZFzGk', minFloat: 0.0, maxFloat: 0.4, odds: 0.015985 },
+        { name: 'P250 | Undertow', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiNW0OL8PfRSIvWSCmKU_v53ue99cCW6khUz_W3dzIuueSqWblJ0WMNwFuYK4xawk9S0Y-7n4Afag4JDzSz73XtK5nt1o7FVPKoITvg', minFloat: 0.0, maxFloat: 0.2, odds: 0.015985 },
+        { name: 'CZ75-Auto | Victoria', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a_s2rfKdlJfSsDX3HlNF6ueZhW2fkk04i5WrXmY2sc3qfPFAlWZd3EOdY4Bi6loCxPu7h51fZjNlGzST5kGoXuTXAF0gA', minFloat: 0.0, maxFloat: 0.75, odds: 0.00639 },
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'phoenixcase', name: 'Operation Phoenix Weapon Case', series: '11', release: '20. února 2014', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fr2wPtqP5PKVvJPSQDWSSl7sn6eMxHC3hwhl3sDuDztivJHrEagJzWZd3W6dU5fXcT7oM', items: [
+        { name: 'UMP-45 | Corporal', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbRSI_-BHmiCwOJJvOhuRz39wUUi4W6Bzdipd3KWOwInXJFyTbEKuhbtloHlMbzm5AbW2YkWzSv5jjQJsHiIsauxOw', minFloat: 0.05, maxFloat: 0.75, odds: 0.1998075 },
+        { name: 'Negev | Terrain', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1I_82gbaNoNs-HG3WB_vpzovNoRieMmRQguynLz4qgJyqWOg8iDZFyFOcD40axlYflNL7htgDb2thNmH6oinkc5yZt4fFCD_QbgNa1nA', minFloat: 0.0, maxFloat: 0.45, odds: 0.1998075 },
+        { name: 'Tec-9 | Sandstorm', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiFO0Oara_1SM_GdCnSEzvx7j-1gSCGn2xsi52XSyIqueCifOAMnD8YkQ-YMtUPpwIK2N-jq4QSK2ohCm36q239XrnE8IX2h_4o', minFloat: 0.1, maxFloat: 0.7, odds: 0.1998075 },
+        { name: 'MAG-7 | Heaven Guard', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiFO0P-vb_NSKPWSGGKe_uJ_t-l9AXm1zEol52_cz9z9d3rDb1J0DZdwFOMLtxa4m4W2Zejn5ALc2NhFzyTgznQeMWQmjgI', minFloat: 0.0, maxFloat: 0.1, odds: 0.1998075 },
+        { name: 'MAC-10 | Heat', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-BC2OYzvpJvOhuRz39xR5w4GzUyo6pdnuUawMpWJokTLUL50K6l9XiNO7i4lGKiYsRxCv6jTQJsHim4lDW8g', odds: 0.0399625 },
+        { name: 'SG 553 | Pulse', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4c8-DG2uDxNF6ueZhW2eykUh24jjczYqscH7GblIpCJBxF-AD4BHtxIKzM-nq5ACK3t1GyySskGoXuRyAaawM', minFloat: 0.1, maxFloat: 0.6, odds: 0.0399625 },
+        { name: 'FAMAS | Sergeant', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1a4c2oaalsM8-ACXOvzedxuPUnF3HmkBx_tjnSmNmrJHiROFN1W8NxFrFZsxbrk4e0Yuvr5wWLi4JAyjK-0H3maOk52Q', minFloat: 0.1, maxFloat: 1.0, odds: 0.0399625 },
+        { name: 'USP-S | Guardian', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSI-WsG3SA_ut6teZoQT2MmRQguynLyd76I32fbFUkD5EmRu4Ct0O4m9fmY-zlsQSMiN9CnHj2jitL531o4fFCD_TZrkjVNw', minFloat: 0.0, maxFloat: 0.38, odds: 0.0399625 },
+        { name: 'AK-47 | Redline', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSI_-RHGavzedxuPUnFniykEtzsWWBzoyuIiifaAchDZUjTOZe4RC_w4buM-6z7wzbgokUyzK-0H08hRGDMA', minFloat: 0.1, maxFloat: 0.7, odds: 0.0106567 },
+        { name: 'P90 | Trigon', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-V7B_KfecAFicyOl-pK9vGi3nlEt24GnSwoypc3rFbQ52XsN0EOFcshfuwYa1NbzktVTZ3ohN02yg2RSFidN_', minFloat: 0.08, maxFloat: 0.75, odds: 0.0106567 },
+        { name: 'Nova | Antique', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSIf6HB3aFxNF6ueZhW2fmwRwl6jyHw96vIn2UbVVzXMdyRuYLt0O7ltPjZbu0tQTejo9Hyn2skGoXucYtjcOH', minFloat: 0.0, maxFloat: 0.3, odds: 0.0106566 },
+        { name: 'AWP | Asiimov', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk7uW-V6V-Kf2cGFidxOp_pewnF3nhxEt0sGnSzN76dH3GOg9xC8FyEORftRe-x9PuYurq71bW3d8UnjK-0H0YSTpMGQ', minFloat: 0.18, maxFloat: 1.0, odds: 0.003195 },
+        { name: 'AUG | Chameleon', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7uepV6dlIf2WAmKfz-9_ouRWQyC0nQlpt23VztercCjGbg90C8RyQOcMs0G5x93uZLm37wbe2owTz3j9iShI6TErvbi7ZmzWCw', minFloat: 0.0, maxFloat: 0.5, odds: 0.003195 },
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'stickercapsule2', name: 'Sticker Capsule 2', series: '12', release: '27. února 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ikLvbz6Mac1c_SWCjaUk7tytblqTH3rwxki527Sw9j7c32XbQAhWMYlE7ENrFDmxQkjC0Ti', items: [
+        { name: 'Samolepka | Banana', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj261fmTxy_ncWypXde6aL7aqJvcaiXDDGUwLYv5uNvGHC2l0l0sj-ByN2sIHrBaBhgVMXwKPP2hQ', odds: 0.080645 },
+        { name: 'Samolepka | Bomb Code', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj25VTlfh7-mpOu-yQDu_asbPQ7cfOXXmPIkboh5-AxHX3lx0tw62XczdyucXnCaQQhD4wwG7B88LNKHw', odds: 0.080645 },
+        { name: 'Samolepka | Chicken Lover', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj34lDkShj_oZrv6ydJoab4MPZpc_PBDzXDl-ggs7M4Hy-ylhhyt22Amdj8JX_FZ1UnA8QmE-YU8k7vYJs36dk', odds: 0.080645 },
+        { name: 'Samolepka | Good Game', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsjz5VbjRhz8m9jlrXAOtvb_PKI6cvOVCmLFle0nseM4H3DrlEkl42WHmd78dXyVbA4oFNIuEhUNvd1i', odds: 0.080645 },
+        { name: 'Samolepka | Good Luck', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsjz5VbjTQjyldjhqXYDufH5aaFseabLD2aTw-gi5bgxSnvqwkwit2vTztasc3uUOgJ2FNIuEnevrBpg', odds: 0.080645 },
+        { name: 'Samolepka | Have Fun', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj860_iRwj_0JWy-HoJ6fH2a_0_ePaXDGPFxLsktec9FnrlkUkm6jvcyYqpdXuVOg8-Sswnnu8cDqY', odds: 0.080645 },
+        { name: 'Samolepka | Let\'s Roll-oll', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj47030fg_-kprf8i5Xoav3PvNoJaCSVjHGmeoktbUwGHnmw0ok4mSBwtmvcn-fOgMmCZR0EeAU8k7vZOsCOqc', odds: 0.080645 },
+        { name: 'Samolepka | Metal', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj5703mTVOmn5firCNZu6r8bPZvJKSXWD-Rl-sltrk8G3vqzUgl4WrQmNmpdHKRcEZ-XU9JdaNk', odds: 0.080645 },
+        { name: 'Samolepka | Nice Shot', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj641rifg75kYKuqSNf66b5Pvc9cKKVWjHElLch6LY8Gn_gw0si5WuDmN6vJ3_BOlR1CowwG7Av-d9Y7g', odds: 0.080645 },
+        { name: 'Samolepka | Welcome to the Clutch', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsjj71XkThD0oZXs6DZY57z6bKI5eKTFDGXDwL9wteBtFirrwEsmsTjQm96ocS3EPVAhAsB1F7QIrFDmxRUFa3Qh', odds: 0.080645 },
+        { name: 'Samolepka | Bish (holografická)', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj240rvfhX-kpmu-yBevqP2O_E4I6mVDTCWlLYjtblvG3vglEt-4m3VzdmpIimSOAImWIwwG7DEtAgJ5w', odds: 0.0403225 },
+        { name: 'Samolepka | Bash (holografická)', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj260rvfhX-kpmuqHdf6vP5PKI1IaTGVj6Vkuhws-BoFnnnzUgltmmGyY77IyjEaFJxXowwG7CRGcYc-g', odds: 0.0403225 },
+        { name: 'Samolepka | Bosh (holografická)', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj25UrvfhX-kpmuqiQL7aSqO_I6JabFDTaUlrwlseI-G3uwxUUhtWvTzIz8d3mWbFd1C4wwG7C3RapAzQ', odds: 0.0403225 },
+        { name: 'Samolepka | Let\'s Roll-oll (holografická)', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj47030fg_-kprf8i5X0PqhZKsjeKmXXjDGmLcj4OcwH32ywkR04m7TytuoIHvBO1d1CccjQ7INtBO_k8qnab1UOa6C3g', odds: 0.0403225 },
+        { name: 'Samolepka | Crown (speciální)', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj3-FbwTyL3kZ_ssycDt6v4PvU_dvTGDWGWl-xwtLZoS36ykB4ltTvXy42seS_EPFQpC8BuBbldJQkRI1c', odds: 0.01613 },
+        { name: 'Samolepka | Stupid Banana (speciální)', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsjn_kz3SBnOnJfu_Cxa0PShYagjJPSXXTbJwL0utLltGnq3whwi5G-Azt-oIH2RO1VyDZRxRbNf4Rjrlcqnab352TE6HQ', odds: 0.01613 }
+    ]},
+    { id: 'emskato14legends', name: 'EMS Katowice 2014 (Legendy)', series: '15', release: '6. března 2014', type: 'capsule', image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk5PO6OvQ8dM_DXCnHkOgktbhoHyqxxRh0tWiDnIr4dnKSOAUoC5J1TbJZ4Bi8k9HlY-Li-UWA3NcCqy5X", items: [
+        { name: 'Samolepka | compLexity Gaming | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLykZvw8SdD5ua3Jv08d_XGXzeVl7906bhvGn62xhkjsTiEzIv6IinEbgEnCJZ3RuZc5hWm0oqwz9ycayY', odds: 0.10080625 },
+        { name: 'Samolepka | Team Dignitas | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL1l5Hu9DZa_LyrOaA8dvKWVjLAkLp05Oc5Gy-yzE4h42uEzN34dnuRZgQjD8QkQOFcrFDmxY_voY8V', odds: 0.10080625 },
+        { name: 'Samolepka | Fnatic | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL3kJf09CEVvqStP6Y6JaaSWjfGlb8mtrM4Ti-wzE12sDjWm4mrdC6WZwMmW5JyQflK7EfDL65HwA', odds: 0.10080625 },
+        { name: 'Samolepka | HellRaisers | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL5m5rs7yNS_Pe8e-o1cqaWXDeWwLhy6bZsG3vlkBt2tWqEn9f4eHyRPAAoWcRxRu8NukTqjJS5YFwAHIOk', odds: 0.10080625 },
+        { name: 'Samolepka | Team LDLC.com | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL9mprjsyAD6fb2P6Y9eKmRCzPBwOt3s7MwG3rlxEwj5mmEzdaqdCqfPQIjAsNuBbldhnvSCr8', odds: 0.10080625 },
+        { name: 'Samolepka | LGB eSports | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL9mZSuqyQK7qD8Pvc0dvTFXD-Vluxzs7hqGn3mzU0k5DmHm4ypd3uSbQIiXIwwG7Ckzoj_bQ', odds: 0.10080625 },
+        { name: 'Samolepka | Ninjas in Pyjamas | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL_l5jq_DFS4eK3YqVgIePdCGHJxOwk5bAwFnDrxBkmsWXUnN_9d3iXZ1AjA8B2QLICt0WwkNC1ZPSiuVKyuwQSVA', odds: 0.10080625 },
+        { name: 'Samolepka | Titan | Katovice 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLll4Lh82xYuaf3PKY8JqPGVzWVx-t15uc8HX_ix09_tWSAz46gcSqTawEmCsN2W6dU5WsJhLBH', odds: 0.10080625 },
+        { name: 'Samolepka | compLexity Gaming (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLykZvw8SdD5ua3V6xiLP_dWWHGw71z6LY9Fijkwkx14GnVw476dX-XaVV0X8d0TLRc5kHpxNbvYfSiuVK5KAR_yA', odds: 0.02016125 },
+        { name: 'Samolepka | Team Dignitas (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL1l5Hu9DZa_M2mZ6hibvGSCmbGmbol5bk5Hyvnl0kktT_Xn4mreHLGPFAnXJpxFLQP4UG5kNP5d7S1RHgEpV4', odds: 0.02016125 },
+        { name: 'Samolepka | Fnatic (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL3kJf09CFk5_2iZ-o_IqTAWDDBwLsn4eQ6HiiyzU915GvXwtqsJH3Eag8lA5VxTeUD4RC8jJS5YFS-xO2Q', odds: 0.02016125 },
+        { name: 'Samolepka | HellRaisers (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL5m5rs7yNS_Pe8e5tlL_ycQGWRxbgh4rg-HyyxxUh15z6Hyd6tcirBagB1A5t3Ee8J4BCxldziYeL8p1uJW10TqV0', odds: 0.02016125 },
+        { name: 'Samolepka | Team LDLC.com (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL9mprjwipU4_3gbfU1c_bAXDKTwu8u4bhvG3qwxk1x4WXRyYuteXrDPFUnWJtwEbYJsQ74zIN29ZviPw', odds: 0.02016125 },
+        { name: 'Samolepka | LGB eSports (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL9mZTf9S1X4Lz3a_Q0damXDDGWl-olsbdtGy3hl0h06j7cz9ivdnmUb1IiX5VzTe4MrFDmxdFt4nC-', odds: 0.02016125 },
+        { name: 'Samolepka | Ninjas in Pyjamas (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL_l5jq_DFS4eK3YqVgIeOsBmiczqAl5rc-TH-xxEsi6myAyIytcSiebAQhCpZ1FuEDu0bskdfkMb-z5gzWlcsbmn_Kwe4B', odds: 0.02016125 },
+        { name: 'Samolepka | Titan (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLll4Lh8x1T4P6hJqZrJfHAXjXGkr0i4rc_GSjixEh35GSAnNr8IyqSbg8kA8ciRrQJshGm0oqwlCzKr50', odds: 0.02016125 },
+        { name: 'Samolepka | ESL Skull (speciální) | Katovice 2014', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLmkZrmwjFQ-v6iV6F-LM-VAW6cj-wl5bc5GnjjxUoh62-Gmd2rI3mSblMhWMcmTbQMsEW4kNLgMu-34gDAy9USDQz6ROg', odds: 0.03226 }
+    ]},
+    { id: 'emskato14challengers', name: 'EMS Katowice 2014 (Vyzyvatelé)', series: '14', release: '6. března 2014', type: 'capsule', image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk5PO6OvQ8dM_DXynCkLkv6LJrSSrilkRw4GzSw9-qIHmSPFNxWJR2TeIMt0HsltXgYrzq-UWA3Meo50Y4", items: [
+        { name: 'Samolepka | 3DMAX | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVKimpvh5WxZuab6MfY1cPPKXj7JmegmtLZtGXyyxhlz6mrUztv7cSifPwUpXpR4W6dU5eKAn36h', odds: 0.10080625 },
+        { name: 'Samolepka | iBUYPOWER | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL4nIP57S1M6uDgOaA0cKjFD2bDl-8hsbZqTnDrlEsj5mzWn9uhdi7FalImXMF4F7UKuw74zIM3Z7kOtQ', odds: 0.10080625 }, 
+        { name: 'Samolepka | mousesports | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL8kYPz-DFL4OC6e-o5JKTCXGaSwLxzsrc_Gi-xxxsktmXUyNf6dCqXaVQlDMN5Q-JbsRLrjJS5YIc8_oYw', odds: 0.10080625 }, 
+        { name: 'Samolepka | Clan-Mystik | Katovice 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL8h4X09CkVu6f2bPE8ePTGVz_Fxbku4LQ8Hiyyw00ktm-GwoygJy2ebA4jCscmEPlK7Efyj5HByQ', odds: 0.10080625 }, 
+        { name: 'Samolepka | Natus Vincere | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL_n4DpsyNZuKD2MPc9I6iQVmaWl74n6bg6HC23zB4k5D7UzYv7dCiWbgEiWcRuBbldh118oDg', odds: 0.10080625 }, 
+        { name: 'Samolepka | Reason Gaming | Katovice 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLjm5fz8iwVt6D8bPU7dKGQXTbHkLt05LE7HnDrwkxy5zuDydqhcXOVaQMmDJV3Q_lK7EchjsH25A', odds: 0.10080625 }, 
+        { name: 'Samolepka | Virtus.Pro | Katovice 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLnl4T06DFL_f3gbfc1JfLFXjPAxewl5rg8HHixwB5wt2jXzIyocyiXPAQoApp2F7EK5A74zIM2Mq5r8w', odds: 0.10080625 }, 
+        { name: 'Samolepka | Vox Eminor | Katovice 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLnkY7l8CtV4ODgMKE-cvTLC2XDkusn4-Q_TnnmkU9w42XSyd79cX3DZgMkCMZxFOADsw74zIMX7bakIw', odds: 0.10080625 }, 
+        { name: 'Samolepka | 3DMAX (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVKimpvh5R1T4P6hJvxvI6HKD2KWletzs7drHyrqwEx-sjmAmdz4cy_CZlcpDMchELQOt0Om0oqw6utmJzg', odds: 0.02016125 },
+        { name: 'Samolepka | iBUYPOWER (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL4nIP57S1M6uCRYKthL77KW2XAkr91tLQ-S33iwhly62jcn9yrcy2fOlBxA5JyRuVf40W7xoC2Kaq8sK3FB_Eg', odds: 0.02016125 }, 
+        { name: 'Samolepka | mousesports (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL8kYPz-DFL4OC6e5tlL_ycQGTHwu0ktrQ6TSu2wEoi4Gvdydz_dy2RO1dyAsR1E-BetBa8w9zgZbn8p1uJ-rzeGxs', odds: 0.02016125 }, 
+        { name: 'Samolepka | Clan-Mystik (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL8h4X09Clk5_2iZ-o1cfaSXWLFlesisblqGS2wx0l0sW7Rntj8J3nGOAIgCpZ4EbIOsEG5jJS5YDNvjHnm', odds: 0.02016125 }, 
+        { name: 'Samolepka | Natus Vincere (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVL_n4DpwipU4_3gav08c6jBWzHElbck5ONvGX2yxU8m6mnXwtetcnOfOgMiCJclRbIMsg74zIPTbZA4cw', odds: 0.02016125 }, 
+        { name: 'Samolepka | Reason Gaming (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLjm5fz8ixk5_2iZ-o-I6PDX2HFxbsmtORsG3jgxEQm6mWHm9r9In_EbVV0DZciELULsRO-jJS5YC3mluwy', odds: 0.02016125 }, 
+        { name: 'Samolepka | Virtus.Pro (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLnl4T06DFL_f2RYKthL77DD2SWleou4OU8HHDgzRsm5W6Dz9qteXuSOlIlDpR2F7Rb5kTtwdPmKaq8sGSbxVk8', odds: 0.02016125 }, 
+        { name: 'Samolepka | Vox Eminor (holografická) | Katovice 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLnkY7l8CtV4OCRYKthL76WWWXIxewvs-c5SirkwE9_4TzTz9j4JCieZgMhCZEhE7IOuxm_k9S0Kaq8sAIJzkJO', odds: 0.02016125 }, 
+        { name: 'Samolepka | ESL Wolf (speciální) | Katovice 2014', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-sJnCW8Vli_YTxuAm2FVLmkZrmwidI482oZ61hbqTKCjCUk7Zw5uA7F3-3lBly4juEyNmvdirDawVzDZIjEeEKsxmwxoD5d7S1SQWYyHI', odds: 0.03226 }
+    ]},
+    { id: 'ems14package', name: 'EMS One 2014 Souvenir Package', series: '13', release: '12. března 2014', type: 'package', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx50q2FSLhjJnt8mxavfH_bPRvd_GSCzHBxbZ0tLY6Gy3kkRl0tW7cy4n4dXnFOFN1DJZzW6dU5V8ClnPH', items: [
+        { name: 'AUG | Contractor', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf7i1k__-tV6hkJ_iHQGWWxOx04LlsGn7lwElytW3cnNihdnqTaFMhWJZxQeYLsUXpxoeyZOv8p1uJ4uPpmuk', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'PP-Bizon | Sand Dashed', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1I_826abRoH-ObAXWE_v13vuVWQyC0nQlp62XcyNygJCrDawR1WZIlQ7QL4xS_wNblPu_h7gOP3oJHynr8iHhK6zErvbioPrlsUA', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'SG 553 | Waves Perforated', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1I_826abRoH_ScGnSv1u9gtfJWQyC0nQlp4TyDnNr4c3yVPQcpX8FxQORZ5he5lYG1Mr-07wOMjt1Hyyv-3H5O5jErvbhvnntidg', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'XM1014 | Blue Spruce', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk_P2RZat-M8-fB2CY1aAg4OU7S3rkkE115WqEyN2rcnqXOwNyAsMhFuUP4UO4l920M-O0s1GNlcsbmkmuSLNg', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'Tec-9 | Groundwater', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wjFU0P2iYbJoH_yaCW-Ej7om4eQ6H3zrxEwk4T-HmN78dirCb1MmA8Z3Re8D5hS5x9KzYrvkslPAy9USDDHRuWI', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'P250 | Boreal Forest', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwipC0PSheqF-NM-RAXWVwOJJvOhuRz39wEsm4WXRz4urcXvEZw8pXJp1RrEIuhC_lNfiYeLj51TXg4JAyyT_jTQJsHgo2RMlUQ', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'Nova | Sand Dune', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwjFU0OGvZqBSLPmUBnPek75ysrZoHnnkw0V0tjndwo6tcnqSawEoWMQkR-Rf5hLul9S1M-vkthue1dyxC6rLqQ', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'FAMAS | Colony', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1I4M29eKVuJc-eD3WZz-tJvOhuRz39xExw5GXTw4qod3uUaQ91ApZ3QbMItxDrxtK2ZbuxtAaLg4hDxS76hjQJsHgze9LmZw', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'AUG | Storm', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf7i1k_OaheqlrMv-dGlicyOl-pK84GCzkxEkisDnUz42qc32WaVckW5AhQeVYs0W9wIfuP7i34laK2d9G02yg2S19fQbA', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'G3SG1 | Jungle Dashed', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1I_826abRoH-ObAXWE_uRjvuZlSha_nBovp3PRz92tJSrFOw4oAsYmFucLsxaxkdfiNejj5gPX349BmXmqhnlPun5i_a9cBim8k1Zw', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'MP7 | Army Recon', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf7jJk_OK8ab1SIeKeF1icyOl-pK84Sijhwk525z-AmN2rcC7GaVIgW5p3ROQLthe9ltGyMOKw5wHZjd5E02yg2bE0ycdT', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'SSG 08 | Blue Spruce', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1I4M2jZ7d-H_yaCW-Ej7sl6OVsHXHizUQksGyDyNn7dH-WZgEgXJshFOdZskO6xoC1Y-LjtVDAy9US2YFh0PQ', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'Galil AR | Sage Spray', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0OG-V7d9MvGKMWOV0utkpN56Ti62qhEutDWR1N6qcCqSOgEiCsMhQLZftxnpxtfkP-Ph71eMjYtDmCX3jytO5nlt5OkcEf1yc_oaZQU', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'Tec-9 | Army Mesh', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wjFL0P-re6xSIeKeF1icyOl-pK8xGnCxkR5_tWTQztepcHiWOwAlCpJ3Q7ML5BO-lNyxMuvl5wXYiY0Q02yg2eIzVY8M', minFloat: 0.0, maxFloat: 0.6, odds: 0.05 },
+        { name: 'SCAR-20 | Contractor', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk_P2ReKluH_yaCW-Ej7914-I_HHznx0lz4jmDwtaoJXOebgMlApt0EeJbt0W7xIG0Muzl5wTAy9USD_fgAo4', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'Dual Berettas | Contractor', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1I4M2-ZadSLPmUBnPekb8g5LI8Hyi2l01z42Tdmdj9cXiRaA4jXJp4E7YJ4Ra8lILmP-7itBue1dzkV1WWjA', minFloat: 0.06, maxFloat: 0.8, odds: 0.05 },
+        { name: 'PP-Bizon | Night Ops', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1T9s24abZkI_GeAVieyOl-pN5lRi67gVMk4Gvdy439eS3DPFUgXpp3Qu5btESxm4LnZbmxtAPdg90WmySqinxN8G81tMa6T4nf', minFloat: 0.0, maxFloat: 0.6, odds: 0.0094118 },
+        { name: 'XM1014 | CaliCamo', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk5-uRfqV_KfOSA2ivxetltfN9cCW6khUz_TuGmI2odiqUaVN2A5IkFuJZtRjrldDkNLiw4ADc2o1Emyj72yxM5ix1o7FV5bllY3w', minFloat: 0.0, maxFloat: 0.6, odds: 0.0094118 },
+        { name: 'P2000 | Granite Marbleized', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0Pq3V6N_If6aGmKvzedxuPUnHyvhkUh2tmuBztupdi2fPwclDMN1F-JctUTuwYDgYu3rslPdj9lHnjK-0H1HqokLtA', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'UMP-45 | Gunsmoke', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1T9s2pbah9Jf6sAm6Xyfo4trM5GCzrkE5w42jVzYqgdijBalR2CMd4R-JeuhS8lNXjN7nj4gTa2pUFk3skeb6bFA', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'XM1014 | Blue Steel', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7uORaqh4JfSsAm6Xyfo4s7NrFnmylk114jiBnNn7cC7GaFcgC5pxEbZe5kTslYG0N7625laN2JUFk3tWvCSOkg', odds: 0.0094118 },
+        { name: 'Dual Berettas | Stained', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1a_s2oZ7ZuJfSsAm6Xyfo45LVtG3zgzEt-tmWHydutd3nFaVciDJIjFrZZt0OxmoXkMuuz7wbY2pUFk3vnrYa7Ww', odds: 0.0094118 },
+        { name: 'FAMAS | Cyanospatter', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1T9s28baFrH_yaCW-Ej7olsbNsG3rmzEoj5m6Hz9atJC2WOg8iDJchR7JeuhfuwIbnZO3k4FHAy9USioZeSPo', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'Galil AR | VariCamo', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0Pq3V7JsMvmQD2qf_uJ_t-l9AXzgwU0ktW6HnIr_cH7FO1R1CpFyTbQNtBHqkYHuM-iw5FDeid1NmCjgznQefGamZCs', minFloat: 0.0, maxFloat: 0.6, odds: 0.0094118 },
+        { name: 'AUG | Condemned', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf7jJk4ve9YJtrL-KWHXOvx-dktd5lRi67gVNztmXQz92qcyiWPQAiDZZ1ELUD5kG8wNW0P762tVaMjopBxCX3jiMc8G81tDi9HBdS', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'M249 | Gator Mesh', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8zMK5wjFL0P-re6xSMOmHBmie_uJ_t-l9ASrkwxxwtWrUyY79I3yUaA5xWcd2RO4C4BO6l4HkZbnj7lSM2YtDzC3gznQeaJe5pgI', minFloat: 0.0, maxFloat: 0.6, odds: 0.0094118 },
+        { name: 'Nova | Candy Apple', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwjFU0OCrbJthKfebGinHxepysuU_HCy3zRsm6jyHyNetIn-XZlQiWJojQ-QIskHqm9eyZezr-UWA3PfdNWrU', minFloat: 0.0, maxFloat: 0.3, odds: 0.0094118 },
+        { name: 'MP9 | Orange Peel', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f7jJk-_O-bZtiMvGdCWKvzedxuPUnGXnkzUwj5WnQzt2scXKSb1ciD8ZwEORb5xW_m9XiYe7gtAPXg4kQyTK-0H0u1pUr8A', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'G3SG1 | VariCamo', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1T9s24abZkI_GeAVicyOl-pK9qTn7gwUlwsWrVzd2sci3GZ1cnDpF0TeNe5kG9mt21Mrzq4VPYjdhA02yg2WVbe73u', minFloat: 0.0, maxFloat: 0.6, odds: 0.0094118 },
+        { name: 'USP-S | Forest Leaves', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSM-CsAmKR1-tlj-1gSCGn2xgh5W3Rwo2gcH6eP1IhWcYmTeYO4xTsw9TmY-mx5Q3a3ogQmSqsiCtXrnE8utrnVdI', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'M4A1-S | Boreal Forest', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_iKMWGf0-tlpN5rQDu2lBEYvzSCkpu3dyqVZgF1CJAhF7NYtULrlIa2M-Lh4wKMiYlDmyqrhygduCZs6-xXV71lpPMY7TF_eA', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'Desert Eagle | Mudder', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk5-uRZat5NPyWCliDwOByj-1gSCGn20gj4WrVyNiuJ3OfPVAjCpEmE7MKuxbqmtDmPuu0slDW3Y5GyS-tintXrnE8PKHjtHI', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'AWP | Safari Mesh', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf7jJk4ve9YJt5If6sAm6Xyfo45uU7HS_nzU914z_dzImtdXyQZlMjCJIkFOUI5ES9k9PkPriz71bdiJUFk3tlgygeXw', minFloat: 0.06, maxFloat: 0.8, odds: 0.0094118 },
+        { name: 'P90 | Teardown', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf7jJk4ve9YJtlL-SsD2mU_u15vOVWQyC0nQlp5mjWy4n9cX3FZ1UiApMkQbJZ4BK8ktXnM-zrsgzeg4wQyHr3iiMc5zErvbiseXdBZA', minFloat: 0.0, maxFloat: 0.6, odds: 0.0037033 },
+        { name: 'Upilovaná brokovnice | Full Stop', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2mcZt7IeKaDWadztFkteVWQyC0nQlp42yEyIr7cX6TaVN0XJsiQeYJ5BTplYDjYrnj7wPX3opHnHr93CJN7zErvbhNR0v1hQ', minFloat: 0.0, maxFloat: 0.6, odds: 0.0037033 },
+        { name: 'SG 553 | Anodized Navy', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1a4c2gabJ0H_yaCW-Ej7ons-AwG37hzUQj5z_Tw9esIHnCZ1UiW5ojQuYJtBO6kNzgNrjitQXAy9USYrEgg8s', minFloat: 0.0, maxFloat: 0.08, odds: 0.0037033 },
+        { name: 'MP7 | Anodized Navy', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_Cxk4fO4cZthKfebGinIw-0v5-cxS33kwEh2tz-HyYugJC7FZwVyXJZ2FO4CtBa4xtPkN-nn-UWA3HYryggq', minFloat: 0.0, maxFloat: 0.08, odds: 0.0037033 },
+        { name: 'USP-S | Night Ops', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSKOmsGGaCyO13ve5WQSC0nQkYvzSCkpu3cy-RbFciDJUlQ7Rc4xW6l4DuNLzi4gPdg41NzX6r3H8d7y5q5epTAr1lpPPHAcmmJQ', minFloat: 0.0, maxFloat: 0.6, odds: 0.0037033 },
+        { name: 'FAMAS | Teardown', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1I_82jbbdlH_icGliRz-pJs-5lSxa_nBovp3PQw9r9cXuQZwMjXMF0E7YN4ES9loflPu_htQTX3otGyS3_iCNP6ixq_a9cBmFkCHH9/330x192', minFloat: 0.0, maxFloat: 0.6, odds: 0.0037033 },
+        { name: 'Five-SeveN | Silver Quartz', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRaalSI-KKHXORzeJ_quRtcDq6mQsioQKJk4jxNWXCP1AmX8Z0EbIP5Be8w4fhNu7r5ATZ3t4Xzn782yJB63o-5bkLA_En5OSJ2KaCxRX6', minFloat: 0.0, maxFloat: 0.4, odds: 0.0037033 },
+        { name: 'SSG 08 | Acid Fade', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1a7s2oaaBoH_eBD3SDze94tN5lRi67gVN05G3QzI6pIn2UOAYhDJMjEeANsBbtlYC2ZbvltA2P2I5FyHmq2Hka8G81tCngBDgW', minFloat: 0.0, maxFloat: 0.03, odds: 0.0037033 },
+        { name: 'Glock-18 | Candy Apple', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1I4M28baBSLPmUBnPelb93teA-FivjzB5wsjzTyI2pIn_CPAMoW8N3ROJZshm5w9zgNbnk5xue1dyMA9ZU_Q', minFloat: 0.0, maxFloat: 0.3, odds: 0.0037033 },
+        { name: 'Dual Berettas | Cobalt Quartz', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1a4s2ter1-NPGfAm6KxOpJsu18Sha_nBovp3OGm92vdXyWOgN2Dcd2E7Zfsxa7kNe2Zbm2slSN2N1HnCmqi39MuCc6_a9cBtlhe-EA', minFloat: 0.0, maxFloat: 0.4, odds: 0.0022233 },
+        { name: 'AWP | Pit Viper', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf9Ttk_PyvY6F-K_mdMWuZxuZi_rQ_GS3mxRwk4jvTyNv6eC-RPQV1W5AlTOZb4xLtw9fuNriw51Hd3otbjXKp4cSTTIs', minFloat: 0.08, maxFloat: 0.5, odds: 0.0022233 },
+        { name: 'M4A1-S | Nitro', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H-OcMWiCwOBxtd5oTCq2mwk0jDGMnYftb3nFaVQgApQiQuEOukS-x4KxP-PjsQOLjt9HzS6t2CpB6C0_4LxWBaA7uvqANEieesU', minFloat: 0.06, maxFloat: 0.8, odds: 0.0022234 }
+    ]},
+    { id: 'communitysc', name: 'Community Sticker Capsule 1', series: '16', release: '1. května 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk7P2jZbFjKeSKXjbembgi5rJqG3Gyw0R3sGSBnN-hdHiSbwZxX8B5E-MJsBe9wIW2Nb7m7hue1dzqPCVrsQ', items: [
+        { name: 'Samolepka | Backstab', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpVvmQhbiipfis3ED7qT5MaJsIvHLDzCUlL8i4bRqG323xB5z62_cw474JXzEaFUhDMZuBbld_SQamO4', odds: 0.0733136 },
+        { name: 'Samolepka | Pocket BBQ', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpUnoQhb0iqni_zMV7ar-OvJscKmVWmLEmL5057JrTnGxk0xy4z_RzdipJHOXbQFzX8NxQflK7Edh8BfzWw', odds: 0.0733136 },
+        { name: 'Samolepka | Bomb Doge', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpVvoTB_Ompnn-GwDufH-O6JrJvTGVzGUlu8ntrM6Hn7gkB5ztW3Vztn_dC7GOlN0CsF0W6dU5RydrPIb', odds: 0.0733136 },
+        { name: 'Samolepka | Burn Them All', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpVvyUxPOip7l8B1a4_7ga_E8dPOSXWLDkr116LFoFi_mxhh3sW2BnImpdXiXPQEoW5pyQrYK5w74zIO4q5TJwQ', odds: 0.0733136 },
+        { name: 'Samolepka | Llama Cannon', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpVXrQBDwoZXh8yxU4bz7afw4c_bFWzXJxeshtOJvSX7hxR936jjWyY6tcnvBbAQgDpF2Q-dcrFDmxZXwgBVC', odds: 0.0733136 },
+        { name: 'Samolepka | My Other Awp', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpVbzSRjjoZf37WxYuaD7bac5JKDHWTOSwLgh4bg8TH61wxkj5GSBzduoJCrBPFcgD8AlW6dU5ThujcYi', odds: 0.0733136 },
+        { name: 'Samolepka | Shave Master', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpUrvQAv0k5fz6SdJofasPPY5eaPCXD7HxLwjtuQ7HXzgx0x24muAwt__eX7CZlQoA5ElE7UU8k7vMV1_eSk', odds: 0.0733136 },
+        { name: 'Samolepka | Rising Skull', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpUrsVBH90MWxqHRevqWtbfZvJanFWjKUx7sgs7UxHi3ilEom4m2HmY36dXuRaQ8-Sswngy0W5DY', odds: 0.0733136 },
+        { name: 'Samolepka | Sneaky Beaky Like', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpUrpRBz6h6ni-CNQ9ryqPKY7cvLFWjbHl7xzsrAwH3GywB924jiAwt2udS6RbAUoXMEhQbNbrFDmxUbkWtai', odds: 0.0733136 },
+        { name: 'Samolepka | To B or not to B', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpU3ofh_OkYTf8y1P0OahV6YjJqOVXz_Akrx1tuU5S37hlEp3smyEy4v6cSiValQpW8QlE7QJuhLuxsqnab1rivshFQ', odds: 0.0733136 },
+        { name: 'Samolepka | Death Comes', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpV3iQAn5oZXv8CdIofCravA8dPPADDDIwLou6edtFi3glxh04GuEn47_JH2VOFRxWcAhF7IU8k7vB0Y5DAc', odds: 0.0733140 },
+        { name: 'Samolepka | Teamwork (holografická)', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpU3iQBDmkYTrwipU4_3gOPNuc_bECzXGkbsj5-Q-F3i2xkgktmvWw9_9J3vFZlQhX5QjTLFb4w74zIOEdmzQGg', odds: 0.080645 },
+        { name: 'Samolepka | Rekt (holografická)', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpUviSgm_yJDhqHMJvvb6aqJuI6eWXmGRkL8v4OI-HS3nl0t24GSDzY6qeX6WPBhgVMX-XaKLcw', odds: 0.080645 },
+        { name: 'Samolepka | Headhunter (speciální)', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpVHiQBn5i5j0-DBk6f2nZOppcqiSWTXFwOwksbFrHnmxxUx352ncn9ehI3uXP1QiD5p5QrIL4Ba6jJS5YBlVjhXJ', odds: 0.008065 },
+        { name: 'Samolepka | Flammable (speciální)', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpV_rQBD8n5Ts-B1d4PuiJvQ9I_WWDWSWlb8k5bA4SnDjxUshsTnVyoutcXyXPQciDJN0R-EOshim0oqw3mezwEo', odds: 0.008065 },
+        { name: 'Samolepka | New Sheriff (speciální)', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpVfiViLilpPy9CRd0PShYagjIqORCmPAl7wh57VrH3uwkUUk4j7dm9qvJX2ROwdxApB3E-JbthG_lMqnab0KHGELBA', odds: 0.008065 },
+        { name: 'Samolepka | Swag (speciální)', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOHaC619h7delpUrwQBrOmJnp8WwLt6v9aqVudPORX2LJl7omtuRsTSjixU9-6j6Dn9_8ciqSbAAkXsZ4W6dU5f-J8SZe', odds: 0.008065 }
+    ]},
+    { id: 'huntsmancaseog', name: 'Huntsman Weapon Case (původní)', series: '17', release: '1. května 2014', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frmxY6qr9OqU0cvbKCGTDk7dys7k-S36yzU114GrRmNaoeSmXaVV0WJp0W6dU5Q_KKWwm', items: [
+        { name: 'Tec-9 | Isaac', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiFO0Oara_1SIeOaB2qf19F6ueZhW2frlEpz6zyAy477dXrEagFxDcclRO4C5EK8wIa1Nem3s1TdiotNzCn5kGoXuYgN6W8t', odds: 0.133205 },
+        { name: 'SSG 08 | Slashed', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1Y-s29e6M9eM-aA2qf0_p3vN5kSi26gBBp62XXyon_eHKXagYoC5ZwFLQNska7lIfiY-rgtVCN2IxExX_9h34buDErvbiGjEi-fQ', minFloat: 0.15, maxFloat: 0.8, odds: 0.133205 },
+        { name: 'Dual Berettas | Retribution', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XuWbwcuyMESA4Fdl-4nnpU7iQA3-kKnl8StP6ryvOqJpJqjACjbBkb93srg-Fn7ilBhysWXSyNarJSqUZlIpCMclTbMCrFDmxYRwJ9Kk', minFloat: 0.0, maxFloat: 0.45, odds: 0.133205 },
+        { name: 'Galil AR | Kami', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0Pq3V6NsLPmfMWyRzOdJvOhuRz39wkl142uEwtqsJ3OealV1DZYmFuNZ4xTtx4HnZuPl4gaLjdpNnHqt3TQJsHjaThnzjg', minFloat: 0.0, maxFloat: 0.6, odds: 0.133205 },
+        { name: 'P90 | Desert Warfare', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XuWbwcuyMESA4Fdl-4nnpU7iQA3-kKnwpHIVvfOsPfI9dqDCWDDGkb4j5OU_Fy_kx0l1tj6DnoqseC2TP1cpAsF2QPlK7EcMYXqtDg', minFloat: 0.0, maxFloat: 0.5, odds: 0.133205 },
+        { name: 'CZ75-Auto | Poison Dart', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XuWbwcuyMESA4Fdl-4nnpU7iQA3-kKnj53UO7ryvaac0dKiVW2XBlrwmsuA6GH3hkE9062qEz9aoeCmVawchW8dwEe4MrFDmxWPDR_Ga', minFloat: 0.0, maxFloat: 0.7, odds: 0.133205 },
+        { name: 'AUG | Torque', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7uepV7R_L_eBC3SDyPhJvOhuRz39lxhxsm_WzN37Iy7CbAcmC8B2QuYPtRCwx9HvNr-xtQPaj95EmS__3TQJsHjrLu4xbg', minFloat: 0.0, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'PP-Bizon | Antique', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLs-SAHOZ0Ptzj-1gSCGn20sj4DnTyN2pdyjFOg4oXJV5Qu5c5xS9w4bjNL7q7gHd2INGxCn_iyxXrnE83Efvvd0', minFloat: 0.0, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'MAC-10 | Curse', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XuWbwcuyMESA4Fdl-4nnpU7iQA3-kKnt_CEKv7yrP_I4dvXLWDLBk7Yis7ZqTHHrwktwtz7Sz4mtdHyUPAQpDpV5F-cLrFDmxRuwA7jf', minFloat: 0.0, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'XM1014 | Heaven Guard', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7OeRcKk8cKHHMW-VwPhzvt5uWiihkSIrujqNjsH7cHLFPwd1WZsiFrJYuhC4lNTuNu3n5ASN3YxEniStjSMa6H45675UT-N7rZnbv6eE', minFloat: 0.03, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'M4A1-S | Atomic Alloy', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_GeMWrEwL87o95oQyW8jCIooTyLnYrGLSLANkI-D5d2FrENtRG7wNDvZe-3slfci9pFmHj8jSof6yZjtugEB6QtrKTXhxaBb-PhITXxPA', minFloat: 0.0, maxFloat: 0.9, odds: 0.0106567 },
+        { name: 'SCAR-20 | Cyrex', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk7OeRe6dsMs-QF3WV2dF6ueZhW2fgzUR_52nUzYugICnCPVImApYkRO8NtkLtw4a1Nbzn7lSN2oITnCr5kGoXuXXxbesR', minFloat: 0.0, maxFloat: 0.5, odds: 0.0106567 },
+        { name: 'USP-S | Orion', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XuWbwcuyMESA4Fdl-4nnpU7iQA3-kKn17jJk_PuibapuJeLdWGLFwL8i4eVsFiqxxUt34jmHnoysJ3qVOAYgCJZwQrRb5EPul4XlYvSiuVIHgy4Xvg', minFloat: 0.0, maxFloat: 0.5, odds: 0.0106566 },
+        { name: 'AK-47 | Vulcan', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSMuWRDGKC_uJ_t-l9AXCxxEh14zjTztivci2ePQZ2W8NzTecD4BKwloLiYeqxtAOIj9gUyyngznQeF7I6QE8', minFloat: 0.0, maxFloat: 0.9, odds: 0.003195 },
+        { name: 'M4A4 | Howl', rarity: 'red', image: 'https://steamcommunity-a.akamaihd.net/economy/image/pWJghcMk-ZNf7MuJgJ4zuB0uqjSHVPfTiyIYk2R4ex9saVd-mji_gf8113em_m82BSnxc45L99eNKR-BZW5sFWMrQ3SLPLiI70TTfaW0fCcBP7pryh65zoEoLp9-aj4lbnF4fNk8_LvzdMN0or9pGRkzuSzJJLTfnCEU3Cw7aktvZUNz3Dz10_gu0CyvtzwgEWzqfYkZ7oaKdUjDeT84SDszEiXDLaOD', minFloat: 0.0, maxFloat: 0.4, odds: 0.003195 },
+        { name: '★ Lovecký nůž ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1Wv1dMizcWMY0IeErADLHR6z7FVW23IQ1&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'huntsmancase', name: 'Huntsman Weapon Case', series: '17', release: '11. června 2014', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frmxY6qr9OqU0cvbKCGTDk7dys7k-S36yzU114GrRmNaoeSmXaVV0WJp0W6dU5Q_KKWwm', items: [
+        { name: 'Tec-9 | Isaac', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiFO0Oara_1SIeOaB2qf19F6ueZhW2frlEpz6zyAy477dXrEagFxDcclRO4C5EK8wIa1Nem3s1TdiotNzCn5kGoXuYgN6W8t', odds: 0.133205 },
+        { name: 'SSG 08 | Slashed', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1Y-s29e6M9eM-aA2qf0_p3vN5kSi26gBBp62XXyon_eHKXagYoC5ZwFLQNska7lIfiY-rgtVCN2IxExX_9h34buDErvbiGjEi-fQ', minFloat: 0.15, maxFloat: 0.8, odds: 0.133205 },
+        { name: 'Galil AR | Kami', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0Pq3V6NsLPmfMWyRzOdJvOhuRz39wkl142uEwtqsJ3OealV1DZYmFuNZ4xTtx4HnZuPl4gaLjdpNnHqt3TQJsHjaThnzjg', minFloat: 0.0, maxFloat: 0.6, odds: 0.133205 },
+        { name: 'CZ75-Auto | Twist', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a4s2pcbZsNPWsAm6Xyfo45bY7TXzjxk5w42XXn93_cnLFOFN1C5t0ROANsBLtx9ziNu6x4FHejpUFk3uH-TvaLw', odds: 0.133205 },
+        { name: 'P90 | Module', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_Cxk_f23aahvLPWWClicyOl-pK8_Sn_rwE1x5z6AyY6qeXmRb1cgWMNwR7Ff4Bm_m9y0Przq4A3b348Q02yg2QQMyM9M', minFloat: 0.0, maxFloat: 0.35, odds: 0.133205 },
+        { name: 'P2000 | Pulse', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0PG7V7Q_cKDDMXeFzf1zj-1gSCGn201wsTnRm9egcS7DaABxDZckQe5Ys0S6xtKxZO-wsQDbi9lMxSv-jS5XrnE8fJdFk9o', minFloat: 0.0, maxFloat: 0.6, odds: 0.133205 },
+        { name: 'AUG | Torque', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7uepV7R_L_eBC3SDyPhJvOhuRz39lxhxsm_WzN37Iy7CbAcmC8B2QuYPtRCwx9HvNr-xtQPaj95EmS__3TQJsHjrLu4xbg', minFloat: 0.0, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'PP-Bizon | Antique', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLs-SAHOZ0Ptzj-1gSCGn20sj4DnTyN2pdyjFOg4oXJV5Qu5c5xS9w4bjNL7q7gHd2INGxCn_iyxXrnE83Efvvd0', minFloat: 0.0, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'XM1014 | Heaven Guard', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7OeRcKk8cKHHMW-VwPhzvt5uWiihkSIrujqNjsH7cHLFPwd1WZsiFrJYuhC4lNTuNu3n5ASN3YxEniStjSMa6H45675UT-N7rZnbv6eE', minFloat: 0.03, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'MAC-10 | Tatter', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2lZ7Z4MOSsAm6Xyfo4tbY7H3q1xRt152TWyt6tc3ifaVcmDppxReVethawlYHmNO6ztQbciJUFk3uxmhdQIQ', minFloat: 0.0, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'M4A1-S | Atomic Alloy', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_GeMWrEwL87o95oQyW8jCIooTyLnYrGLSLANkI-D5d2FrENtRG7wNDvZe-3slfci9pFmHj8jSof6yZjtugEB6QtrKTXhxaBb-PhITXxPA', minFloat: 0.0, maxFloat: 0.9, odds: 0.0106567 },
+        { name: 'SCAR-20 | Cyrex', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk7OeRe6dsMs-QF3WV2dF6ueZhW2fgzUR_52nUzYugICnCPVImApYkRO8NtkLtw4a1Nbzn7lSN2oITnCr5kGoXuXXxbesR', minFloat: 0.0, maxFloat: 0.5, odds: 0.0106567 },
+        { name: 'USP-S | Caiman', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSI-WsBWaZzO94j-1gSCGn20t-4WyBn4mocC6XbVN0CMB2RLYMsUG5x9DgN-20tQSNiI1GzS2q3XtXrnE8NAiGp64', minFloat: 0.0, maxFloat: 0.4, odds: 0.0106566 },
+        { name: 'AK-47 | Vulcan', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSMuWRDGKC_uJ_t-l9AXCxxEh14zjTztivci2ePQZ2W8NzTecD4BKwloLiYeqxtAOIj9gUyyngznQeF7I6QE8', minFloat: 0.0, maxFloat: 0.9, odds: 0.003195 },
+        { name: 'M4A4 | Desert-Strike', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0OanfKVjM-ScHGqvzedxuPUnHnjnxEsi4WTTntqucnuUaA92CZR2E-IDtRa-mobnYeLksQbXg4hDyTK-0H1Bbz5yqg', minFloat: 0.0, maxFloat: 0.7, odds: 0.003195 },
+        { name: '★ Lovecký nůž ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1Wv1dMizcWMY0IeErADLHR6z7FVW23IQ1&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'breakoutcase', name: 'Operation Breakout Weapon Case', series: '18', release: '1. července 2014', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fqWxdv_b8O_w5eKXBWWXHw-smtrBvTHDmwEsl4jvWn4z_I3qWZwV1X5ZwW6dU5RcRF1o0', items: [
+        { name: 'MP7 | Urban Hazard', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_jdk4uL5JadiLf2SAGOV09F6ueZhW2fgx0gl4WTczdj7I3LFaQYjDcQiE-Beuhe6xIXnP-_l41eKi9pEyH79kGoXuW6iY_I1', minFloat: 0.0, maxFloat: 0.5, odds: 0.159846 },
+        { name: 'Negev | Desert-Strike', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1Y-s2gbaNoNs-HB3ORz_1iv_NkcCW6khUz_WnUz42tI3-WOw5zDpAmQOQD4ELskoDlMeni4gTWjoNNmSj_33kcvC51o7FVXp6G1h4', minFloat: 0.0, maxFloat: 0.5, odds: 0.159846 },
+        { name: 'P2000 | Ivory', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0PG7V7Q_cKDDMW6Gzvxvj-1gSCGn20gism3dz96pc3KVOgYoCpR4TOFZsxbsxNzlYejl7lPWiIJBmX6t235XrnE8r5B4jsA', odds: 0.159846 },
+        { name: 'SSG 08 | Abyss', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1a_s2ibbJkIeSbD2mvzedxuPUnH3_jzE1y4TvQyIr9JyieZlckCsRxF-8K50bsxN3gZOzktAzc2IJEzDK-0H1XlSI8xg', odds: 0.159846 },
+        { name: 'UMP-45 | Labyrinth', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1T9s2iYapoM8-cHGaexutJvOhuRz39wRtx4WXczNupdS2XawApD5okQLEK5hm4kYHvYrjm5FDbj4MWnnn4ijQJsHh9pjg_2g', minFloat: 0.0, maxFloat: 0.4, odds: 0.159846 },
+        { name: 'PP-Bizon | Osiris', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLr2cHW6CyP1JvOhuRz39xUxx6jiBz42rIHjBbAcnWZcjROcJsxjtmoXmNe_k5QHajtlNyC2r3zQJsHh050JUDA', minFloat: 0.0, maxFloat: 0.5, odds: 0.0399625 },
+        { name: 'CZ75-Auto | Tigris', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1Y-s2tP_FsbeSaCWKC_uJ_t-l9ASvil0R15WjUmYmqc33CaQ91W5QlRbVetETtwNC1P-u34g2L2dpEmS_gznQebcVQ6rs', odds: 0.0399625 },
+        { name: 'Nova | Koi', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSK_-aMWuZxuZi_rBqGCu3xEoksm_SzomhcHiQP1QjD8BxQuAN50TtlIK1Yri05lDeiY5bjXKpu6W3YF0', minFloat: 0.0, maxFloat: 0.3, odds: 0.0399625 },
+        { name: 'P250 | Supernova', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiFO0PCnfLBoMuOEC2KE_uJ_t-l9AXzlwk5zsGnWz46uICjCPAZ2CZF0QO8LtBjtkNaxZrji7wbY2tkUySXgznQe4Iqu8Lg', minFloat: 0.0, maxFloat: 0.4, odds: 0.0399625 },
+        { name: 'Desert Eagle | Conspiracy', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7OeRbKFsJ_yWMWaF0-tjo95lRi67gVMk4WTSm9moI3-QPVBxDJByQOJe40O6k4fnM-zgsQXci4gUyH3_3CMa8G81tJHuULJI', minFloat: 0.0, maxFloat: 0.3, odds: 0.0106567 },
+        { name: 'Five-SeveN | Fowl Play', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRabVSdaesCGKR1eZzovJWQyC0nQlptm_Vw9ercnOUaA8lA5skFuIPsxPqmtXkNu205lfYiN8XnCyvj3hNvDErvbiIo1idJQ', odds: 0.0106567 },
+        { name: 'Glock-18 | Water Elemental', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1Y-s2pZKtuK72fB3aFxP11te99cCW6khUz_TjVyompc3-QOFR2DJQkFOMJtBbqk9LlY-7n5QLZjtkTxCWqhixPv311o7FVIf8eASQ', minFloat: 0.0, maxFloat: 0.7, odds: 0.0106566 },
+        { name: 'P90 | Asiimov', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-JaV-KfmeAXGvzedxuPUnTSjikRgksjuBzoz4dXLFb1QoC8QlTLQD4EPqk4LvN-Pns1aMioNBzTK-0H3gQVv65g', minFloat: 0.0, maxFloat: 0.92, odds: 0.003195 },
+        { name: 'M4A1-S | Cyrex', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_OGMWrEwL9lj-JwXSyrqhEutDWR1N77cimSbQQgC8F5QLYCsELpltTnZuvk7wbcjdhDzy_43yMb6ilvt7kcEf1yDWu2yf8', minFloat: 0.0, maxFloat: 0.5, odds: 0.003195 },
+        { name: '★ Motýlek ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1PVihrlAsunZIdjOo1_wuqjzdBFTILifp&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'esports14summer', name: 'eSports 2014 Summer Case', series: '19', release: '10. července 2014', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-UnoUwniocSwrHZk_OejZaF_bvXGWT6Vkughs-A5H321kUQl5myEm9__dHKQaw8gWZtzQ7VYu0a-lYf5d7S1qrUfUsY', items: [
+        { name: 'SSG 08 | Dark Water', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1a4s20baZ_Ic-XD3Wb_uJ_t-l9AXriwk1y6mqDyov9eXyTaAFzD5R4RrFYsRC4k9fhML7itQGPio9EyX_gznQeRZeU19w', minFloat: 0.1, maxFloat: 0.26, odds: 0.133205 },
+        { name: 'MAC-10 | Ultraviolet', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1I4M2-fbZ9LPWsAm6Xyfo457RoS3vlzRx2sWWAzNz4dXvGbQ9zCsZ1FOMI40G4ktDvY-LgtQ3YipUFk3sgu3LoQg', minFloat: 0.06, maxFloat: 0.8, odds: 0.133205 },
+        { name: 'USP-S | Blood Tiger', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSKOmsHGKU1edxtfNWQyC0nQlptWWEzd-qd3mVbgR2WZYiFuUMtUG7x4HhYeLhs1fZiN1DnC6viH4Y7TErvbgp6HjWjQ', minFloat: 0.0, maxFloat: 0.3, odds: 0.133205 },
+        { name: 'CZ75-Auto | Hexane', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1T9s2sZLFoKPWLMWuZxuZi_rBqS3vrkRxz5W7dnN2oIyiTZgYhXpN5EOIPsUbsloC1M-_qs1HdiYlbjXKpP5VEBps', minFloat: 0.0, maxFloat: 0.4, odds: 0.133205 },
+        { name: 'Negev | Bratatat', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1Y-s2seqV5IeSSGliexOlzpt5lRi67gVN2sDzUwtevIy_EZwZ1DZclEOANu0brmtDuPriw5lTejdlHxSv3iilA8G81tKRsmgNk', odds: 0.133205 },
+        { name: 'XM1014 | Red Python', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk5-uRe6psK_WABW6e_vxztN5lRi67gVN05G3dyt77dXjBZ1MpWJQmReRbthbpxNDvZb6x4AOP2oMRz3_42ntJ8G81tDf1ocTs', minFloat: 0.08, maxFloat: 0.5, odds: 0.133205 },
+        { name: 'PP-Bizon | Blue Streak', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1T9s29eKhsNOSWHFicyOl-pK8-Hyzjx0t1sWjdy4v_dXyVaFcpC5ElTO4OsxSxkILjYu3k5wKM2dlG02yg2QMXfH6m', minFloat: 0.08, maxFloat: 0.8, odds: 0.03197 },
+        { name: 'P90 | Virus', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf9Ttk9f2jaq1oH_yaCW-Ej7l0tLY8Fn3jk0h342jRwtz9In6TOg4kDZImQ-4Nshi4w9LmNOnh4wHAy9USHtJ8vvM', minFloat: 0.06, maxFloat: 0.8, odds: 0.03197 },
+        { name: 'MP7 | Ocean Foam', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_C9k4OG9YaJ0H_KfG2KvzedxuPUnGX6xlEl2tWmEzdyrd32RbQ5yXpB5RuIK4xaxxIGzY7zl5gza2YITnzK-0H3lsKvKCA', minFloat: 0.0, maxFloat: 0.08, odds: 0.03197 },
+        { name: 'Glock-18 | Steel Disruption', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1a4s2qbLRsNPSWAHSV_v1_vPdsXRa_nBovp3PWmYuhdnyebAdyWJUjE7ResBC6xoXhZe_j7w3Zid1Aziio3SlI5iw__a9cBqG4HP4O', minFloat: 0.0, maxFloat: 0.2, odds: 0.03197 },
+        { name: 'Desert Eagle | Crimson Web', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk5-uRf6FvM8-XD3WbxPxJvOhuRz39wEUh5W3Rytyscy7FPAYgWJJzRe4MtUW8loKyZOm3sQzb34lEzyX32zQJsHig-EWd2A', minFloat: 0.06, maxFloat: 0.8, odds: 0.03197 },
+        { name: 'AUG | Bengal Tiger', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf9Ttk-_upbbZSLPmUBnPeme1z5LU7F3_gxk9xtj6Em4yveCrDOgIiW5cjRrIL5hnuk9TkM-rr5hue1dxoTofnTA', minFloat: 0.06, maxFloat: 0.8, odds: 0.0079925 },
+        { name: 'Nova | Bloomstick', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0OG-eq1jJ8-dAXGR_uJ_t-l9AXDrxU4msD_UzN2qIy6Va1chXJJxFu8OtBO5l9fjZLnh4wXd3olBmCzgznQeBg5SBVo', minFloat: 0.06, maxFloat: 0.8, odds: 0.0079925 },
+        { name: 'AWP | Corticera', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk6fO4bahsH_GEHlicyOl-pK8xTSzqwU1-5jjWno6hJHyeOg91A5R2TOEOtRS-kIG2ZeO25lDYg90U02yg2USK57Qn', minFloat: 0.06, maxFloat: 0.3, odds: 0.0079925 },
+        { name: 'P2000 | Corticera', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0PG7V6JsNvWfD1iAk74m4N5lRi67gVNzt2TTyo6gdH6XPwEiCcZ2RucC5BG9kdTvZe-24QSIidhHyimoiC0b8G81tLsWWhFO', minFloat: 0.06, maxFloat: 0.3, odds: 0.0079925 },
+        { name: 'M4A4 | Bullet Rain', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0PC7ZKhoNM-BD26e_uMisbBWQyC0nQlp4GmGydioIH3DPFMjDMd2QrQO5hDtkNK2Ne_htAXd3d0Uyiiriysb5zErvbh6fsb98Q', minFloat: 0.02, maxFloat: 0.46, odds: 0.003195 },
+        { name: 'AK-47 | Jaguar', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0OKvZrBlJeKsD2zEltF6ueZhW2fhzUwi4WuBzNv6dCiWPVUgApV0TLIM40SwxNLuN-Pl71fdjogXmy79kGoXuYeqaPqj', odds: 0.003195 },
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+    ]},
+    { id: 'eslcol14legends', name: 'ESL Cologne 2014 (Legendy)', series: '20', release: '4. srpna 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk7P2iZ6NjJaLDXzOvkb844rY5G33kwE5-42SGyNz7ci6SaVR2DsF5R7MK5hjuk9W1Nrnk4QSNiZUFk3udWK44YA', items: [
+        { name: 'Samolepka | Cloud9 | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVrrTgj1x9iwqnJevPGra_U9JabEWjLGmbxzsrc6HHyylERy5zyDmNr6cXrDbQcoFNIuEhUwGBlG', odds: 0.1152071 },
+        { name: 'Samolepka | Fnatic | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpV_pQAn4ndiwrHYNuPP7aqA0IaLKCzLGw-gv4rRrSiixkElx42TSn9_4J3jBPFJ1FNIuEkY8pr9p', odds: 0.1152071 },
+        { name: 'Samolepka | HellRaisers | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVHiTRHjn5_z-DBIofaqPqI0cKKWWjORx70k5LI4GCjhxxl_t2jVytyuJH-TbFQhDpBwFrUU8k7vwnTS81E', odds: 0.1152071 },
+        { name: 'Samolepka | Ninjas in Pyjamas | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVfuTxfwjZ_u7TtR7v-ve-o1dKSRCDSUk7sv5OQ4GHCxlEgmsWnWmNf9d3_CZlB1DcMkR7INtkS7jJS5YMQHv9WI', odds: 0.1152071 },
+        { name: 'Samolepka | Team Dignitas | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU3iQBD1l5Hu9DZa_LyvbvE5d6nECGLJw71ytuA5THrrzR5_5m-Am9-qInyUbw50X8Z1FuFZrFDmxX8HedWy', odds: 0.1152071 },
+        { name: 'Samolepka | Team LDLC.com | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU3iQBD9mprjsyMJu6P5P_Q0cqGVWWTIl78v4-NoHSzlxB4m52SByt6qci6UPVdxCZNuBbldwsz6sE0', odds: 0.1152071 },
+        { name: 'Samolepka | Virtus.Pro | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU_uUwnkjYby8mxZuaqqPadvc6GXWjHEkbsltLZrFi-3xEp0sG3Um434dC_GbwIjCcFxW6dU5ZvHl6hL', odds: 0.1152073 },
+        { name: 'Samolepka | Cloud9 (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVrrTgj1x6no8i5UofCrbKI1c_HED2aTl7on5uc7HCzmxUl35TiGm9f7eS6ea1dyXsN2RrUU8k7vpthukzo', odds: 0.0230414 },
+        { name: 'Samolepka | Fnatic (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpV_pQAn4nano8i5Uoff3OvY0eKSWWGPAkOgvs-BoGnGwlBwl42vXm42vJCqVaAAnDJUlQOUU8k7vMYpVz2k', odds: 0.0230414 },
+        { name: 'Samolepka | HellRaisers (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVHiTRHjn5_z-DBI0PqhZKsjeabHWDOUxe8n6eA5Gnnlx05-sjjdztmqeHOSalQkXJt3FOMNtEa9l8qnab34Yl7EoQ', odds: 0.0230414 },
+        { name: 'Samolepka | Ninjas in Pyjamas (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVfuTxfwjZ_u7TtR7v-ve5tlL_ycQDPDkLgv4eRvTirmlx906mrdwtmhIy6SaFB0CpdxQrZZuhHtm9PnYuz8p1uJbjqx6jo', odds: 0.0230414 },
+        { name: 'Samolepka | Team Dignitas (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU3iQBD1l5Hu9DZa_M2mZ6hibqKSWT_GmOok4-Q_HX7jk0l36m6Hno6pJH6eblcgCZckFrRf5xa4lNz5d7S1Xff9X5I', odds: 0.0230414 },
+        { name: 'Samolepka | Team LDLC.com (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU3iQBD9mprjwipU4_3gPaU_dafCCmHBwLontLZvSSzmxUwktz_Xm9ipInKfbQ8kWJskEbMOug74zIP5-SOPXw', odds: 0.0230414 },
+        { name: 'Samolepka | Virtus.Pro (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU_uUwnkjYby8h1T4P6hJqE-cKfDCjXBlb4m47Q6F3HhxUt24mXRn4uveXKTbw4gAsd5QONZtkWm0oqw-b7ior8', odds: 0.0230416 },
+        { name: 'Samolepka | ESL One Cologne 2014 (modrá)', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVz0TSLw0MThr3UKv_T4aaZuJfLFCmWRxegv5LZqG3-ywhhz5mmBw9arJX-XbFc-Sswn3PCkWfw', odds: 0.03226 }
+    ]},
+    { id: 'eslcol14challengers', name: 'ESL Cologne 2014 (Vyzyvatelé)', series: '21', release: '4. srpna 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk7P2iZ6NjJaLDXzOvkbw44uIxHSzqxUlz5Wndn9avJ3PGOg51A5J1FO4N5hixxIbvMbmzswTei5UFk3twnJT98w', items: [
+        { name: 'Samolepka | Copenhagen Wolves | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVroURj_lpfn-CxM4P64bbcjJvXDVz6VmLYn5rcwS362wEVy4mzTz9r7InKTbQFyCsR4EeMI5xjuw8qnab3n35zNFg', odds: 0.0896055 },
+        { name: 'Samolepka | dAT team | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpV3mVQn0n5uuq3Fa66v_a_I6eaHEWjDGmLon4rBqG3mxlht04GnczdavcniebQUnAowwG7Ca1OjKuQ', odds: 0.0896055 },
+        { name: 'Samolepka | Epsilon eSports | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVz3UhT9kZjl7jJU_ea9JqI0eaiXD2GWmb4k4eI7SyuwxRsj4mmDnompJ3qfaldzDZRwRrYIsBSm0oqwZf2mjz4', odds: 0.0896055 },
+        { name: 'Samolepka | iBUYPOWER | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVDlVAThkYHl72wCuvP7OPZseaGXD2LAkrZ14eI-TH3glB534z_Rnon_ICiUalJ2WJpwW6dU5T_u4lJC', odds: 0.0896055 },
+        { name: 'Samolepka | London Conspiracy | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVXoTxn-kJXv8zFL5uCva70jc6XEXD7Ekbp3sbE5G3vhkEh142TTmNb4eXiQZgclWcAhQuYL5kW7l8qnab0Aj9QPqA', odds: 0.0896055 },
+        { name: 'Samolepka | Natus Vincere | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVfmVxS_mJKyrCYJvKSsMKA8caSQCmLCw71w5-c7Gn6ywR8i4mzUzNevJ3rCPRhgVMXX2CFYug', odds: 0.0896055 },
+        { name: 'Samolepka | Titan | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU3uVRz_0MawqHsLu6L2OqY4cafEWDLHxbgu47M-Gn3mwRxy5W3RyIz6JH6QZwI-SswnPBpcMaM', odds: 0.0896055 },
+        { name: 'Samolepka | Vox Eminor | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU_oWRj8l5jv72wC66GoPqZodqGXWjbDx7l0sbQ7TXngwEkmsGWDm9ysJ3OQPFV0D8NzW6dU5c9qhUys', odds: 0.0896055 },
+        { name: 'Samolepka | MTS GameGod Wolf | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU7oTRu_m5PhrnBZ6vCqPv1vc_HHXjDIke9z4eJsGy3rlxh-tW7cmN6hIC7BahhgVMXxTGU_bQ', odds: 0.0896060 },
+        { name: 'Samolepka | Copenhagen Wolves (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVroURj_lpfn-CxM4P64bbdSKP-fASnBku1ztbI-H37rl0wh6mXUzd74JX_EaFAnCsR2E-9ctBbuk4XgMenn-UWA3IZ28y4y', odds: 0.0179211 },
+        { name: 'Samolepka | dAT team (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpV3mVQn0n5vf9S1X4LyrPPc8dfKWXWLCwrZw5-VoSSyxlkwl5z_WnI36dX7DagMmWJslRLRbrFDmxb6Jc4yR', odds: 0.0179211 },
+        { name: 'Samolepka | Epsilon eSports (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVz3UhT9kZjl7jJU_ea9V6xiLP_dWzXIwr8utrg4HHvkw08hsm2Dm9asJHyebA8nXsdyFOIItRfskYblM_SiuVKPYzevXw', odds: 0.0179211 },
+        { name: 'Samolepka | iBUYPOWER (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVDlVAThkYHl7x1T4P6hJqU0dqfKWWHCmbZz5Lc4Hyrjwk0j4zuGn9moJCnGbwYjWcRwFu5Y5hWm0oqwCnjbiRQ', odds: 0.0179211 },
+        { name: 'Samolepka | London Conspiracy (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVXoTxn-kJXv8zFL5uCva71SKP-fASmVl-oi47YwF3qxwUh24W3czN78cHPBPwchCptwE-dYthW4l9XmNOzi-UWA3E_DDq1h', odds: 0.0179211 },
+        { name: 'Samolepka | Natus Vincere (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVfmVxTOlpns8mwPv6L5MPw1ePTCXT-Tk-0j5bQ8THzlxhh-5jvSnIn_eXKWOAV0AsYlW6dU5aIXDh2b', odds: 0.0179211 },
+        { name: 'Samolepka | Titan (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU3uVRz_oZ7v8S0VuqX3PvE_eKKXXGaSxLgn5rhvFnC1lEsk4m7Tz4v9dXnEbFB2DMR3TflK7Ecql-bHIw', odds: 0.0179211 },
+        { name: 'Samolepka | Vox Eminor (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU_oWRj8l5jv7x1T4P6hJvQ8JvOSWjCVxO8utOQ7Tn2wkx53tm2ByN34dX3FaQImCsR2ROYI40am0oqw2OT1Msc', odds: 0.0179211 },
+        { name: 'Samolepka | MTS GameGod Wolf (holografická) | Kolín nad Rýnem 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpU7oTRvOlpns8mwKt6qrafJvJKKVXDWRlLwntONoGyzqkEUhsG7Xn9-vc3rEOFUkDJB4W6dU5cMA8fJW', odds: 0.0179212 },
+        { name: 'Samolepka | ESL One Cologne 2014 (červená)', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVz0TSLz0MHjqCZYuaf5PaI_eKCXDzTExbwi47JvFny3xB525j6ByY34eCnGagI-SswnHbNHT_Y', odds: 0.03226 }
+    ]},
+    { id: 'overpass14package', name: 'Overpass Collection Souvenir Package (2014)', series: '28', release: '13. srpna 2014', type: 'package', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-VW2FSLhjJnt8h1f6s2hfqF_MPGAHSnIxLYi6bc9Fnrjlx90sT6Byt6qc3PCZ1NzA8ZxTeUOtEK_ktWzP-vn-UWA3B_cRugF', items: [
+        { name: 'M249 | Contrast Spray', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8zMK5wjFL0OG-eqV0H_yaCW-Ej-shsbBtS3q2wkUitWzUz9b_c3vEZ1UhD5R4F-QL40a8m4HuZbnitlfAy9USVV6qaxA', minFloat: 0.06, maxFloat: 0.80, odds: 0.159786 },
+        { name: 'MAG-7 | Storm', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wjFU0OG6Z7ZgJuKcAHOvzedxuPUnS3_iwk926m6EnIyvIn3DbQF0X5UjRbJfthewktK2MLzq4ATcgoJCxTK-0H2wBd1PlQ', minFloat: 0.06, maxFloat: 0.80, odds: 0.159786 },
+        { name: 'MP9 | Storm', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f7i1k_OaheqlrMv-dGlicyOl-pK8_S3zjxRh_5mmGn9epIymQPQBxDpQlFuUJ5xa6kt2yZLjkswLY2ooT02yg2WH9Y1dp', minFloat: 0.06, maxFloat: 0.80, odds: 0.159786 },
+        { name: 'Upilovaná brokovnice | Sage Spray', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c29eJt-MOKSF1iUxP1zovVWXCi0kCIrujqNjsH9eC_GblMpCMB4RLYJuhi8wdLiN7_qslaNjdkWyCmqjn9O5yk5sbwBT-N7rdc-87w7', minFloat: 0.06, maxFloat: 0.80, odds: 0.159786 },
+        { name: 'UMP-45 | Scorched', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1I_82qabR9LPWsAm6Xyfo46bMxGn-3x00m4m-HzN2sIH6SZwQpWJVwQu4MuhK5xIXiMuO24QLej5UFk3vMYylqRQ', minFloat: 0.06, maxFloat: 0.80, odds: 0.159786 },
+        { name: 'MP7 | Gunsmoke', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf9Ttk6PeieKFjH_yaCW-Ej7d0sbI8Gyrklht04GvXy46vJ3uQbQ4nWcN5EeAI5hPtmtzjP7nktlHAy9USqCgnGlg', minFloat: 0.06, maxFloat: 0.80, odds: 0.0399475 },
+        { name: 'Desert Eagle | Urban DDPAT', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk5-uRbKB9IeSsG3WS_uJ_t-l9AXm2kxkk42rWn9egc36UOwYiX5N1EOVYsRLtldC0M77g5QXfiN1Fzn_gznQemk8fKYk', minFloat: 0.06, maxFloat: 0.80, odds: 0.0399475 },
+        { name: 'Glock-18 | Night', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1I4M2gYaNlNM-fB2CY1aAmtOU-S33jwEwhtWvdzIr4cHvCPwR1DZdxQrFZt0bsloLjP7jg4VGMlcsbmvNarNNc', minFloat: 0.06, maxFloat: 0.80, odds: 0.0399475 },
+        { name: 'P2000 | Grassland', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0OGhV6N_IeOAAmaexdF6ueZhW2fkzEght2zVnIz_cXrCPQEmA5IhE7FZ4BG-x4GyY-rr5wWNj4kXyi_2kGoXucFfluJI', minFloat: 0.06, maxFloat: 0.80, odds: 0.0399475 },
+        { name: 'XM1014 | VariCamo Blue', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk5-uRfqV_KfOSA2ivw-Jjtd5lRi67gVN0tmTdyN-gJy2fb1AjCcFzFOYDu0btxNDkYr_k4APXg4JNxXn32n5L8G81tKBcQXWQ', minFloat: 0.00, maxFloat: 0.50, odds: 0.0110967 },
+        { name: 'SSG 08 | Detour', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1T9s29e6M9eM-eD3WbxPxJvOhuRz39lxsm6m_XmdugcnOXaFMlD5ImEbQP5kW4kICyM-vj5wXc2dkUzHqoiDQJsHjAk3eMVA', minFloat: 0.00, maxFloat: 0.43, odds: 0.0110967 },
+        { name: 'CZ75-Auto | Nitro', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1I4M2heqVjJ_WsD2STxOBio7NWQyC0nQlptWvXw9_7I3zCaVB1C5YkTeAIsRC8m9a1MePg5VGLiI9CnH772C9AuDErvbi4qlLcDQ', minFloat: 0.06, maxFloat: 0.80, odds: 0.0110966 },
+        { name: 'AWP | Pink DDPAT', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf9Ttk6_a-abBSMPmdBVicyOl-pK9qHXC2zUpz5DiBn9arJCmXOFd0DZpxQOUDtBC6wNK0MOzl4wXWjYpG02yg2c9nQ1pb', minFloat: 0.06, maxFloat: 0.80, odds: 0.00333 },
+        { name: 'USP-S | Road Rash', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSI-WsG3SA_v13vuV5Tjm2hxgjjDGMnYftby2UaFcmCsF1R-cLsBS4mtLmM7nmsVbfiNlHxSuriypAvytisuhQWPY7uvqAwrOwBmU', minFloat: 0.00, maxFloat: 1.00, odds: 0.00333 },
+        { name: 'M4A1-S | Master Piece', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_OGMWrEwL87o956RiW2mx4ijDGMnYftby3FbFdyXpZxQ-AP5hi7wILkZOzg5ASNgt4WmCv833hKuntvsLxWAKE7uvqATAFok6E', minFloat: 0.00, maxFloat: 1.00, odds: 0.00133 }
+    ]},
+    { id: 'cobblestone14package', name: 'Cobblestone Collection Souvenir Package (2014)', series: '27', release: '13. srpna 2014', type: 'package', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-VW2FSLhjJnt8h1f6s2taqZhJb7GCmXDwLp057U8SSiwkxt1tz_Sw46qJC6RZgcpXJJwQrVf5xe7lIfnKaq8sA1qTP9C', items: [
+        { name: 'P90 | Storm', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf7i1k_OaheqlrMv-dGlicyOl-pK8-HSixlhh2sG_TydaveS7EZw91A5ByEeIJ4Rm6kNfgMbzr7wGMgolA02yg2VYIqRCy', minFloat: 0.06, maxFloat: 0.80, odds: 0.159744 },
+        { name: 'SCAR-20 | Storm', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk_P2Re7BiMv2VHGie1dF6ueZhW2fjxBgl5jyAntytc3ifO1AjXpslRLFft0PtxoXkMuKwslaPg49MmHj6kGoXuUn7n6Ef', minFloat: 0.06, maxFloat: 0.80, odds: 0.159744 },
+        { name: 'Dual Berettas | Briar', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1T9s24YapoM8-fB2CY1aAn4rlsTnzhxxhx5TuHwt76cXuXbVApApV0TLJctxm9kd3vZL-35wTWlcsbmthIan4W', minFloat: 0.06, maxFloat: 0.22, odds: 0.159744 },
+        { name: 'MAC-10 | Indigo', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1I4M2nZqBkJ_-sD2mU_ulktfhWQyC0nQlptT_VztavJXyfa1QgW5J0FuMCtBLtw4ayMe_g5VPZg49MzCX423sf6TErvbjb2X3Wdg', minFloat: 0.06, maxFloat: 0.80, odds: 0.159744 },
+        { name: 'UMP-45 | Indigo', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1I4M2nZqBkJ_-sD2mU_ulktfhWQyC0nQlp4WjTyN78In-Wb1QgDcNzRLUI5ka4wdfjPruxswbdgopGzHj73yNLvzErvbhz6ja6HQ', minFloat: 0.06, maxFloat: 0.80, odds: 0.159744 },
+        { name: 'MAG-7 | Silver', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiNV0OGnZLJoMs-fB2CY1aAm5Lc7SSyxl0t1sj7Wn9ipdXuRZwMkD5NzRbVftkPsx9LvZOjjsgyMlcsbmlF3IVC_', minFloat: 0.00, maxFloat: 0.08, odds: 0.039935 },
+        { name: 'Nova | Green Apple', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwjFU0PW8baFjH_yaCW-Ej7xz5eNtTXHrw0l-4G3SnN78Jy-faQVxCZV3R7FesEHsm9S1Ybm07gXAy9USzA6LpwE', minFloat: 0.00, maxFloat: 0.30, odds: 0.039935 },
+        { name: 'Upilovaná brokovnice | Rust Coat', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2veZt-NPWWAlicyOl-pK87TC2ylB534jiGzNv6dCjFPQR2XpJ4RuQPtRbqx9znYujitFPZ3oJC02yg2T-LVFiK', minFloat: 0.0, maxFloat: 0.8, odds: 0.039935 },
+        { name: 'USP-S | Royal Blue', rarity: 'lightblue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSKOmsB2mUyOl5j_R6Xxa_nBovp3OAzNv6d3yVbVBxAsNzReNZuxK8kIHnNurj4wTaiNlBnH6q3CMYv3po_a9cBsy26Gzj', minFloat: 0.06, maxFloat: 0.80, odds: 0.039935 },
+        { name: 'P2000 | Chainmail', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0POjV6dlIfmdA2aZzdF6ueZhW2fqxU4k6znTn434JHnEPA9yWcR2TLIJ4UK4w9e2Nbjr4QbX2owXnyr7kGoXuSuECNR4', minFloat: 0.00, maxFloat: 0.22, odds: 0.01664 },
+        { name: 'MP9 | Dark Age', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_C9k4ve6aahSKf6fD36vzedxuPUnG3uwxxkk6jnWmdqsJy-UbFV0DZV4FLRctUXqwIWyNb_r5Qbdg4lGzzK-0H2q-xqNvQ', minFloat: 0.00, maxFloat: 0.20, odds: 0.01664 },
+        { name: 'CZ75-Auto | Chalice', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a4s28Z71sLM-fB2CY1aBzsrQ5HnyyzBh25jzcyI3_dyqXaFcmC8ByReBZuxi-lYXlMei05FSPlcsbmsOlfuvI', minFloat: 0.00, maxFloat: 0.10, odds: 0.00333 },
+        { name: 'Desert Eagle | Hand Cannon', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7uORYKVjJPOSAGmfz9F6ueZhW2eww0t-6mrUn977cinDZ1IgD8YiTeUIthjpk9zkYem04wTXj4oRnCv7kGoXuTIzWSlA', minFloat: 0.01, maxFloat: 0.7, odds: 0.00333 },
+        { name: 'M4A1-S | Knight', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_GeMWqV1e96o95lRi67gVNwsWTQzdn4JHyQZ1QhWMZyQe5YsxK-ktPnZOiwtVDcjo9ExS393ytB8G81tGXpYjdX', minFloat: 0.00, maxFloat: 0.10, odds: 0.00133 },
+        { name: 'AWP | Dragon Lore', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk4veqYaF7IfysCnWRxuF4j-B-Xxa_nBovp3Pdwtj9cC_GaAd0DZdwQu9fuhS4kNy0NePntVTbjYpCyyT_3CgY5i9j_a9cBkcCWUKV', minFloat: 0.00, maxFloat: 0.7, odds: 0.00027 }
+    ]},
+
+
+
+    // KOLEKCE (WIPPPP)
+    { id: 'assaultcol', name: 'Kolekce Assault', release: '14. srpna 2013', type: 'collection', image: 'https://static.wikia.nocookie.net/cswikia/images/c/c6/Set_assault.png/revision/latest', items: [
+        { name: 'UMP-45 | Caramel', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1I4M2tabZsLfWfMWuZxuZi_rgxTXGwkBt36juDnI36dXrFOw5yC5ciF7YPsUbuld22Zb-x4lCP34tbjXKpx97cZGE', minFloat: 0.06, maxFloat: 0.8, odds: 0.4},
+        { name: 'SG 553 | Tornado', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1I4M26Z7ZjIfScMWuZxuZi_uU7Syuxlx505muBzN2sI3uUOA51C5AhR7UIsEKww9W0MO634APd2NhbjXKp4EWrMzw', minFloat: 0.06, maxFloat: 0.8, odds: 0.4},
+        { name: 'Five-SeveN | Candy Apple', rarity: 'lightblue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRe6tSMvWXMWuZxuZi_rAwG36xxUp-t2rVwt6vdCmSPAQnDpNxQOBY5BXsxoWzZuvg5Ffdid1bjXKptD9kyfI', minFloat: 0.00, maxFloat: 0.3, odds: 0.16},
+        { name: 'AUG | Hot Rod', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_Cxk_feqV6hkJ_iHQDCVkuxz5bY_H3znlhtz5jzTztigeXLBbwRyD8ckTOZbt0G8wNOyZuL8p1uJa1KD__k', minFloat: 0.00, maxFloat: 0.08, odds: 0.016665},
+        { name: 'Negev | Anodized Navy', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1a4c2gabJ0H_yaCW-Ej7cu4rJrSXzikUh04G2Em9yteS-SagAkDsQlEOMP4RexldKzM7ix4lPAy9USZWBsgPo', minFloat: 0.00, maxFloat: 0.08, odds: 0.016665},
+        { name: 'Glock-18 | Fade', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1a7s2oaaBoH_yaCW-Ej-8u5bZvHnq1w0Vz62TUzNj4eCiVblMmXMAkROJeskLpkdXjMrzksVTAy9US8PY25So', minFloat: 0.00, maxFloat: 0.08, odds: 0.003335},
+        { name: 'MP9 | Bulldozer', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f7i1k9veiZKt6H_yaCW-Ej-tztbQ5Hy2wxklw5TiDnt_4eC_GOFR1XJdzQ-AMskXswNbvNuvq4wPAy9USwXKj73o', minFloat: 0.06, maxFloat: 0.8, odds: 0.003335}
+    ]},
+    
+    
+    
+    /*{ id: 'test', name: 'test bedna', series: '0', release: '0. ledna 0000', type: 'case', image: 'https://tiermaker.com/images/chart/chart/minecraft-cursed-chests--65370/cursed-chest-3png', items: [
+        { name: 'gray float 0.999 - 1.0', rarity: 'gray', image: 'https://static.wikia.nocookie.net/minecraft_gamepedia/images/a/ac/Rotten_Flesh_JE3_BE2.png/revision/latest/thumbnail/width/360/height/360?cb=20190521031955', odds: 0.8, minFloat: 0.999, maxFloat: 1.0},
+        { name: 'gold float 0.06 - 0.8', rarity: 'gold', image: 'https://minecraft.wiki/images/Nether_Star.gif?fb01f', odds: 0.2, minFloat: 0.06, maxFloat: 0.8}
+    ]}*/
+
+    { id: 'weeklycarepackage', name: 'Týdenní Balíček Odměn (pouze skiny)', release: '27. září 2023', type: 'collection', image: 'https://drive.google.com/thumbnail?id=1R5CiIV77IPKGFPAQRZW5zKq5mYFMdwFi&sz=w1000', items: [
+        { name: '000', rarity: '000', image: '000', minFloat: 0., maxFloat: 0., odds: 1.0}
+    ]}
+
+    /*{ id: '000', name: '000', release: '0. ledna 0000', type: 'collection', image: 'assets/image/case_weekly_drop.png', items: [
+        { name: '000', rarity: '000', image: '000', minFloat: 0., maxFloat: 0., odds: 1.0}
+    ]}*/
+  ],
+  
+  rarities: {
+    gray: { color: '#B0C3D9', label: 'Neotestovaná' },
+    lightblue: { color: '#5E98D9', label: 'Prověřená' },
+    blue: { color: '#4B69FF', label: 'Armádní' },
+    purple: { color: '#8847FF', label: 'Zakázaná' },
+    pink: { color: '#D32CE6', label: 'Tajná' },
+    red: { color: '#EB4B4B', label: 'Skrytá' },
+    gold: { color: '#FFD700', label: '★ Speciální Předmět ★' },
+    contraband: { color: '#E4AE33', label: 'Pašovaná' }
+    
+  }
+};
+
+class Spinner {
+  constructor(id, items) {
+    this.id = id; 
+    this.pool = items;
+    this.items = []; 
+    this.offset = 0; 
+    this.raf = null;
+    this.slotW = 160; 
+    this.lastTickIdx = -1;
+  }
+
+  mount(parent) {
+    const div = document.createElement('div');
+    div.className = 'spinner-instance';
+    div.innerHTML = `<div class="spinner-marker"></div><canvas class="spin-canvas" id="cvs-${this.id}"></canvas>`;
+    parent.appendChild(div);
+    this.canvas = div.querySelector('canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.resize(); 
+    this.reset();
+  }
+
+  resize() {
+    this.canvas.width = this.canvas.parentElement.offsetWidth;
+    this.canvas.height = this.canvas.parentElement.offsetHeight;
+  }
+
+  // Chudej spinner pro reálnost
+  _getFillerItem(pool) {
+    const totalWeight = pool.reduce((sum, it) => sum + it.odds, 0);
+    const r = Math.random() * totalWeight;
+    
+    let acc = 0;
+    let selected = pool[0]; // Fallback
+
+    for (const it of pool) {
+      acc += it.odds;
+      if (r <= acc) {
+        selected = it;
+        break;
+      }
+    }
+    
+    const itemCopy = { ...selected };
+    
+    // 10% šance na StatTrak
+    if (state.activeCase && state.activeCase.type === 'case') {
+        if (Math.random() < 0.1) {
+            itemCopy.name = "StatTrak™ " + itemCopy.name;
+        }
+    }
+    
+    return itemCopy;
+  }
+
+  reset() {
+    this.offset = 0;
+    this.lastTickIdx = -1;
+
+    const commonPool = state.activeCase.items.filter(item => item.rarity !== 'gold');
+    const pool = commonPool.length > 0 ? commonPool : state.activeCase.items;
+
+    for (let i = 0; i < 100; i++) {
+      this.items[i] = this._getFillerItem(pool);
+    }
+
+    this.draw();
+  }
+
+  // Určení výherního předmětu
+  drawItem() {
+    const r = Math.random();
+    let acc = 0;
+    let selectedItem = null;
+    
+    for (const i of this.pool) { 
+      acc += i.odds; 
+      if (r <= acc) {
+        selectedItem = { ...i }; 
+        break;
+      }
+    }
+
+    if (!selectedItem) selectedItem = { ...this.pool[0] };
+
+    if (state.activeCase && state.activeCase.type === 'case') {
+      if (Math.random() < 0.1) {
+        selectedItem.name = "StatTrak™ " + selectedItem.name;
+      }
+    }
+    return selectedItem;
+  }
+
+  draw() {
+    const {ctx, canvas, items, offset, slotW} = this;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    items.forEach((it, i) => {
+      const x = i * slotW - offset;
+      if (x + slotW < 0 || x > canvas.width) return;
+      
+      const rarityData = DATA.rarities[it.rarity] || { color: '#fff' };
+      const color = rarityData.color;
+      
+      // Pozadí slotu
+      const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
+      grad.addColorStop(0, color + '44');
+      grad.addColorStop(0.5, color + '11');
+      grad.addColorStop(1, 'transparent');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(x + 4, 10, slotW - 8, canvas.height - 20);
+      
+      // Spodní linka
+      ctx.fillStyle = color; 
+      ctx.fillRect(x + 4, canvas.height - 14, slotW - 8, 4);
+
+      // Obrázek / emoji
+      if (it.image) {
+        if (!it._imgObj) {
+          it._imgObj = new Image();
+          it._imgObj.src = it.image;
+          it._imgObj.onload = () => this.draw();
+        }
+        
+        if (it._imgObj.complete) {
+          const targetH = 82; 
+          const aspect = it._imgObj.naturalWidth / it._imgObj.naturalHeight;
+          const finalW = targetH * aspect;
+          
+          ctx.drawImage(
+            it._imgObj, 
+            x + (slotW - finalW) / 2, 
+            (canvas.height - targetH) / 2, 
+            finalW, 
+            targetH
+          );
+        }
+      } else {
+        ctx.font = '36px Arial';
+        let icon = '🔫';
+        if (it.name.includes('★')) icon = '🔪';
+        else if (state.activeCase && (state.activeCase.type === 'capsule' || it.name.includes('Samolepka'))) icon = '🏷️';
+        else if (state.activeCase && state.activeCase.type === 'package') icon = '📦';
+        
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(icon, x + slotW / 2, canvas.height / 2);
+        
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+      }
+    });
+  }
+
+  stop() {
+    if (this.raf) {
+      cancelAnimationFrame(this.raf);
+      this.raf = null;
+    }
+  }
+
+  async spin(winner) {
+    const winIdx = 60;
+    
+    // Příprava předmětů
+    const commonPool = state.activeCase.items.filter(item => item.rarity !== 'gold');
+    const poolToUse = commonPool.length > 0 ? commonPool : state.activeCase.items;
+
+    // Naplnění spinneru předmětama
+    for (let i = 0; i < 100; i++) {
+       this.items[i] = this._getFillerItem(poolToUse);
+    }
+
+    this.items[winIdx] = winner;
+
+    // Animace spinneru po roztočení
+    const target = winIdx * this.slotW - (this.canvas.width / 2) + (this.slotW / 2) + (Math.random() * 60 - 30);
+    const start = performance.now();
+    this.duration = Math.floor(Math.random() * (9500 - 8500 + 1)) + 8500;
+
+    return new Promise(res => {
+      const step = (now) => {
+        const p = Math.min((now - start) / this.duration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        this.offset = ease * target;
+
+        const curIdx = Math.floor((this.offset + this.canvas.width / 2) / this.slotW);
+        if (curIdx !== this.lastTickIdx) {
+          audio.playTick(this);
+          this.lastTickIdx = curIdx;
+        }
+
+        this.draw();
+        if (p < 1) {
+          this.raf = requestAnimationFrame(step);
+        } else {
+          this.raf = null;
+          res(winner);
+        }
+      };
+      this.raf = requestAnimationFrame(step);
+    });
+  }
+}
+
+/** -------------------------
+ * STATE & ACTIONS
+ * ------------------------- */
+const state = {
+  isSpinning: false,
+  openCount: 1,
+  instances: [],
+  activeCase: null,
+  lastResults: [],
+  sortOrder: 'desc'
+};
+
+const monthMap = {
+  ledna: 0, února: 1, března: 2, dubna: 3, května: 4, června: 5,
+  července: 6, srpna: 7, září: 8, října: 9, listopadu: 10, prosince: 11
+};
+
+// Převod čísel na měsíce (filtr)
+function parseReleaseDate(dateStr) {
+  if (!dateStr || dateStr === 'Neznámé') return 0;
+  const parts = dateStr.replace('.', '').split(' ');
+  const day = parseInt(parts[0]);
+  const month = monthMap[parts[1]] || 0;
+  const year = parseInt(parts[2]);
+  return new Date(year, month, day).getTime();
+}
+
+const router = {
+  go(view, id) {
+    if (view === 'home' && state.isSpinning) {
+      state.isSpinning = false;
+      state.instances.forEach(s => s.stop());
+
+      document.getElementById('openBtn').disabled = false;
+      document.getElementById('incBtn').disabled = false;
+      document.getElementById('decBtn').disabled = false;
+    }
+    
+    if (view === 'home') {
+      if (state.activeCase) {
+         audio.playMenuBack();
+      }
+      handleFilterChange(); 
+    }
+
+    document.getElementById('view-home').style.display = view === 'home' ? 'block' : 'none';
+    document.getElementById('view-case').style.display = view === 'case' ? 'block' : 'none';
+    document.querySelector('header h1').style.display = view === 'home' ? 'block' : 'none';
+    
+    const backBtn = document.querySelector('#backBtn');
+    if (backBtn) {
+      backBtn.style.display = view === 'home' ? 'none' : 'block';
+    }
+
+    if (view === 'case') {
+      const searchInput = document.getElementById('searchInput');
+      
+      state.activeCase = DATA.cases.find(c => c.id === id);
+      document.getElementById('caseTitle').innerText = state.activeCase.name;
+
+      const isCollection = state.activeCase.type === 'collection';
+
+      audio.init();
+      audio.playMenuSelect();
+      
+      document.getElementById('caseSubtitle').innerHTML = `
+        ${!isCollection ? `
+          <span style="opacity:0.6;">Bedna série č. <span style="color:#fff">${state.activeCase.series || 'Neznámé'}</span>,</span>
+        ` : ''}
+        <span style="opacity:0.6;">Datum vydání: <span style="color:#fff">${state.activeCase.release || 'Neznámý'}</span></span>
+      `;
+
+      this.initSpinners();
+      this.renderDropTable();
+    }
+  },
+
+  initSpinners() {
+    const container = document.getElementById('spinnersContainer');
+    container.innerHTML = ''; 
+    state.instances = [];
+    for (let i=0; i < state.openCount; i++) {
+      const s = new Spinner(i, state.activeCase.items);
+      s.mount(container); 
+      state.instances.push(s);
+    }
+  },
+
+renderDropTable() {
+  const grid = document.getElementById('dropGrid');
+  if (!state.activeCase) return;
+
+  const isCapsule = state.activeCase.type === 'capsule';
+
+  grid.innerHTML = state.activeCase.items.map(it => {
+    const rarityData = DATA.rarities[it.rarity];
+    let label = rarityData.label;
+
+    // Přepis rarit pro kapsle
+    if (isCapsule) {
+      if (it.rarity === 'blue') label = 'Vyšší třída';
+      else if (it.rarity === 'purple') label = 'Významná';
+      else if (it.rarity === 'pink') label = 'Exotická';
+      else if (it.rarity === 'red') label = 'Mimořádná';
+    }
+
+    const color = rarityData.color;
+    const gradientBg = `linear-gradient(90deg, ${color}22 0%, transparent 100%)`;
+
+    // Case Card na hlavní stránce
+    let imageHtml = '';
+    if (it.image) {
+      imageHtml = `<img src="${it.image}" style="width: 60px; height: auto; margin-left: 10px; filter: drop-shadow(0 0 3px rgba(0,0,0,0.3));">`;
+    }
+
+    return `
+      <div class="drop-card" style="--card-color: ${color}; border-left: 4px solid ${color}; background: ${gradientBg}; display: flex; align-items: center; justify-content: space-between; padding: 10px;">
+        <div style="flex-grow: 1;">
+          <div style="font-size:12px; font-weight:800; color:${color}; text-transform: uppercase;">${label}</div>
+          <div style="font-size:14px; color: #fff">${it.name}</div>
+        </div>
+        ${imageHtml}
+      </div>
+    `;
+    }).join('');
+  }
+}
+
+function handleAllFilterChange() {
+  const allCheckbox = document.getElementById('filterAll');
+  const otherCheckboxes = document.querySelectorAll('.filter-chip input:not(#filterAll)');
+  
+  otherCheckboxes.forEach(cb => {
+    cb.checked = allCheckbox.checked;
+  });
+  
+  handleFilterChange();
+}
+
+function toggleSort() {
+
+  state.sortOrder = state.sortOrder === 'desc' ? 'asc' : 'desc';
+  
+  const btn = document.getElementById('sortBtn');
+  btn.innerText = state.sortOrder === 'desc' ? '📅 Seřazeno od nejnovějších' : '📅 Seřazeno od nejstarších';
+  
+  handleFilterChange();
+}
+
+function handleFilterChange() {
+  const allCheckbox = document.getElementById('filterAll');
+  const otherCheckboxes = Array.from(document.querySelectorAll('.filter-chip input:not(#filterAll)'));
+
+  audio.init();
+  audio.playMenuFilterChange();
+
+  const allOthersChecked = otherCheckboxes.every(cb => cb.checked);
+  const someOthersUnchecked = otherCheckboxes.some(cb => !cb.checked);
+
+  if (allOthersChecked) allCheckbox.checked = true;
+  else if (someOthersUnchecked) allCheckbox.checked = false;
+
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const activeTypes = otherCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
+
+  let filtered = DATA.cases.filter(c => {
+    const matchesType = activeTypes.includes(c.type);
+    const matchesSearch = c.name.toLowerCase().includes(searchTerm) || 
+                          c.items.some(it => it.name.toLowerCase().includes(searchTerm));
+    return matchesType && matchesSearch;
+  });
+
+  filtered.sort((a, b) => {
+    const dateA = parseReleaseDate(a.release);
+    const dateB = parseReleaseDate(b.release);
+    return state.sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+  });
+
+  renderCases(filtered);
+}
+
+document.getElementById('searchInput').addEventListener('input', handleFilterChange);
+
+function resetFilters() {
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+
+  const allCheckbox = document.getElementById('filterAll');
+  if (allCheckbox) {
+    allCheckbox.checked = true;
+    handleAllFilterChange();
+  } else {
+    renderCases(DATA.cases);
+  }
+}
+
+async function handleOpen() {
+  if (state.isSpinning) return;
+  audio.init();
+  audio.playStart();
+  state.isSpinning = true;
+
+  // Particles při otevření
+  const allSpinners = document.querySelectorAll('.spin-canvas');
+  allSpinners.forEach(spinner => {
+    const rect = spinner.getBoundingClientRect();
+    particles.spinBurst(
+      rect.left + rect.width / 2, 
+      rect.top + rect.height / 2, 
+      rect.width, 
+      rect.height * 0.3
+    );
+  });
+  
+  // Vypnutí tlačítek
+  document.getElementById('openBtn').disabled = true;
+  if(document.getElementById('incBtn')) document.getElementById('incBtn').disabled = true;
+  if(document.getElementById('decBtn')) document.getElementById('decBtn').disabled = true;
+
+  // Reset spinneru
+  const promises = state.instances.map(s => {
+    s.reset(); 
+    const win = s.drawItem(); 
+    return s.spin(win);
+  });
+
+  const results = await Promise.all(promises);
+
+  if (!state.isSpinning) return; 
+
+  state.lastResults = results;
+  audio.playReveal();
+  showResultsModal();
+  state.lastResults.forEach(r => addHistory(r));
+  
+  state.isSpinning = false;
+
+  // Zapnutí tlačítek
+  document.getElementById('openBtn').disabled = false;
+  if(document.getElementById('incBtn')) document.getElementById('incBtn').disabled = false;
+  if(document.getElementById('decBtn')) document.getElementById('decBtn').disabled = false;
+  
+  if (typeof updateCounterUI === 'function') updateCounterUI();
+}
+
+function addHistory(it) {
+  const container = document.getElementById('topHistory');
+  const placeholder = document.getElementById('historyPlaceholder');
+  
+  if (placeholder) {
+    placeholder.remove();
+    container.style.justifyContent = 'flex-start';
+  }
+
+  const node = document.createElement('div');
+  node.className = 'history-node';
+  
+  const isPackage = state.activeCase && state.activeCase.type === 'package';
+  const souvenirPrefix = isPackage ? '<span style="color:#ffd700; font-weight:bold">Souvenir</span>' : '';
+
+  node.innerHTML = `
+    <span style="color:${DATA.rarities[it.rarity].color}">●</span> 
+    ${souvenirPrefix}${it.name}
+  `;
+  
+  node.classList.add('new-item');
+  setTimeout(() => node.classList.remove('new-item'), 1000);
+
+  container.prepend(node);
+
+  if (container.children.length > 30) {
+    container.lastElementChild.remove();
+  }
+}
+
+function renderCases(filteredData) {
+  const grid = document.getElementById('casesGrid');
+  
+  if (filteredData.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--muted);">
+        <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+        <h2 style="color: #fff; margin-bottom: 10px;">Není tu nic k zobrazení</h2>
+        <p style="margin-bottom: 20px;">Pravděpodobně je vyhledávací výraz špatně nebo jsou všechny filtry vypnuté</p>
+        <button class="btn" onclick="resetFilters()">Resetovat filtry</button>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = filteredData.map(c => {
+    let visualContent = '';
+    
+    if (c.image) {
+      // Nastavení obrázku z dat předmětu
+      visualContent = `<img src="${c.image}" alt="${c.name}" style="width: 90px; height: 70px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0px 18px rgba(0,0,0,0.3));">`;
+    } else {
+      // Fallback na emoji když neni obrázek
+      let emoji = '📦';
+      if (c.type === 'case') emoji = '🧰';
+      else if (c.type === 'package') emoji = '📦';
+      else if (c.type === 'capsule') emoji = '✉️';
+      else if (c.type === 'collection') emoji = '🎁';
+      visualContent = `<div style="font-size:40px; margin-bottom:10px">${emoji}</div>`;
+    }
+
+    return `
+      <div class="case-card" onclick="router.go('case', '${c.id}')" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+        ${visualContent}
+        <h3 style="margin:0; font-size: 20px;">${c.name}</h3>
+        
+        ${c.type !== 'collection' ? `
+          <div style="font-size:12px; color:var(--muted); opacity:0.8; margin-top: 8px;">
+            Bedna série č. <span style="color:#fff">${c.series || 'Neznámé'}</span>
+          </div>
+        ` : ''}
+
+        <div style="font-size:12px; color:var(--muted); opacity:0.8; ${c.type === 'collection' ? 'margin-top: 8px;' : ''}">
+          Datum vydání: <span style="color:#fff">${c.release || 'Neznámý'}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showResultsModal() {
+  const list = document.getElementById('resultsList');
+  
+  // Zjištění typu bedny
+  const isCapsule = state.activeCase && state.activeCase.type === 'capsule';
+  const isPackage = state.activeCase && state.activeCase.type === 'package';
+  
+  list.innerHTML = state.lastResults.map(r => {
+    // Nastavení limitu z dat předmětu
+    const min = (r.minFloat !== undefined) ? r.minFloat : 0.00;
+    const max = (r.maxFloat !== undefined) ? r.maxFloat : 1.00;
+    
+    // Pattern 1-1000
+    const pattern = Math.floor(Math.random() * 1000) + 1;
+
+    // Výpočet globálního floatu
+    const roll = Math.random() * 100;
+    let globalWear = 0;
+
+    if (roll <= 3) globalWear = Math.random() * 0.07;
+    else if (roll <= 27) globalWear = 0.07 + Math.random() * (0.15 - 0.07);
+    else if (roll <= 60) globalWear = 0.15 + Math.random() * (0.38 - 0.15);
+    else if (roll <= 84) globalWear = 0.38 + Math.random() * (0.45 - 0.38);
+    else globalWear = 0.45 + Math.random() * (1.00 - 0.45);
+
+    // Přepočet na reálný float
+    const wear = min + (globalWear * (max - min));
+    const wearFixed = wear.toFixed(9);
+
+    // Určení floatu
+    let wearName = "";
+    if (wear <= 0.07) wearName = "Zbrusu nový";
+    else if (wear <= 0.15) wearName = "Lehce opotřebený";
+    else if (wear <= 0.38) wearName = "Opotřebený";
+    else if (wear <= 0.45) wearName = "Silně opotřebený";
+    else wearName = "Poničený bojem";
+
+    // Logika pro raritu a barvu
+    let rarityLabel = DATA.rarities[r.rarity].label;
+    const rarityColor = DATA.rarities[r.rarity].color;
+
+    if (isCapsule) {
+      if (r.rarity === 'mil-spec' || r.rarity === 'blue') rarityLabel = 'Vyšší třída';
+      else if (r.rarity === 'restricted' || r.rarity === 'purple') rarityLabel = 'Významná';
+      else if (r.rarity === 'classified' || r.rarity === 'pink') rarityLabel = 'Exotická';
+      else if (r.rarity === 'covert' || r.rarity === 'red') rarityLabel = 'Mimořádná';
+    }
+
+    // Skrytí floatu u samolepek
+    const wearInfoHtml = isCapsule ? '' : `
+      <div style="font-size:12px; color: var(--muted); line-height: 1.4; margin-top: 4px;">
+        <div>Číslo šablony vzorku: <strong>${pattern}</strong></div>
+        <div>Opotřebení: <strong>${wearFixed}</strong></div>
+        <div>Povrch: <strong>${wearName}</strong></div>
+      </div>
+    `;
+
+    // Logika pro obrázek (fallback na ikonu)
+    let visualHtml = '';
+    if (r.image) {
+      visualHtml = `<img src="${r.image}" style="width: 100%; height: auto; display: block; filter: drop-shadow(0 0 5px rgba(0,0,0,0.25));">`;
+    } else {
+      let icon = '🔫';
+      if (r.name.includes('★')) icon = '🔪';
+      else if (r.name.toLowerCase().includes('rukavice')) icon = '🧤';
+      else if (isCapsule) icon = '🏷️';
+      else if (isPackage) icon = '📦';
+      visualHtml = `<span style="font-size: 40px;">${icon}</span>`;
+    }
+
+    const souvenirPrefix = isPackage ? '<span style="color:#ffd700">Souvenir </span>' : '';
+
+    // Finální šablona - jeden řádek
+    return `
+      <div class="result-row" style="border-left: 4px solid ${rarityColor}; display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.03); border-radius: var(--radius);">
+        <div style="flex-grow:1; padding-right: 15px;">
+          <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:${rarityColor}; letter-spacing: 0.5px;">
+            ${rarityLabel}
+          </div>
+          <div style="font-weight:700; margin-bottom: 2px; font-size: 16px; color: #fff;">
+            ${souvenirPrefix}${r.name}
+          </div>
+          ${wearInfoHtml}
+        </div>
+        
+        <div style="width:100px; min-width:100px; display: flex; justify-content: center; align-items: center;">
+          ${visualHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Zobrazení modalu
+  const modal = document.getElementById('modalOverlay');
+  modal.style.display = 'flex';
+  modal.classList.remove('closing');
+  
+  // Efekt částic pro každý vyhraný předmět
+  state.lastResults.forEach((r, idx) => {
+    const color = DATA.rarities[r.rarity].color;
+    setTimeout(() => {
+      particles.burst(window.innerWidth/2, window.innerHeight/2, color, 80);
+    }, idx * 150);
+  });
+}
+
+function updateCounterUI() {
+  document.getElementById('countVal').innerText = state.openCount;
+  document.getElementById('decBtn').disabled = state.openCount <= 1 || state.isSpinning;
+  document.getElementById('incBtn').disabled = state.openCount >= 5 || state.isSpinning;
+}
+
+function closeModal() {
+  const modal = document.getElementById('modalOverlay');
+  modal.classList.add('closing');
+  setTimeout(() => {
+    modal.style.display = 'none';
+    modal.classList.remove('closing');
+  }, 400);
+  audio.playMenuBack();
+}
+/*-------------------------
+INIT
+------------------------- */
+document.getElementById('incBtn').onclick = () => { if (!state.isSpinning) { state.openCount = Math.min(5, state.openCount + 1); updateCounterUI(); router.initSpinners(); } };
+document.getElementById('decBtn').onclick = () => { if (!state.isSpinning) { state.openCount = Math.max(1, state.openCount - 1); updateCounterUI(); router.initSpinners(); } };
+document.getElementById('openBtn').onclick = handleOpen;
+document.getElementById('muteBtn').onclick = (e) => { audio.muted = !audio.muted; localStorage.setItem('muted', audio.muted); e.target.innerText = audio.muted ? '🔇 Zvuk vypnutý' : '🔈 Zvuk zapnutý'; };
+document.getElementById('searchInput').addEventListener('input', handleFilterChange);
+
+// Prvotní vykreslení beden při načtení stránky
+renderCases(DATA.cases);
+
+particles.init();
+router.go('home');
+window.addEventListener('resize', () => {
+  particles.canvas.width = window.innerWidth;
+  particles.canvas.height = window.innerHeight;
+  state.instances.forEach(s => { s.resize(); s.draw(); });
+});
+</script>
+</body>
+</html>

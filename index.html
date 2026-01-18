@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>CS2 Otevírací Simulátor</title>
 <link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/image/favicon.png">
 <style>
   :root {
     --bg: #0B0D10; --panel: #0F1316; --text: #E6E6E6; --muted: #B5B5B5;
@@ -284,13 +285,13 @@ const audio = {
   }
 
   const sounds = {
-    case_tick: 'https://docs.google.com/uc?export=download&id=1e8OcP1u4ShkX4NwFvt8sWf6WOrRanUXw',
-    item_open: 'https://docs.google.com/uc?export=download&id=1x_KVv9jIOnME9PxwproU9_Q-AEg5Vizk',
-    capsule_tick: 'https://docs.google.com/uc?export=download&id=13HhBaHS-KDsCKhaypw0glstyny8NHUqE',
-    capsule_start: 'https://docs.google.com/uc?export=download&id=11B1Apvho3Th4gV6LDsFrtEoKtVVVc3Ga',
-    menu_case_open: 'https://docs.google.com/uc?export=download&id=1YfdVI3ekixXNCh6Xl4nY4K71JvDOjLjO',
-    menu_back: 'https://docs.google.com/uc?export=download&id=1XioO0QQMHoSnNPQKOabzO9aFUyMRNkaq',
-    menu_filter_change: 'https://docs.google.com/uc?export=download&id=1bzQuFuKBu-SJSJaXLRLgI820TT7CEnsK'
+  case_tick: 'assets/sound/case_tick.wav',
+  item_open: 'assets/sound/item_open.wav',
+  capsule_tick: 'assets/sound/capsule_tick.wav',
+  capsule_start: 'assets/sound/capsule_unlock_start.wav',
+  menu_case_open: 'assets/sound/menu_case_open.wav',
+  menu_back: 'assets/sound/menu_back.wav',
+  menu_filter_change: 'assets/sound/menu_filter_change.wav'
   };
 
   for (const [key, path] of Object.entries(sounds)) {
@@ -464,7 +465,7 @@ const DATA = {
         { name: 'AK-47 | Case Hardened', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiNK0P2nZKFpH_yaCW-Ej7sk5bE8Sn-2lEpz4zndzoyvdHuUPwFzWZYiE7EK4Bi4k9TlY-y24FbAy9USGSiZd5Q', minFloat: 0.0, maxFloat: 0.08, odds: 0.015985 },
         { name: 'Desert Eagle | Hypnotic', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7vORfqF_NPmUAVicyOl-pK9qSyyywxgjtmnVytyocnLGPA4iWcYmRLYIu0S-xtbuMLjg51DXjoJC02yg2VjGnh4J', minFloat: 0., maxFloat: 0.08, odds: 0.015985 },
         { name: 'AWP | Lightning Strike', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_C9k4_upYLBjKf6UMWaH0dF6ueZhW2frwU1_sW2EmNyvc32RZwMpCpcjQ-EJ4xbtmt3gYezk4wzb3tpAy3mrkGoXubsGIfVN', odds: 0.00639 },
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 } 
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', odds: 0.00256 } 
     ]},
     { id: 'esports13', name: 'eSports 2013 Case', series: '2', release: '14. srpna 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-UnoUwniocSwrHEV7KaobPdud6HEWjXGmbYl6LIwHn2ywhgh5GzXzdmsc3yRalAkD5R3FvlK7Ed7JoXDRQ', items: [
         { name: 'M4A4 | Faded Zebra', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFL0OirarZsI_GeMWWH_uJ_t-l9AXu3zBkhsDyHz4z9dXmVagJzW8MiQbFetBfrkNHhZbjr51CMiN8TyS_gznQeEoYBjXk', minFloat: 0.06, maxFloat: 0.8, odds: 0.26641 },
@@ -476,7 +477,7 @@ const DATA = {
         { name: 'AK-47 | Red Laminate', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wipC0POlPPNhIf2sAm6Xyfo4tucxS3rjwRx_42zRwo6pdSnCPwAmX5ohFOIJsUTqwdThNOi0s1TajZUFk3t5vdi_Cw', minFloat: 0.06, maxFloat: 0.8, odds: 0.015985 },
         { name: 'AWP | BOOM', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf9Ttk7f6vZZt-Kf2DAmKvzedxuPUnTX7mkxhy62iDzYqhdiqXbw4oWZEkE-IDsRa9lIXlMejktFOMi49MmDK-0H2AgUnw_w', minFloat: 0.06, maxFloat: 0.28, odds: 0.015985 },
         { name: 'P90 | Death by Kitty', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk7PO6e694LPyAMXfJkdF6ueZhW2fgkUh042jUnN2geSqTaFN2CcQmQuRfsBXtxtfkN7mztASIg91Bniv8kGoXucYQxgOQ', minFloat: 0.08, maxFloat: 0.32, odds: 0.00639 },
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', odds: 0.00256 }
     ]},
     { id: 'bravocase', name: 'Operation Bravo Case', series: '3', release: '19. září 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj7-lz1QAn4kZjf9CsVuvf7OfQ5IabBVzbHlb915bcwHCjikEp_sTnTn4z6eH6RblQlC8RwFPlK7EdXSP0Ibg', items: [
         { name: 'SG 553 | Wave Spray', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1I_829eLZsOc-ED3GV0tF0ouB_QBa_nBovp3PcwoqtdC3BOwQkCZB3QOIIsxm_kNyyZuzg7w3f2YNEnn6qjS0Y6Clq_a9cBmkkHSs4', minFloat: 0.06, maxFloat: 0.8, odds: 0.133205 },
@@ -494,7 +495,7 @@ const DATA = {
         { name: 'AWP | Graphite', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_C9k7OC7ZbRhJc-RHGaGztF6ueZhW2e2k0l2sW_WzN7_cS6SbgV1CsF3TOEI4EOwloGzNLzg5g3fiIpHxC78kGoXuTqeOjwH', minFloat: 0.0, maxFloat: 0.12, odds: 0.0106566 },
         { name: 'AK-47 | Fire Serpent', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0PSneqF-JeKDC2mE_u995LZWTTuygxIYvzSCkpu3cnvFPQB2DpUkROFY4Rntw93lP7i241DbiI1BxSuviHlKunk_6-sHU71lpPMTRLyP4Q', minFloat: 0.06, maxFloat: 0.76, odds: 0.003195 },
         { name: 'Desert Eagle | Golden Koi', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7v-Re6dsLPWAMWWCwPh5j-1gSCGn20om6jyGw9qgJHmQaAcgC8MmR7IMthm5m4W2M7zj7wOIj4pGn32o23hXrnE8VHBG1O4', minFloat: 0.0, maxFloat: 0.12, odds: 0.003195 },
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', odds: 0.00256 }
     ]},
     { id: 'weaponcase2', name: 'CS:GO Weapon Case 2', series: '4', release: '8. listopadu 2013', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bji61XxRCKj0M-xr3IIvqP5PqI_c6LDCjWUkrdw5LUwTivgkE9wsGnUnNr8InzBP1c-SswnzDatg2g', items: [
         { name: 'Tec-9 | Blue Titanium', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiNV0OanfKVjKeWeXTeG_uJ_t-l9AXnikBh-6mvTztz4eHvCOgIiCpFzQOAJ5xPulNK2Nr7q7gHcg9lEm3ngznQe7B1sAb0', minFloat: 0.0, maxFloat: 0.04, odds: 0.159846 },
@@ -509,7 +510,7 @@ const DATA = {
         { name: 'P90 | Cold Blooded', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_C9k_P6nfKxoMs-DVzevzedxuPUnSivqkBt_5m7Rw9v8cXmTZ1UjX5Z5EOEIuhK8koHuNe7r51fYjt4XyDK-0H2E4aJrDg', minFloat: 0.0, maxFloat: 0.08, odds: 0.015985 },
         { name: 'USP-S | Serum', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSIf2sC2uVwvpkueJWXSy3qhEutDWR1I34J3uXOwFyCsF4TeAJt0bpw9OxNrzh7gyI3t1DmHiq3y5M6HxqsrwcEf1yfEp4lzc', minFloat: 0.0, maxFloat: 0.25, odds: 0.015985 },
         { name: 'SSG 08 | Blood in the Water', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1Y-s29YKV_K8-fB2CY1aAmsbFtFnDilkUl5j7UzoqsInmVaFd0XMMlELYDshbuxNPvP-yxtlCMlcsbmlWiixNl', minFloat: 0.06, maxFloat: 0.20, odds: 0.00639 },
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', odds: 0.00256 }
     ]},
     { id: 'dh13package', name: 'DreamHack 2013 Souvenir Package', series: '6', release: '27. listopadu 2013', type: 'package', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjw4k62EiLhjJnt8mxevfSqbqVsJaHKWGWVmOwi5eJtGX7jzUsi6mTXzNb_d3rDPQZzW5okW6dU5dbJcrqx', items: [
         { name: 'R8 Revolver | Bone Mask', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c29eJt5IeCWMWuZxuZi_rNtHX_hwh91sWjXm9qreSqfaAIgD5d3RLNbt0Pqx4e2Mrjn5wHbi99bjXKpUIbZI8w', minFloat: 0.06, maxFloat: 0.8, odds: 0.0470588 },
@@ -573,7 +574,7 @@ const DATA = {
         { name: 'AWP | Redline', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk7uW-V6diIuKSMWuZxuZi_rUxHS3lzUwm5DjWy976dSiRagd1WJB1RLQP4RK-mtazM-3itQeL2INbjXKpw2eVIZ0', minFloat: 0.1, maxFloat: 0.4, odds: 0.0106566 },
         { name: 'M4A4 | Asiimov', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0P_6V6V-Kf2cGFicyOl-pK85H3i1wRgk42_Rm9f_In2QawAjXJojRLIP5kTsx9LiPujm71bbitlN02yg2TSwkYTY', minFloat: 0.18, maxFloat: 1.0, odds: 0.003195 },
         { name: 'Upilovaná brokovnice | Kraken', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWCmiWx9F5s_VmXzy-hSIrujqNjsH_eXmWaVRyXpF3EOZe5Bm8w93gMbzn4waPg98Tzir8jHwbuC5p4uZUT-N7rZ8ILI16/', minFloat: 0.0, maxFloat: 0.4, odds: 0.003195 },
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', odds: 0.00256 }
     ]},
     { id: 'esports13winter', name: 'eSports 2013 Winter Case', series: '5', release: '18. prosince 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-UnoUwniocSwrHFkvqbgafw-JKHKWTGSw7wmtOMxTX2yw0ki5DyGm4ugcirGPQ4nC5B3EbNetw74zIMdBc4CJw', items: [
         { name: 'Galil AR | Blue Titanium', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0POgV7BkNPGdB3Kdkr5gj-1gSCGn208jsDvRmNmqdn6fbw4iCJp5Q7Nb4xW8xNSzMenk7wbX341AzyitjitXrnE8X82UsFg', minFloat: 0.0, maxFloat: 0.04, odds: 0.133205 },
@@ -588,7 +589,7 @@ const DATA = {
         { name: 'AWP | Electric Hive', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf9Ttk5_u4bZthKfebGinElLtytLVtG362x05wsWyByt2scHrGOgd1WZJ1ROBc4xi_ld3gNO7g-UWA3Kwc2RVq', minFloat: 0.0, maxFloat: 0.4, odds: 0.0106567 },
         { name: 'Desert Eagle | Cobalt Disruption', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7v-RbKB9IeSXC2mDxNFmteBqQCq4qhEutDWR1I36c3OVbFQjDcRwR7EO4EW-x4HvMumzswfWjd8XnCn2iShM53s5t-0cEf1ycu8KccY', minFloat: 0.0, maxFloat: 0.2, odds: 0.0106566 },
         { name: 'M4A4 | X-Ray', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0Oq8ab1SLaSsAm6Xyfo46LAxTHrgxU8lt2WHmNf7cS-Ub1JxDpQkQecO40OwxN2yZbvg41DciJUFk3vXysuZ3Q', minFloat: 0.0, maxFloat: 0.3, odds: 0.00639 },
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', odds: 0.00256 }
     ]},
     { id: 'stickercapsule', name: 'Sticker Capsule', series: '9', release: '5. února 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ikLvrz-PfRpcKeQCzPEk-p147M_SXrglx8l4m2EnoqvJS2eagchCZQiQeADrFDmxXUYlhnp', items: [
         { name: 'Samolepka | Lucky 13', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu5P840vzRBj_0JPlqiYP6ff6OPM0cvLBDGORmbYhs7NsTii2zBt_tT_Qn9iscH3GO1A-SswnhsokpHo', odds: 0.080645 },
@@ -620,7 +621,7 @@ const DATA = {
         { name: 'CZ75-Auto | Fuchsia Is Now', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a4s2ofbduKPmSMWuZxuZi_uM-Sn_hlhgi4D_RnImrJC3COFIoApB3FLUP4RS9mtSzYu_r7wHZjopbjXKpFZZFzGk', minFloat: 0.0, maxFloat: 0.4, odds: 0.015985 },
         { name: 'P250 | Undertow', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiNW0OL8PfRSIvWSCmKU_v53ue99cCW6khUz_W3dzIuueSqWblJ0WMNwFuYK4xawk9S0Y-7n4Afag4JDzSz73XtK5nt1o7FVPKoITvg', minFloat: 0.0, maxFloat: 0.2, odds: 0.015985 },
         { name: 'CZ75-Auto | Victoria', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a_s2rfKdlJfSsDX3HlNF6ueZhW2fkk04i5WrXmY2sc3qfPFAlWZd3EOdY4Bi6loCxPu7h51fZjNlGzST5kGoXuTXAF0gA', minFloat: 0.0, maxFloat: 0.75, odds: 0.00639 },
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', odds: 0.00256 }
     ]},
     { id: 'phoenixcase', name: 'Operation Phoenix Weapon Case', series: '11', release: '20. února 2014', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fr2wPtqP5PKVvJPSQDWSSl7sn6eMxHC3hwhl3sDuDztivJHrEagJzWZd3W6dU5fXcT7oM', items: [
         { name: 'UMP-45 | Corporal', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbRSI_-BHmiCwOJJvOhuRz39wUUi4W6Bzdipd3KWOwInXJFyTbEKuhbtloHlMbzm5AbW2YkWzSv5jjQJsHiIsauxOw', minFloat: 0.05, maxFloat: 0.75, odds: 0.1998075 },
@@ -636,7 +637,7 @@ const DATA = {
         { name: 'Nova | Antique', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSIf6HB3aFxNF6ueZhW2fmwRwl6jyHw96vIn2UbVVzXMdyRuYLt0O7ltPjZbu0tQTejo9Hyn2skGoXucYtjcOH', minFloat: 0.0, maxFloat: 0.3, odds: 0.0106566 },
         { name: 'AWP | Asiimov', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk7uW-V6V-Kf2cGFidxOp_pewnF3nhxEt0sGnSzN76dH3GOg9xC8FyEORftRe-x9PuYurq71bW3d8UnjK-0H0YSTpMGQ', minFloat: 0.18, maxFloat: 1.0, odds: 0.003195 },
         { name: 'AUG | Chameleon', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7uepV6dlIf2WAmKfz-9_ouRWQyC0nQlpt23VztercCjGbg90C8RyQOcMs0G5x93uZLm37wbe2owTz3j9iShI6TErvbi7ZmzWCw', minFloat: 0.0, maxFloat: 0.5, odds: 0.003195 },
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', odds: 0.00256 }
     ]},
     { id: 'stickercapsule2', name: 'Sticker Capsule 2', series: '12', release: '27. února 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ikLvbz6Mac1c_SWCjaUk7tytblqTH3rwxki527Sw9j7c32XbQAhWMYlE7ENrFDmxQkjC0Ti', items: [
         { name: 'Samolepka | Banana', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj261fmTxy_ncWypXde6aL7aqJvcaiXDDGUwLYv5uNvGHC2l0l0sj-ByN2sIHrBaBhgVMXwKPP2hQ', odds: 0.080645 },
@@ -776,7 +777,7 @@ const DATA = {
         { name: 'USP-S | Orion', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XuWbwcuyMESA4Fdl-4nnpU7iQA3-kKn17jJk_PuibapuJeLdWGLFwL8i4eVsFiqxxUt34jmHnoysJ3qVOAYgCJZwQrRb5EPul4XlYvSiuVIHgy4Xvg', minFloat: 0.0, maxFloat: 0.5, odds: 0.0106566 },
         { name: 'AK-47 | Vulcan', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSMuWRDGKC_uJ_t-l9AXCxxEh14zjTztivci2ePQZ2W8NzTecD4BKwloLiYeqxtAOIj9gUyyngznQeF7I6QE8', minFloat: 0.0, maxFloat: 0.9, odds: 0.003195 },
         { name: 'M4A4 | Howl', rarity: 'red', image: 'https://steamcommunity-a.akamaihd.net/economy/image/pWJghcMk-ZNf7MuJgJ4zuB0uqjSHVPfTiyIYk2R4ex9saVd-mji_gf8113em_m82BSnxc45L99eNKR-BZW5sFWMrQ3SLPLiI70TTfaW0fCcBP7pryh65zoEoLp9-aj4lbnF4fNk8_LvzdMN0or9pGRkzuSzJJLTfnCEU3Cw7aktvZUNz3Dz10_gu0CyvtzwgEWzqfYkZ7oaKdUjDeT84SDszEiXDLaOD', minFloat: 0.0, maxFloat: 0.4, odds: 0.003195 },
-        { name: '★ Lovecký nůž ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1Wv1dMizcWMY0IeErADLHR6z7FVW23IQ1&sz=w1000', odds: 0.00256 }
+        { name: '★ Lovecký nůž ★', rarity: 'gold', image: 'assets/image/rsi_huntsman.png', odds: 0.00256 }
     ]},
     { id: 'huntsmancase', name: 'Huntsman Weapon Case', series: '17', release: '11. června 2014', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frmxY6qr9OqU0cvbKCGTDk7dys7k-S36yzU114GrRmNaoeSmXaVV0WJp0W6dU5Q_KKWwm', items: [
         { name: 'Tec-9 | Isaac', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiFO0Oara_1SIeOaB2qf19F6ueZhW2frlEpz6zyAy477dXrEagFxDcclRO4C5EK8wIa1Nem3s1TdiotNzCn5kGoXuYgN6W8t', odds: 0.133205 },
@@ -794,7 +795,7 @@ const DATA = {
         { name: 'USP-S | Caiman', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSI-WsBWaZzO94j-1gSCGn20t-4WyBn4mocC6XbVN0CMB2RLYMsUG5x9DgN-20tQSNiI1GzS2q3XtXrnE8NAiGp64', minFloat: 0.0, maxFloat: 0.4, odds: 0.0106566 },
         { name: 'AK-47 | Vulcan', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSMuWRDGKC_uJ_t-l9AXCxxEh14zjTztivci2ePQZ2W8NzTecD4BKwloLiYeqxtAOIj9gUyyngznQeF7I6QE8', minFloat: 0.0, maxFloat: 0.9, odds: 0.003195 },
         { name: 'M4A4 | Desert-Strike', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0OanfKVjM-ScHGqvzedxuPUnHnjnxEsi4WTTntqucnuUaA92CZR2E-IDtRa-mobnYeLksQbXg4hDyTK-0H1Bbz5yqg', minFloat: 0.0, maxFloat: 0.7, odds: 0.003195 },
-        { name: '★ Lovecký nůž ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1Wv1dMizcWMY0IeErADLHR6z7FVW23IQ1&sz=w1000', odds: 0.00256 }
+        { name: '★ Lovecký nůž ★', rarity: 'gold', image: 'assets/image/rsi_huntsman.png', odds: 0.00256 }
     ]},
     { id: 'breakoutcase', name: 'Operation Breakout Weapon Case', series: '18', release: '1. července 2014', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fqWxdv_b8O_w5eKXBWWXHw-smtrBvTHDmwEsl4jvWn4z_I3qWZwV1X5ZwW6dU5RcRF1o0', items: [
         { name: 'MP7 | Urban Hazard', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_jdk4uL5JadiLf2SAGOV09F6ueZhW2fgx0gl4WTczdj7I3LFaQYjDcQiE-Beuhe6xIXnP-_l41eKi9pEyH79kGoXuW6iY_I1', minFloat: 0.0, maxFloat: 0.5, odds: 0.159846 },
@@ -811,7 +812,7 @@ const DATA = {
         { name: 'Glock-18 | Water Elemental', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1Y-s2pZKtuK72fB3aFxP11te99cCW6khUz_TjVyompc3-QOFR2DJQkFOMJtBbqk9LlY-7n5QLZjtkTxCWqhixPv311o7FVIf8eASQ', minFloat: 0.0, maxFloat: 0.7, odds: 0.0106566 },
         { name: 'P90 | Asiimov', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-JaV-KfmeAXGvzedxuPUnTSjikRgksjuBzoz4dXLFb1QoC8QlTLQD4EPqk4LvN-Pns1aMioNBzTK-0H3gQVv65g', minFloat: 0.0, maxFloat: 0.92, odds: 0.003195 },
         { name: 'M4A1-S | Cyrex', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_OGMWrEwL9lj-JwXSyrqhEutDWR1N77cimSbQQgC8F5QLYCsELpltTnZuvk7wbcjdhDzy_43yMb6ilvt7kcEf1yDWu2yf8', minFloat: 0.0, maxFloat: 0.5, odds: 0.003195 },
-        { name: '★ Motýlek ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1PVihrlAsunZIdjOo1_wuqjzdBFTILifp&sz=w1000', odds: 0.00256 }
+        { name: '★ Motýlek ★', rarity: 'gold', image: 'assets/image/rsi_butterfly.png', odds: 0.00256 }
     ]},
     { id: 'esports14summer', name: 'eSports 2014 Summer Case', series: '19', release: '10. července 2014', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-UnoUwniocSwrHZk_OejZaF_bvXGWT6Vkughs-A5H321kUQl5myEm9__dHKQaw8gWZtzQ7VYu0a-lYf5d7S1qrUfUsY', items: [
         { name: 'SSG 08 | Dark Water', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1a4s20baZ_Ic-XD3Wb_uJ_t-l9AXriwk1y6mqDyov9eXyTaAFzD5R4RrFYsRC4k9fhML7itQGPio9EyX_gznQeRZeU19w', minFloat: 0.1, maxFloat: 0.26, odds: 0.133205 },
@@ -831,7 +832,7 @@ const DATA = {
         { name: 'P2000 | Corticera', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0PG7V6JsNvWfD1iAk74m4N5lRi67gVNzt2TTyo6gdH6XPwEiCcZ2RucC5BG9kdTvZe-24QSIidhHyimoiC0b8G81tLsWWhFO', minFloat: 0.06, maxFloat: 0.3, odds: 0.0079925 },
         { name: 'M4A4 | Bullet Rain', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0PC7ZKhoNM-BD26e_uMisbBWQyC0nQlp4GmGydioIH3DPFMjDMd2QrQO5hDtkNK2Ne_htAXd3d0Uyiiriysb5zErvbh6fsb98Q', minFloat: 0.02, maxFloat: 0.46, odds: 0.003195 },
         { name: 'AK-47 | Jaguar', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0OKvZrBlJeKsD2zEltF6ueZhW2fhzUwi4WuBzNv6dCiWPVUgApV0TLIM40SwxNLuN-Pl71fdjogXmy79kGoXuYeqaPqj', odds: 0.003195 },
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'https://drive.google.com/thumbnail?id=1KC_BcLGgViAPpBgJl9ibO93WVSPlTnku&sz=w1000', odds: 0.00256 }
+        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', odds: 0.00256 }
     ]},
     { id: 'eslcol14legends', name: 'ESL Cologne 2014 (Legendy)', series: '20', release: '4. srpna 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk7P2iZ6NjJaLDXzOvkb844rY5G33kwE5-42SGyNz7ci6SaVR2DsF5R7MK5hjuk9W1Nrnk4QSNiZUFk3udWK44YA', items: [
         { name: 'Samolepka | Cloud9 | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVrrTgj1x9iwqnJevPGra_U9JabEWjLGmbxzsrc6HHyylERy5zyDmNr6cXrDbQcoFNIuEhUwGBlG', odds: 0.1152071 },
@@ -906,9 +907,7 @@ const DATA = {
         { name: 'AWP | Dragon Lore', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk4veqYaF7IfysCnWRxuF4j-B-Xxa_nBovp3Pdwtj9cC_GaAd0DZdwQu9fuhS4kNy0NePntVTbjYpCyyT_3CgY5i9j_a9cBkcCWUKV', minFloat: 0.00, maxFloat: 0.7, odds: 0.00027 }
     ]},
 
-
-
-    // KOLEKCE (WIPPPP)
+    // KOLEKCE
     { id: 'assaultcol', name: 'Kolekce Assault', release: '14. srpna 2013', type: 'collection', image: 'https://static.wikia.nocookie.net/cswikia/images/c/c6/Set_assault.png/revision/latest', items: [
         { name: 'UMP-45 | Caramel', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1I4M2tabZsLfWfMWuZxuZi_rgxTXGwkBt36juDnI36dXrFOw5yC5ciF7YPsUbuld22Zb-x4lCP34tbjXKpx97cZGE', minFloat: 0.06, maxFloat: 0.8, odds: 0.4},
         { name: 'SG 553 | Tornado', rarity: 'gray', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1I4M26Z7ZjIfScMWuZxuZi_uU7Syuxlx505muBzN2sI3uUOA51C5AhR7UIsEKww9W0MO634APd2NhbjXKp4EWrMzw', minFloat: 0.06, maxFloat: 0.8, odds: 0.4},
@@ -917,22 +916,12 @@ const DATA = {
         { name: 'Negev | Anodized Navy', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1a4c2gabJ0H_yaCW-Ej7cu4rJrSXzikUh04G2Em9yteS-SagAkDsQlEOMP4RexldKzM7ix4lPAy9USZWBsgPo', minFloat: 0.00, maxFloat: 0.08, odds: 0.016665},
         { name: 'Glock-18 | Fade', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1a7s2oaaBoH_yaCW-Ej-8u5bZvHnq1w0Vz62TUzNj4eCiVblMmXMAkROJeskLpkdXjMrzksVTAy9US8PY25So', minFloat: 0.00, maxFloat: 0.08, odds: 0.003335},
         { name: 'MP9 | Bulldozer', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f7i1k9veiZKt6H_yaCW-Ej-tztbQ5Hy2wxklw5TiDnt_4eC_GOFR1XJdzQ-AMskXswNbvNuvq4wPAy9USwXKj73o', minFloat: 0.06, maxFloat: 0.8, odds: 0.003335}
-    ]},
-    
-    
-    
-    /*{ id: 'test', name: 'test bedna', series: '0', release: '0. ledna 0000', type: 'case', image: 'https://tiermaker.com/images/chart/chart/minecraft-cursed-chests--65370/cursed-chest-3png', items: [
-        { name: 'gray float 0.999 - 1.0', rarity: 'gray', image: 'https://static.wikia.nocookie.net/minecraft_gamepedia/images/a/ac/Rotten_Flesh_JE3_BE2.png/revision/latest/thumbnail/width/360/height/360?cb=20190521031955', odds: 0.8, minFloat: 0.999, maxFloat: 1.0},
-        { name: 'gold float 0.06 - 0.8', rarity: 'gold', image: 'https://minecraft.wiki/images/Nether_Star.gif?fb01f', odds: 0.2, minFloat: 0.06, maxFloat: 0.8}
-    ]}*/
+    ]}, 
 
-    { id: 'weeklycarepackage', name: 'Týdenní Balíček Odměn (pouze skiny)', release: '27. září 2023', type: 'collection', image: 'https://drive.google.com/thumbnail?id=1R5CiIV77IPKGFPAQRZW5zKq5mYFMdwFi&sz=w1000', items: [
-        { name: '000', rarity: '000', image: '000', minFloat: 0., maxFloat: 0., odds: 1.0}
-    ]}
-
-    /*{ id: '000', name: '000', release: '0. ledna 0000', type: 'collection', image: 'assets/image/case_weekly_drop.png', items: [
+    /*{ id: 'weeklycarepackage', name: 'Týdenní Balíček Odměn (pouze skiny)', release: '27. září 2023', type: 'collection', image: 'https://drive.google.com/thumbnail?id=1R5CiIV77IPKGFPAQRZW5zKq5mYFMdwFi&sz=w1000', items: [
         { name: '000', rarity: '000', image: '000', minFloat: 0., maxFloat: 0., odds: 1.0}
     ]}*/
+
   ],
   
   rarities: {

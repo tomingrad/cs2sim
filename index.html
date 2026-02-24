@@ -6,384 +6,7 @@
 <title>CS2 Otevírací Simulátor</title>
 <link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/image/favicon.png">
-<style>
-  :root {
-    --bg: rgb(9, 12, 14);
-    --panel: rgb(13, 17, 20);
-    --text: #E6E6E6;
-    --muted: #B5B5B5;
-    --accent: #00aeff;
-    --glass: rgba(255, 255, 255, 0.03);
-    --border: rgba(245, 250, 255, 0.075);
-    --radius: 14px;
-
-    --r-consumer: #B0C3D9;
-    --r-industrial: #5E98D9;
-    --r-blue: #4B69FF;
-    --r-purple: #8847FF;
-    --r-pink: #D32CE6;
-    --r-red: #EB4B4B;
-    --r-gold: #FFD700;
-    --r-contraband: #E4AE33;
-  }
-
-  * {box-sizing: border-box; outline: none;}
-
-  body { 
-    margin: 0;
-    font-family: 'Radio Canada Big', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding-top: 60px;
-    overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-
-  .top-history {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50px;
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    z-index: 1000;
-    overflow-x: auto;
-    gap: 12px; 
-    scrollbar-width: none;
-  }
-
-  .top-history::-webkit-scrollbar {display: none;}
-  
-  .history-node {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--glass);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    border: 1px solid var(--border);
-    animation: slideInTop 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    box-shadow: 0 0 0 rgba(255, 106, 0, 0);
-    transition: box-shadow 0.3s;
-  }
-
-  @keyframes slideInTop { 
-    from { transform: translateY(-100%); opacity: 0; } 
-    to { transform: translateY(0); opacity: 1; } 
-  }
-
-  .page-container {
-    width: 85%;
-    margin: 0 auto;
-    padding-bottom: 50px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .case-card {
-  position: relative;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
-              border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
-              box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-
-  .case-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 20px rgba(0, 174, 255, 0.5);
-  border: 2px solid rgba(0, 174, 255, 0.7);
-  }
-
-  .case-card.is-new {border: 1px solid rgba(255, 217, 0, 0.7);}
-
-  .case-card.is-new:hover {
-  border: 2px solid var(--r-gold);
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 25px rgba(255, 217, 0, 0.5);
-  }
-
-  .case-card.is-new::before {
-  content: "NOVĚ V CS2";
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: var(--r-gold);
-  color: #000;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 6px;
-  z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-  }
-
-  .drop-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), 
-              0 0 16px var(--card-color);
-  }
-
-  #openBtn:enabled:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 24px rgba(0, 174, 255, 0.75);
-  }
-
-  .btn:enabled:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 12px rgba(0, 174, 255, 0.5);
-  }
-
-  .filter-chip {cursor: pointer;}
-
-  .filter-chip input {display: none;}
-
-  .chip-label {
-    display: inline-block;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius);
-    color: var(--muted);
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    user-select: none;
-  }
-
-  .filter-chip input:checked + .chip-label {
-    background: rgba(0, 174, 255, 0.15);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  .filter-chip:hover .chip-label {
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  .spinners-container { 
-    width: 100%;
-    margin: 24px auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px; 
-  }
-
-  .spinner-instance { 
-    position: relative;
-    height: 130px;
-    overflow: hidden;
-    width: 100%;
-  }
-
-  .spinner-instance::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 2;
-  
-  background: linear-gradient(
-    to right,
-    var(--bg) 1%,
-    rgba(11, 13, 16, 0) 20%,
-    rgba(11, 13, 16, 0) 80%,
-    var(--bg) 99%
-    );
-  }
-
-  .spinner-marker {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    height: 92.5%;
-    background: var(--accent);
-    transform: translateX(-50%); z-index: 5;
-    box-shadow: 0 0 25px rgba(0, 174, 255, 0.6);
-  }
-
-  canvas.spin-canvas { width: 100%; height: 100%; }
-
-  .controls-row { display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin: 30px 0;
-  }
-
-  .spin-counter {
-    display: flex;
-    align-items: center;
-    background: var(--panel); 
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 6px;
-    gap: 12px;
-  }
-
-  .counter-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    border: none;
-    background: var(--glass);
-    color: #fff;
-    cursor: pointer;
-    font-weight: 800;
-    transition: 0.3s;
-  }
-    
-  .counter-btn:enabled:hover {
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 12px rgba(0, 174, 255, 0.1);
-  }
-  
-  .btn {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 14px 30px;
-    border-radius: var(--radius);
-    font-weight: 800;
-    font-size: 14px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-
-  .btn:disabled, .counter-btn:disabled {
-    opacity: 0.25;
-    filter: grayscale(0.5);
-    cursor: not-allowed;
-  }
-
-  .case-content-area {
-    margin-top: 40px;
-    border-top: 1px solid var(--border);
-    padding-top: 30px;
-  }
-
-  .drop-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 15px;
-  }
-
-  .drop-card {
-    background: var(--panel);
-    padding: 15px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--muted);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)
-  }
-
-  .drop-label-container span {display: inline;}
-
-  .drop-card:hover .drop-label-container span {display: none;}
-
-  .drop-card:hover .drop-label-container::after {
-    content: attr(data-odds);
-    display: inline-block;
-    visibility: visible;
-  }
-
-  .backBtn:hover{
-    text-shadow: 0 12px 24px rgba(0, 0, 0, 0.5), 
-                 0 0 8px rgb(0, 174, 255);
-    color: var(--accent);
-  }
-
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(15px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    transition: opacity 0.4s ease, transform 0.4s ease;
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .modal-overlay.closing {
-    opacity: 0;
-    transform: translateY(50px);
-    pointer-events: none;
-  }
-  .modal {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    width: 100%;
-    max-width: 700px;
-    padding: 30px;
-    text-align: center;
-    max-height: 95vh;
-    overflow-y: auto;
-    box-shadow: 0 0 60px rgba(0, 174, 255, 0.1);
-  }
-
-  .results-list {display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 20px 0;
-  }
-
-  .result-row {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 12px;
-    background: var(--glass);
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    text-align: left;
-  }
-
-  footer {
-    width: 100%;
-    padding: 10px 0;
-    text-align: center;
-    color: var(--text);
-    font-size: 12px;
-    font-style: italic;
-    white-space: nowrap;
-    opacity: 0.7;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  #particlesCanvas {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 2500; 
-  }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -1210,6 +833,200 @@ const DATA = {
       { name: 'P2000 | Amber Fade', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0POvV6JsJPWsA2KEwOJ6ueJWQyC0nQlpsjvcmd_7dHyVZgdxAsB1QeRZ5BPqlYbmNuvr5lTW2o1Myyyt3ykY7DErvbib25P3aA', minFloat: 0.0, maxFloat: 0.4},
       { name: 'R8 Revolver | Amber Fade', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c2vaZtrIfSWMXWV1-F6puR7cCW6khUz_W2EnIuheSiVZgIgX8F3Ee9YthLuw9LjMePqswCL34kQzHj6iypPu351o7FV6jjqgC8', minFloat: 0.0, maxFloat: 0.4}
     ]},
+    { id: 'vanguardcase', name: 'Operation Vanguard Weapon Case', series: '29', release: '11. listopadu 2014', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fqGwPtvP9MKA_JKOSCGGWmL8useQ6TXywwB8k4T-EyImgeCmXbA4oAsRzW6dU5QwRm5UL', items: [
+      { name: 'G3SG1 | Murky', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1a4s2pO7dqcc-eG3Wb2NF6ueZhW2e2wE5y6juDy46uJ3qePVR1C5BzR7UO4xa9ldXlYuK07wSP2dlMzin6kGoXucw3wj8l', minFloat: 0.0, maxFloat: 0.25},
+      { name: 'UMP-45 | Delusion', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1I_827ZbQ5dc-XQ3GZ0ud5vvJWQyC0nQlp5z7RwtyrIC6WbAYgCJp3Q-YD4RXsxN3jN-7n41He390QzXn5iCMf5jErvbiLTzB_rQ', minFloat: 0.06, maxFloat: 0.35},
+      { name: 'MAG-7 | Firestarter', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wjFL0P-vb_NSJvmBC2WZ1fpzvt5lRi67gVNyt27dz46scn2TaQ52XpV1E-8I4RLuwIHnMO2w4gfa2NlHmy2ri3xP8G81tFM5kI47', minFloat: 0.06, maxFloat: 0.49},
+      { name: 'MP9 | Dart', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_jdk4uL3V6dlJeaBAWmvzedxuPUnH3_lkRgmtmrVmNn6dC_COFUlWJZwF-df4xW8ktK2N-234QfX2IlMzjK-0H1cH54WRg', minFloat: 0.0, maxFloat: 0.46},
+      { name: 'Five-SeveN | Urban Hazard', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSJvmFC3SV1-t4j_R7TSi9qhUmqTyXnrD1KCzPKhhzXpBwFu9YtxK6k4buYenrtgDWj4NGyX3-2yhBun1qt-YBBKsg_aXWkUifZnLiQ4dl', minFloat: 0.0, maxFloat: 0.25},
+      { name: 'Upilovaná brokovnice | Highwayman', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2veZt-IeeWCmiWx9F0vOBqRC68mRkYvzSCkpu3dXuVaQchCMRwQeJYsxaxl9W0N-nrtVeMid4XyHn53XtN5n5st-xRU71lpPM2tqJ-2A'},
+      { name: 'Glock-18 | Grinder', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1a_s2pZKtuK8-QAW6cxOpJvOhuRz39w00lsG-BnNj7cniROgd1WZRzReIDsBewk9G0YeOw5gWPi40Xnnr4hzQJsHiNyVoujA', minFloat: 0.02, maxFloat: 0.25},
+      { name: 'M4A4 | Griffin', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0P_6afBSJ-KaCGGZz9F6ueZhW2e2zERysm3Umdesd3rGald1DpRyQLVbtUa5mtPvYuzrtATeg95EmS2vkGoXuZ5UWeP5', minFloat: 0.0, maxFloat: 0.8},
+      { name: 'M4A1-S | Basilisk', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_GCMWrEwL9lj-NoXCC_nA4sjDGMnYftbyqVPwUiX5V5ReUDuxC5m9zmNOPktAHYiIgXzSz43C4a7Sg_6uZQVKU7uvqA7bOYRbA', minFloat: 0.0, maxFloat: 0.68},
+      { name: 'SCAR-20 | Cardiac', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk7OeRe6dsMqLDMW6e1etkpuRnWyC8myIrujqNjsH9cniTaFApD5R0F7EJsUG_k9bjM-3n4gLY3opBzCio3yxK5io55OdXT-N7rWZZlsYh'},
+      { name: 'XM1014 | Tranquility', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7OeRcKk8cKHHMWSR0-disfJWQyC0nQlp5zjWnNigIC-falMlWMN2F-cP5Ba-xoXlMri0swTZg41EyX34jS1LuDErvbgNI5zBZg', minFloat: 0.0, maxFloat: 0.5},
+      { name: 'P250 | Cartel', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiNK0OL8PfRSI_GBGmKc_uJ_t-l9AX2wlh906m7Uy4v_cXqWaA4gCpUmQLMNsBO_ltfiYuPltAHbgthGmyzgznQeqxXZ9kg', minFloat: 0.0, maxFloat: 0.75},
+      { name: 'AK-47 | Wasteland Rebel', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0Oa8YaZ4NPWsD2zEltF6ueZhW2fgkEh35m3cmIusIn6TbwMpWJJxReMKtBHsw4HhM7nh4gTc3YJCxXr2kGoXudZyw1tq', minFloat: 0.05, maxFloat: 0.7},
+      { name: 'P2000 | Fire Elemental', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0PG7V7Q_cKDDMWGZ0-tJte1sQiy9gRwrjDGMnYftb3-RZldxWJVyF-QLsUG5mofnML_qtg3cjd4TyCr4jXsf63lr4-5TVvA7uvqA-y0nTh8', minFloat: 0.0, maxFloat: 0.6},
+      { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+    ]},
+    { id: 'dh14legendsholofoil', name: 'DreamHack 2014 (Legendy – holografické/speciální)', series: '30', release: '21. listopadu 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk6_q5OvQ8dM_DXymUk70vtbFoSyi3wUt0tTvdztr7dH7BOgIoDJZ1QeRe4BXrktHvYrzk-UWA3KlVhG0-', items: [
+      { name: 'Fnatic (holografická) | DreamHack 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI68on1_lDkfhX-kpmuqnsCvKf2O6Y8IvKQXDLGwL1w5LhtGi2yxBl15mncmY2vJS2Qaw4nWIwwG7B9qjyRQQ'},
+      { name: 'Cloud9 (holografická) | DreamHack 2014', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI694v7_12-fhX-kpmu_3Ba6ff8aaA6cqiXXjaVmOpztONoTXnjw0904GXcyIqrcnrEb1ByWYwwG7AD8Znu9w'},
+      { name: 'Virtus.Pro (holografická) | DreamHack 2014', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI64o7m_kz0UQ_-oZ7v8S0V6aP-PvU6eKbKVz6Vlrsl4rY6H3iwlE0i42nTzNuheHjEPAEnC5IiR_lK7EczqYGq9w'},
+      { name: 'Ninjas in Pyjamas (holografická) | DreamHack 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI6-o764Fj0SBPhh5zh8CNI0PqhZKsjIamXXWXDwroi47c-GXrlwhwj4GnUyt3_JX2QaA5zW5dzRLUPsxjrwMqnab0TTPE7Jg'},
+      { name: 'Natus Vincere (holografická) | DreamHack 2014', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI6-obi42bvThH-0MDjrXda66uva_BpJfPDD2LFme0vtrk-TXngkUV14zvRm97_JHzFaVQ-Sswnua4kD4M'},
+      { name: 'Team Dignitas (holografická) | DreamHack 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI68I7z5FDzQA7Olpns8mwOt_f6OPRuefHCWzCRl-oi5LhvGnHmlBly5mnTzIr7eCjBOwciW5skW6dU5ZysYEOl'},
+      { name: 'Fnatic (speciální) | DreamHack 2014', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI68on1_lDkfhv-l5qu-3Nf7KX9bfNoefGSXzORxL0jtbMxGijgzBwmtjmDytj9cinEaAQpCowwG7B1HCY2WQ'},
+      { name: 'Cloud9 (speciální) | DreamHack 2014', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI694v7_12-fhv-l5qu_CcK7aT3PKY_IvPBXmWUwrp36OU9TSiywkQk5TzSmdf7JH3CawIkDYwwG7BNaGmqHw'},
+      { name: 'Virtus.Pro (speciální) | DreamHack 2014', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI64o7m_kz0UQ_-oZDv9C4VtqP8MaU6dPKQC2aVxLwk4-QwS363x0p3sWzVmdr7JH6RagEmAsYlQvlK7EfwDImg8A'},
+      { name: 'Ninjas in Pyjamas (speciální) | DreamHack 2014', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI6-o764Fj0SBPhh5zh8CNI0PShYagjdqTLWzfFk7Yj4LY7THrmzUR25GjWz92peS3FPQUmXsNzELVb50W4msqnab02vPT65A'},
+      { name: 'Natus Vincere (speciální) | DreamHack 2014', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI6-obi42bhThT90JO5qyNfv6H_a_NsdfXEWWXHmOwhsuNsHXjik04i52TdwtmvdnKfbAU-Sswnp9PAys4'},
+      { name: 'Team Dignitas (speciální) | DreamHack 2014', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI68I7z5FDzQA7OmJnp8WwO6aP3a_ducanHXmTDlOhz5edqGy22xUtzsmvTzIuvcC2fPVcjDZByW6dU5TALK5nO'},
+      { name: 'DreamHack Winter 2014 (speciální)', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI68JXx61TvQB76iZ_u6SdJvaL_PJtrL_mfQGKVwrl15LI8G33lxRh15WjRn974cHmRaQImAsR4QLJesxjqxIK0Mbz8p1uJKd8rFmI'}
+    ]},
+    { id: 'chromacase', name: 'Chroma Case', series: '38', release: '8. ledna 2015', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fq2wP7qr6bqI5cvHDCzfBlbcv57JqF3zrxRkj4W6Dwo34dy6QPQAoC5ZyW6dU5cxvklfG', items: [
+      { name: 'Glock-18 | Catacombs', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1Y-s2pZKtuK8-XC2aEyfp5vO1WQyC0nQlptWWDzIz8dy6QalMgXsMiQbEJtRjskdW2M7nn71Dcj49Fm3qsiClB7jErvbhnnfwjgw', minFloat: 0.0, maxFloat: 0.5},
+      { name: 'M249 | System Lock', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8zMK5wiFO0P_8PP1SM_WYGmiC_uJ_t-l9AXzhzEt25Wjcn4n4dHKebgMlCMB2RO5b40S-x9TnN-KztFDf3ohDzirgznQedTUXMuU', minFloat: 0.0, maxFloat: 0.8},
+      { name: 'MP9 | Deadly Poison', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_jdk4uL3V6BoIfSfF1iAzudlv-9WQyC0nQlpsm3Vy9f4eXvEPwcoCcNyQOBY5EWxwN3gNru0tFGK2d5Mny__iS8c5zErvbjRwweEJA'},
+      { name: 'SCAR-20 | Grotto', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk7uORe6dsMqLDMWuVwOVJvOhuRz39zRtx62uGm9z8JHnFaFR0AsAjRuQI40Sww9HvNunqtQTego5MmSX4izQJsHiOao_ijg', minFloat: 0.0, maxFloat: 0.5},
+      { name: 'XM1014 | Quicksilver', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7uORcKk8cKHHMXSZxuJ3j-1gSCGn20oksGTXy4yrIC3GbwYpCJF1RuQMtkG-koCyNO22tVSIiY1GxXn6iyhXrnE8nW2Det4', minFloat: 0.0, maxFloat: 0.5},
+      { name: 'Dual Berettas | Urban Shock', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1Y-s2rZK15JeOsG3WSwOBlpO57Qha_nBovp3PQzI6pc3iRZ1cjC5dzQe4CsxPtwdHjMevq41CLjIpMm3_5jypN7Cxp_a9cBoxgoAoS', minFloat: 0.0, maxFloat: 0.47},
+      { name: 'Desert Eagle | Naga', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7uORbKFsJ_yWMWmRxu9JvOhuRz39zEx06jjWm4n8Ii6WPFQhA5YjE7MJskPrwdTuZb7htlHbg9oTzCn2hjQJsHhQd9ynBw'},
+      { name: 'MAC-10 | Malachite', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1a4s2jaac8cM-eD2uRwuZ_pORWQyC0nQlpt27Uw4yrJy_FOlQpCJp2Te5Y5hPqw9HuYePksVaKjt0TmS_2hihJuDErvbgNFzWT1Q', minFloat: 0.0, maxFloat: 0.5},
+      { name: 'Upilovaná brokovnice | Serenity', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWCmiWx9FytfdocCW6khUz_W2Dwtv6cXLFZgUnD5VzQrMPtxjrx9K0Ye637wzYj4gXzimqiH9KuC91o7FV9mPR2UI', minFloat: 0.0, maxFloat: 0.5},
+      { name: 'AK-47 | Cartel', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiNK0POlPPNSI_GBGmKc_uJ_t-l9ASuywktwtW3dwt79eX6fZlUiCJJ1RbUPtkW8w4LiZe_i4ATYjN8WmH7gznQeZkk4ehM', minFloat: 0.0, maxFloat: 0.75},
+      { name: 'M4A4 | 龍王 (Dragon King)', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0P_6afBSIf6QC3SE0-96j-1gSCGn20x062mAwtb8cX3CaAMoApV3EeFZ50Wwk9fuM-vqtAHW3opHn3iqiSxXrnE8PytIGFg', minFloat: 0.0, maxFloat: 0.75},
+      { name: 'P250 | Muertos', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiFO0OL8PfRSLfGdCmacwNF6ueZhW2e1lh51sm3UmN37cHuUbQQhXJtwQO4C4BXsxtHjM-624A3a2IoWySiskGoXuSIJMqiP', minFloat: 0.0, maxFloat: 0.6},
+      { name: 'AWP | Man-o\'-war', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_C9k7uW-V6NhL-KKMWuZxuZi_uM5HXG3xhh_t2iBnI2ucn3EZwEjDpJ0Q-dY5EPrxNTiYevj7gXa2IhbjXKpQIFOiXU', minFloat: 0.1, maxFloat: 0.2},
+      { name: 'Galil AR | Chatterbox', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0PG7V6NsLPmfMWaS0-9lue5ncCS2kRQyvnPXnIn7eSrEZ1AnD5NxTeII4ESwxN3jN7zl5QHXjdhAnyuo2y9Nv3xs_a9cBuAhdjfO', minFloat: 0.35, maxFloat: 0.85},
+      { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'chroma'}
+    ]},
+    { id: 'chroma2case', name: 'Chroma 2 Case', series: '48', release: '15. dubna 2015', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fqmwOuKD2PqI6caDBWDeUkO8uteM9SnDglklw6miEn9j6IHKfblNxA5pxW6dU5UH4LtBe', items: [
+      { name: 'AK-47 | Elite Build', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSLfGAGmKC2NF6ueZhW2e2wh9y5GjTztirdSqfP1dyCpclR7FZ5xe9wNbhZei25FGPjokXxC2vkGoXuQLr5jvs'},
+      { name: 'MP7 | Armor Core', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_DNk4uL5V7FhNOKSA2iUxPx4j-1gSCGn2xhw6zjSzYysICiUOgV0Cpd1TORe5BW9w922Nrux5gKLitpGz3irhnlXrnE866qixJk', minFloat: 0.0, maxFloat: 0.5},
+      { name: 'Desert Eagle | Bronze Deco', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7v-RarZiLuqWMXSAwPx9vORWQyC0nQlp4zzdydqtJXuTOgZzW5F4QbNZ4UK7l9e1N-Pq5AeNj9hHmH783S9J6zErvbgcMfnnyA', minFloat: 0.0, maxFloat: 0.46},
+      { name: 'P250 | Valence', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiNK0OL8PfRSI_-dGmiF09F6ueZhW2fiwUx14zmDnNagcC-WagUkApslQuBYsUW_ktexPry3swPfiogTyyiqkGoXuQius2mt', minFloat: 0.0, maxFloat: 0.8},
+      { name: 'Negev | Man-o\'-war', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1a4s2gbaNoNs-UAmiC2NF6ueZhW2fikBh352vQyt-sI3mRbQ8lDJpxTLVfuxC5k4W0MLvm5VfeithHnij5kGoXuSdORNFb', minFloat: 0.10, maxFloat: 0.20},
+      { name: 'Upilovaná brokovnice | Origami', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWCmiWx9F5ouhuTiS6qhEutDWR1IutIyqSalBzWZQjQbUD4UaxltCzNuLgslTejYwTxSn2jCIc5n1jtbscEf1yxjZ09aw', minFloat: 0.0, maxFloat: 0.55},
+      { name: 'AWP | Worm God', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_DNk7uW-V7B6Kf6WMWuZxuZi_uRoGH3iw0wh4j7cnt6ucSqSZwUkCMB5TLIPsES_kNbuYeOwtgXai4NbjXKpZ4kj0o0', minFloat: 0.0, maxFloat: 0.45},
+      { name: 'MAG-7 | Heat', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiFO0P-vb_NSMvWXBmiE_uJ_t-l9AX7nzBsk623dm46odHmUbFd1Dcd2RbINtBXtkNDjMbzj5AGKjt4UyijgznQe8JftFTE'},
+      { name: 'CZ75-Auto | Pole Position', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1Y-s2tcvM4H-CBC2SZ0ud5vt5lRi67gVNy4mTdzdmgc33COg90DcB2FuMPtxLpldSxZeLn4w2K34NCzXj9hnsY8G81tCL36RK-', minFloat: 0.0, maxFloat: 0.7},
+      { name: 'UMP-45 | Grand Prix', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1a4s27ZbRSMvGQC3WvzOtyufRkASjjxU1x42nVyo2rdnKQbA9xX5ohRrYMtBntmtW1N7zj5lDZgthFzC3gznQezoUeLLY', minFloat: 0.25, maxFloat: 0.35},
+      { name: 'Five-SeveN | Monkey Business', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSJvmFC3SV1-t4j-NoQSi9lCIqtjmMj4K3InqVOlNzDsF0Redf4US4moLgMOnn4QzZg9hFxSX8iiJK5n0_6-cGAr1lpPNC5QABiQ', minFloat: 0.1, maxFloat: 0.9},
+      { name: 'Galil AR | Eco', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0PG7V6NsLPmfMWKTztF7teVgWiT9wBtzsDmEmdupJXjGZlQmA5JwRLIN5xC7k9y1Yey35lDa34lCxXn-jzQJsHiYTuEpwA', minFloat: 0.1, maxFloat: 0.85},
+      { name: 'FAMAS | Djinn', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1a_s2oaalsM8-ZB2me_uJ_t-l9AXzhwxt-5TiAzdmgd3yeaQ50DZRxEe5b4BXrm4HkPr7kslfcg9pCznjgznQepOOy8CM'},
+      { name: 'M4A1-S | Hyper Beast', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_OGMWrEwL9JuPh5SjuMlxgmoCm6lob-KT-JbwF1WZEjR-YJskK9k9XiYePltAeNjYlAxSn5j34dvCZstb4LB6Ut-7qX0V8Xkv5_2A'},
+      { name: 'MAC-10 | Neon Rider', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-dC2ie0-dytfNWQyC0nQlp5DzTntmgdC7COABxX5NxQrUOtUS5w4LgMu6zsVCK2IJCmyisjitM6DErvbicsEA0SQ', minFloat: 0.35, maxFloat: 0.45},
+      { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'chroma'}
+    ]},
+    { id: 'eslkato15challengers', name: 'ESL One Katowice 2015 (Vyzyvatelé – holografické/speciální)', series: '47', release: '26. února 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk6uGiY6V5L-eaDWLCkb8jj7E7AX7lx0t25DjWw4mgJX2SagNzDpZ2R-RbsBe5ldyzMLvj7geI3oNCnn_gznQeMZjWuFY', items: [
+      { name: 'Samolepka | 3DMAX (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFKimpvh5R1T4P6hJqU9cPGXWTLIxbsntrM7GnDgx0lxtm7QzomqdHqTPQAmXsRzFrZf5BGm0oqw44vgYjw'},
+      { name: 'Samolepka | Cloud9 G2A (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLykpn1-Xtk5_2iZ-podPLHXWGRxLx06Lc-H3nqxB52sW-Hw4r8JSqTPVAjXMEmQO8C4RTujJS5YFnqP_yj'},
+      { name: 'Samolepka | Counter Logic Gaming (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLykYPu6SdJ4_2pYadSKP-fASnExOgv6bZoSn2xl05-5Tvdy9aqIn2UbVMmCJMkTeUNukPuxt2zZL6z-UWA3KhuViI2'},
+      { name: 'Samolepka | Flipsid3 Tactics (holografická) | Katowice 2015AK-47 | Elite Build', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL3kp_w7itfvM2mZ6hibqfLWzPFwLl3sbdoFnuxlE9w5GTRzoqrI3jEPwEjApsmROYL50O5kNP5d7S1YvNpNgI/330x192'},
+      { name: 'Samolepka | Keyd Stars (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL6m4_kwipU4_3ga6dreKKSWTKTk78n5uBvTSuxzE5xt2rdn4ugdSrCaVQgCcYmFLQIsg74zIM3PZ3kHg'},
+      { name: 'Samolepka | LGB eSports (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL9mZTf9S1X4Lz7OfM7JfWWCjHClbh16OA-SiznwkVwsjiDz9agJC-fZg8pCMRwELIPrFDmxchh6KQa'},
+      { name: 'Samolepka | Titan (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLll4Lh8x1T4P6hJqU8I6KRWmKWxOsis-A_SXjhzRhz4mmDzdmveCmXaQUlC8YjE7Nf5EGm0oqwbN8y484'},
+      { name: 'Samolepka | Vox Eminor (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLnkY7l8CtV4OCRYKthL77FVzKVmbx06bY4Tnu2zB8i6juBw4qvd32fPwAnXMEkE7UL4Ba5koLhKaq8sHGTMsr1'},
+      { name: 'Samolepka | 3DMAX (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFKimpvh5R1d4PuiJvQ8JKeVWzWVk7kj6LdsTCu3lEQjtmqAzoz9InyWPQ4mCJMhTOYDtBGm0oqwjA-G1Yg'},
+      { name: 'Samolepka | Cloud9 G2A (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLykpn1-Xtk6f2nZOpsePbEXDfExL0ns7UxHHi2wxkm52XdnImpIHjCawAhApV4QuUNuhmwjJS5YB3bYSHq'},
+      { name: 'Samolepka | Counter Logic Gaming (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLykYPu6SdJ4_2pYadSJv-aAimTwugl6ONtHXHhxE5wsG3TzIn6JC6eblUhDcN4RbFe4EWxxILhY7m0-UWA3DaREQZ6'},
+      { name: 'Samolepka | Flipsid3 Tactics (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL3kp_w7itfvM2oZ61hbqWVC2HEmeojtLI4THHnwE5wsWiAw9v_cH6fbVcmDJAmQrNcsBK-wIX5d7S1U-ITdcM/330x192'},
+      { name: 'Samolepka | Keyd Stars (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL6m4_kwiRU5v7ga_Y1JqCSXDKWkbwjsbJsHyjgxBgm6zvdm46gJS-VbVUnX8RzRrFY4Q74zINRJvZQGg'},
+      { name: 'Samolepka | LGB eSports (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL9mZTf-y1S47z9P_ZoI6aRCjHCw7104bU8HCyyw0tz5WjWyt79dnqQOAcoDZsjF-NbrFDmxR8T9v7m'},
+      { name: 'Samolepka | Titan (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLll4Lh8x1d4PuiJvxueKTGD2HGxbYg5uI5GiiwkE934GTRzt2qc37CP1d1XJEmFO9btkSm0oqwW8ejxpo'},
+      { name: 'Samolepka | Vox Eminor (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLnkY7l8CtV4OCRbqtkLL7GWmaUlu8m57A5Gyrgwxtw6mnRnNupIi6eblIjXJoiTOUD4xCxktDnKaq8sO2fqETe'},
+      { name: 'Samolepka | ESL One (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL0jZrf_B1d4PuiJqI9dfPADDDAlr4htOdsSivhx011tjvQmdeqcn3DaVdxXMQlQrNcuxmm0oqwgDldCV4'}
+    ]},
+    { id: 'eslonekato15legends', name: 'ESL One Katowice 2015 (Legendy – holografické/speciální)', series: '46', release: '26. února 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk6uGiY6V5L-eaDWLCkb8jj7E4AXywwk1y5DuHzouvJHmXPw8oW8FwQuRb50K9lobhY-Lm7gKKitlBzn3gznQe01AEOcg', items: [
+      { name: 'Samolepka | Fnatic (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL3kJf09CFk5_2iZ-o7c6mSXWWUx-8l6LY6GHHiwxwh5D_cz9qodX7BbVQhApoiQbZZuxewjJS5YKjFIIsW'},
+      { name: 'Samolepka | HellRaisers (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL5m5rs7yNS_Pe8e5tlL_ycQD6Umb0usrI5HSy1xU53sGSEytuscXrDPAAjCJYkQ7MIshSxkIfkY778p1uJGWYENg4'},
+      { name: 'Samolepka | Natus Vincere (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL_n4DpwipU4_3ga_U4ePbEWGGVwrt3suc4HnzqzUwm52zVw9iucHqQP1R1DMYmFOVe5w74zIMygZ1_PA'},
+      { name: 'Samolepka | Ninjas in Pyjamas (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL_l5jq_DFS4eK3YqVgIeOsBmiczqAh4LM9Hi_nwRly6jjdnNuodHKfaQUhA5NwR7JZ5hW6kNPgM-3ntgXZlcsbmi9nWcK5'},
+      { name: 'Samolepka | PENTA Sports (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLhm5j0_DFL4OC6e5tlL_ycQD7Fxesi4bdoHy3ml04h6mvXnon9IyjGOlUoDJdyTbMIsRDpl4fhNu78p1uJB0L0tMM'},
+      { name: 'Samolepka | Team EnVyUs (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLlm5ft-CxN9ue9V6xiLP_dCjaSlet05rc9FirmkBgm4mXTm9egJHKUbwd0D5RyR-detBbtkYbiZvSiuVKMRTnJmg'},
+      { name: 'Samolepka | TSM Kinguin (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLlm5ft7i1X4P-nbJtlL_ycQGXCw7cltrk7Gn62xkok5W7Xw96sdHufOFNyDJElRucD4Ea8kYHmPu78p1uJnf1U4HQ'},
+      { name: 'Samolepka | Virtus.pro (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLnl4T06DFL_f2RYKthL77GVjDHmb0vteQ_GCrhxk5y62mGzNescXnEbVQlDsYlQ-IMtEbpk9DvKaq8sAY9M1WB/330x192'},
+      { name: 'Samolepka | Fnatic (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL3kJf09CFk6f2nZOpoJKfGXTOTkLl15ec8TnC2lh4htm3VzdmueXqXOFJyDcRxF-MKshPtjJS5YCyObc7C'},
+      { name: 'Samolepka | HellRaisers (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL5m5rs7yNS_Pe8e5trL_mfQDLJx74g6OcxSSrgxhtwsG3dw96hdXyXbQEnWJB4QLJbtROwkoHnPuj8p1uJX70Ou8A'},
+      { name: 'Samolepka | Natus Vincere (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL_n4DpwiRU5v7gbvFvdqHKW2bCl-sm57QwH3zmkUV3tW7Swo6scymRPwV2WZUhRrUM5g74zIN6F1MuVQ'},
+      { name: 'Samolepka | Ninjas in Pyjamas (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL_l5jq_DFS4eK3YqVgIeOsCGiZzaBwtuNtS3nikxtytmvQw96vcCqQOgAkDZckTbILukS_wYK1Pr6271eLlcsbmnHjhxkY'},
+      { name: 'Samolepka | PENTA Sports (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLhm5j0_DFL4OC6e5trL_mfQDHFluovtLE5TXHlwEh1sD7Xnoqsd3qVag8pWJYiE-4DsUO_mtThZu_8p1uJwmOJOUE'},
+      { name: 'Samolepka | Team EnVyUs (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLlm5ft-CxN9ue9V6JiKfzdDWLFw-h3trE_G33glEgm4z_dntj8JS3BO1AlDMZxTbVY50S6wIDuPvSiuVI1xblkNw'},
+      { name: 'Samolepka | TSM Kinguin (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLlm5ft7i1X4P-nbJtrL_mfQDfGle8v57dvTHDjw08itW3VzY36c3-RbFRyCJJzFrQC4RK5x9fnMbj8p1uJrxEt_Vs'},
+      { name: 'Samolepka | Virtus.pro (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFLnl4T06DFL_f2RbqtkLL6VXTORxe8i4OVvSivrxU50sGXXnomocy2SOg5yDMZ0ELFc5he9k9XiKaq8sHK5-C4b'},
+      { name: 'Samolepka | ESL One (speciální) | Katowice 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFL0jZrf_B1d4PuiJqI9dfPADDDAlr4htOdsSivhx011tjvQmdeqcn3DaVdxXMQlQrNcuxmm0oqwgDldCV4'}
+    ]},
+    { id: 'enfucapsule', name: 'Enfu Sticker Capsule', series: '49', release: '28. dubna 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk6vyofZtuIeCAG2uVj74k5uM9HXDnxh4ksGWGm42vdHrCPFVyWJQlRbZesRXuwNezMumxs1PAy9USfO4IHQ0', items: [
+      { name: 'Samolepka | Chabo', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xbkSRTylZPus3Nev_OraqU0JaHKXzOWx-pytORtH3_nwh92sDiHydurJHOfO1UlDMZuBbld1GsteY0'},
+      { name: 'Samolepka | Bombsquad', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xbiTxvkoZTv8CBI_uevbOprJaKWCj7JlL11teVqSnqywkojtjuBwo2sJC6XP1JyXJokQ7YMsUTsjJS5YFN12QZz'},
+      { name: 'Samolepka | Skulltorgeist', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xb0Sgj9kpD17ilO4_66Z7ZqJfmAGimSk-1z5ucwTX3nxkp35GjXm4n6In2ROAEkCZMmFuICthK5xtSyM-7h-UWA3I8OVHaR'},
+      { name: 'Samolepka | Guru', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xbgVA_k0MPmrXoLvaT5PaY8JqiSXzOSkLgg4LhrTSy1w0l-sjyGydj_eHmUOgE-SswnKSNmVCw'},
+      { name: 'Samolepka | Silent Ninja', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xbpSBP7n9i4r3Na7qX3OP1pdamWWWPAx7hz6ONvHHnqkEl05TyEzduoJ3OXbwchFNIuElpTM3yo'},
+      { name: 'Samolepka | Samurai', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xb0QBDkjJfpsyMC7PCtPPdveKiSCDGVwu8m5uVsSXm2xR505G_cn4r7IH-ROw8nX8BuBbldKbS20-w'},
+      { name: 'Samolepka | Skull Troop', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xb0Sgj9kpD16TBU4P2-JvA4IaSSCjXHmL5z6LA-Hiiywxtz42rTm4mpdimXZgInA5p3QLYOsxKm0oqw06BexQA'},
+      { name: 'Samolepka | Salute!', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xb0ThH1l5Pys3sMt6r4OvU-JqDHD2KTkuwls7M8F3C1xh9w5D7cyYv_eH2RbwF0D5ZuBbldWLSjpWk'},
+      { name: 'Samolepka | Spartan', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xb0URzjipfusydavPH5MfJud_HLW2TGwOwhsbY-Siq1xh904WyAy4yhdinBPwJ1XsRuBbldbYrlN8M'},
+      { name: 'Samolepka | Unicorn', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xbyTxTykYTusyQLuKKrMfVvefWSVjOVmeoi5OQ8HXrlxk4lsTvRztiodi2WZwMgDJduBbldKUWCLgw'},
+      { name: 'Samolepka | Skull Lil Boney', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xb0Sgj9kpD18StX7f2gbb0jJfGVCGSWmb504uIwS3Gwk0h0tTvRmYv_eC-Ubw91DMMkFOJctxHqlcqnab2p6h9d7A'},
+      { name: 'Samolepka | Zombie', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xb9ThDzl5Ouq3Ret6P_a_c7ePORVjSVkup3srk5SXm1kEQl5mzVm9_8dn-ePwchWYwwG7C1j_i3jw'},
+      { name: 'Samolepka | Unicorn (holografická)', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xbyTxTykYTuwipU4_3gbqI6ePPFXz7El7oktLc_TX-1xkt-6myAyo39eXueaQZ0CMZyFOZb5g74zIPJVgoj6Q'},
+      { name: 'Samolepka | Bombsquad (speciální)', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xbiTxvkoZTv8CBI_uevbJtrL_mfQD-TlOt14rdtG3HkzEQm42mEmdmtdHyXPQYiCpomF7FbshKxwdDkN7n8p1uJ3wwYy5k'},
+      { name: 'Samolepka | Silent Ninja (speciální)', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-vM26o5ldl55L47xbpSBP7n6nm8itXoaH-Pvc5JKfLXjbHlb0l57ZrTX_nxRly4GnVm4uhICjBPFUgXMNzR-YU8k7vUEjT4K4'}
+    ]},
+    { id: 'falchioncase', name: 'Falchion Case', series: '50', release: '26. května 2015', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fpWwI7Pb-P6Y5dvPEDGSSlrsh57U8HHHiwx5yt2-Dwo7_JSnCOw8oCJF0W6dU5dgrLNA1', items: [
+      { name: 'Galil AR | Rocket Pop', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0PG7V6NsLPmfD3Wv0e9kpOhqQyygqhEutDWR1Nf8eXzDP1InCMR3QucIshjrktexMOqz4QPcjo1Gz3qq2H9L5ylu4ugcEf1yh3Lp9zc'},
+      { name: 'Glock-18 | Bunsen Burner', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1a_s2pZKtuK6HLMWGcwONzo95rQzy2qhEutDWR1Nb7IC-TOw4hCZF5FOJe40W5lILlZLvktAHXiIJMyST_3XlIv3k94escEf1yWue1sjU', minFloat: 0.0, maxFloat: 0.8},
+      { name: 'Nova | Ranger', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSMvGdCWKC_uJ_t-l9ASvqxUhy6mWAy4v7dnuRZlJ0CpR2Q7Nbtxe7kNO1MOu37lSP2N1HzyXgznQe-r9EaTk'},
+      { name: 'P90 | Elite Build', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-V6lsM-SWHH6vzedxuPUnHyi1xE9xsGiDmdqpdnmRPwcgDZslRuAM40Trx93nNevj7gOPjdlGzzK-0H27CoeJJQ'},
+      { name: 'UMP-45 | Riot', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbQ5dc-GHnWfwPxJvOhuRz39lx8h4DnXw9f6cCiWbVNyXsYhF-RbsxK5m9LhMevmtVDeg4JAyyr3jDQJsHgJoZgLvA', minFloat: 0.0, maxFloat: 0.7},
+      { name: 'USP-S | Torque', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSI-WsG3SA_v5kv-Z7SjqgnAsYvzSCkpu3cH2eZgcgD5cmTOQK5BftlobvY-zk4gCN2I4UyX-s3XhI7S4_supXA71lpPNCDDeLhA', minFloat: 0.0, maxFloat: 0.46},
+      { name: 'FAMAS | Neural Net', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1a4s2oaalsM8-XAXOD_uJ_t-l9AX_lzB8ltmXcnoqvInjEPQEoC5AjELRY4Rm_lIDmM7zlsQ2L3YsQxHngznQe8yNao04', minFloat: 0.0, maxFloat: 0.6},
+      { name: 'M4A4 | Evil Daimyo', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0P_6afBSJeaaAliUwOd7qe5WQyC0nQlp4GqGz42ucCqXaQMhDpd4R-AIsxK6ktXgZePltVPXitoRn3-tjCgd6zErvbijVJZd2Q', minFloat: 0.0, maxFloat: 0.52},
+      { name: 'MP9 | Ruby Poison Dart', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_C9k4uL3V6pkNOKcCWKe_uJ_t-l9AXzhkEsm527Xy9r_JynEP1IiWJZ3FOYP4xTqmtznNO-34VCKiYJExSjgznQeVzj6siQ', minFloat: 0.0, maxFloat: 0.5},
+      { name: 'Negev | Loudmouth', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1Y-s2gbaNoNs-SAGmZyed6sfVmXRa_nBovp3PXzousdnrBbgEiX5QjTbICsEa7ktTnNOPrsQLW3YoQyS33jygbuHts_a9cBgJfeVOc', minFloat: 0.14, maxFloat: 0.65},
+      { name: 'P2000 | Handgun', rarity: 'purple', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0PO_V7Q_cKDDMWWfzuNJvOhuRz39xE53sWncnN2vcnKeaQAlA5cjRuUL4RTqxN3nP-ix4QCLjIIQyHn2iTQJsHgxqMM--w'},
+      { name: 'CZ75-Auto | Yellow Jacket', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1Y-s2tcvM4Ic-QBmaD1edstfNWQyC0nQlptjjRn9z8cHjBbgB2WccmFOAPukbux9zlP77nsQXf3YxFzSX9iy9AvDErvbgg0Q8tFg'},
+      { name: 'MP7 | Nemesis', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_jdk4uL5V6poLeOaHVicyOl-pK87Hyu1kR5_5j_WntigcXmXOlBzCZUjQeMLtBG6x9HuNrvl4gCP2I1B02yg2TXalB0S', minFloat: 0.0, maxFloat: 0.32},
+      { name: 'SG 553 | Cyrex', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4c8-QF3WV2dF6ueZhW2frlhl14W7Xzt6geXqQP1N0CMRyQuFY5kHsx9HmZejq7wPei91AzCT_kGoXueC0Dzdv'},
+      { name: 'AK-47 | Aquamarine Revenge', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSI_-GHGaXxNF3vPVWQyC0nQlp4WvVzturJ3qVb1B1DMd3Q7EO5xW_l9O2ZOLg5gyP2N9BxST_jXwY7TErvbj-FmM1dA'},
+      { name: 'AWP | Hyper Beast', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk7uW-V6x0MPWBMWWVwP1ij-1gSCGn20pxtm_WzNuoeHKeaFAnCZUiTe5bt0HqxofmZOrm5Q2IjoMQzS_5iShXrnE8NzWs__c'},
+      { name: '★ Nůž Falchion ★', rarity: 'gold', image: 'assets/image/rsi_falchion.png', knives: 'falchion'}
+    ]},
+    { id: 'eslcol15challengers', name: 'ESL One Cologne 2015 (Vyzyvatelé – speciální)', series: '52', release: '14. srpna 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk6uGia6thL_edCzXAkLtJ4LMnHnDixx5xsWXUzY2tcX-QZwdzAsNzEeZYtkGxkoW0Yri35wXd2YsXyDK-0H1NbZ4ILQ', items: [
+      { name: 'Samolepka | Renegades (speciální) | Kolín nad Rýnem 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUviTxj2n5Ll7h1d4PuiJqFoJKLCXzLJmO9z5eI6Giq3zE4k522ByYqgcH6VZ1BxDJAlQ-8JtBGm0oqwPdO9OOM'},
+      { name: 'Samolepka | Team Kinguin (speciální) | Kolín nad Rýnem 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpVLuTxrkl5jf-y1S47z6bfY6IqKXVj-Wluwj4bg6FnrglE10t2XWwt74J3LEa1d0CsN1QuIOrFDmxW7S0_Na'},
+      { name: 'Samolepka | Team eBettle (speciální) | Kolín nad Rýnem 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpVzlRAnlkpPf-y1S47yoOvVrJqiRXTKUlrd14OVtTS3kw0h242_Rz4mpJyqUPVVxW5JxQbFbrFDmxZVShmDl'},
+      { name: 'Samolepka | Cloud9 G2A (speciální) | Kolín nad Rýnem 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpVrrTgj1x6nm8itXoab5bPU5dqaSVzGWkbYh6bNoHnDklx9xsWXcwo2rIy2ePAAgDpF2ELYU8k7vfcZyPOE'},
+      { name: 'Samolepka | Team Immunity (speciální) | Kolín nad Rýnem 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpU3iQBD4k5v18ytP9s2oZ61hbvPKWDTBkex0sudqGSzgwkx1tWXVnt_9dCqTPAVzXMR0F7QDsUbqkNP5d7S10jMU2ho'},
+      { name: 'Samolepka | Flipsid3 Tactics (speciální) | Kolín nad Rýnem 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpV_rSA3il5LlwiRU5v7gOaA9daWRDGbAkrhysuBvHHHqlhwj4TmEyN-seC-UagUnCMBzEeUJug74zINL4x9aEQ'},
+      { name: 'Samolepka | Titan (speciální) | Kolín nad Rýnem 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpU3uVRz_oZDv9C4VvqT-O6Vrc6PFVjWWwu0gs-I-Ti_hkE0j52TQw4uoc3-TOAEmX8d4QflK7Ectp--aiQ'},
+      { name: 'Samolepka | Counter Logic Gaming (speciální) | Kolín nad Rýnem 2015', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpVrrRiL3kZ_ss3Fe6fD9aaE7c_LKCmLAwugm5bg_Hy_llh8l523Rm42hIC2WPwBxCMNuBbldhIFmC88'},
+      { name: 'Samolepka | ESL (speciální) | Kolín nad Rýnem 2015', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpVz0TSL3kZ_ss3sJ7qT5OPI4JKXCVzaUmOwjtuQ7TSy1wxhz62vXm92oJXqSbAFxC5tuBbldgfgpO_M'}
+    ]},
+    { id: 'col15cloud9agc', name: 'Autograph Capsule | Cloud9 G2A | Kolín nad Rýnem 2015', series: '72', release: '14. srpna 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU6lp684nxuAm2FCLykpn1-XsVvvOrOvRuJafLDWHDlOx15uQxS3jlkU91sGTWzI3_JH6XPwV0A8dzRvlK7EchNMAfgA', items: [
+      { name: 'n0thing | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL_kYLo9CxcoaavOqVrd_LKWD7Ikb8i6LQ9GXCwxkR_422HyY6tcy-XbAEgDJZ0F-MU8k7v25_25yQ'},
+      { name: 'seang@res | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLimZfy-DEV6qv-avM7d6bADWbDk7Yls7Q-Hy22kx9_sW6ByNj9IimVawAjCsRwQvlK7Edq4sQL6w'},
+      { name: 'shroud | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLiloTv6CYVuqL_bf1vJaPAXzWVw7sv4eRoHnu1kExx4j7Vm9mrdyqXaQN1CcElRflK7EeB_-D34A'},
+      { name: 'freakazoid | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL3jJPh9iNB4PuqJqFuIfHGXWSSkutz4eA7GS3qkU5wtTzUyoyvI3qVbAYoXJBxRrIK4UOm0oqwUFWoPiw'},
+      { name: 'Skadoodle | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLilZfk8i1f4_fgOPdpJvPDXGHGx7wn5OBoTX7qxUV15GqHztiuJS3Bb1RxDZV3F-AKsg74zIMzHdpgGA'}
+    ]},
+    { id: 'col15virtusproagc', name: 'Autograph Capsule | Virtus.Pro | Kolín nad Rýnem 2015', series: '64', release: '14. srpna 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU6lp684nxuAm2FCLnl4T06DFL_f3gbqA8JKmVWWbHx74l5LQxTXriwhl3sWmAydaqdHrEa1cmCsYhReILuw74zIMIEvTe0w', items: [
+      { name: 'NEO | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL_m5mu-CcL6qX6MfVvcfaWDGWSlb8l4rg6Fyyxxht_5z7Vyo79cC-RaQEpCIwwG7BwgOeIRQ'},
+      { name: 'pashaBiceps | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLhn4Xo_GwMu6L_P_I1eKHGWTLFmb4u47ZrHCjqkBh-42XUy9irdCnCalQgD5omW6dU5b4b27BP'},
+      { name: 'TaZ | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLln4yu-CFftqv7afxucfPCCDLElrkmteBrSS2wwUwktmWDm9ygdimeO1cpW4wwG7Biv2gIrg'},
+      { name: 'Snax | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLikJf4syMIvPf6Pvw4IvaQWzXAlLYm5blsGCjqxE0j4WSByon_dn6fb1d0DMduBbldYXl0d2Y'},
+      { name: 'byali | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLzh5fs9GwOt6WqMfE4I6nKCzCUkLx35eA7GXm2xEx2tmyBnNyodS-fZgEjApAjW6dU5XVvcrYb'}
+    ]},
+    { id: 'col15luminosityagc', name: 'Autograph Capsule | Luminosity Gaming | Kolín nad Rýnem 2015', series: '58', release: '14. srpna 2015', type: 'capsule', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU6lp684nxuAm2FCL9i5vp8y1I5ua3b6VgKf6UQGbDkLsltrQ9SS_ilhh15mqAy42hJH6VaQckDZQjQOICtxLskYHnZOr8p1uJylA7Bnc', items: [
+      { name: 'FalleN | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL3n5rs-CwVuqKtMfU1dvOWXj_FluogtrI_GX_hlE9_4znVn4usJ36RZg9yCZclRflK7EcVC1scNw'},
+      { name: 'steel | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLiipPl8WwN7qb2OvQ-JfSQDT-Vkeovtrc6H3_jzRwmsmzQyI6pcnvDaA8oW5J0W6dU5frV9Y0p'},
+      { name: 'fer | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL3m4SuqHpd6aWqMKdocPGWXzaUkLt057Y7Gy22wkwl5WSGy4uhJ3PCOwNzCIwwG7Dnmtw88w'},
+      { name: 'boltz | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLzkZr052xf7fD7Pv08dafEDTDEmOt16LQ6Tirmx0l_tWjWytqqc3nEZ1AmWcdxW6dU5cWKSghV'},
+      { name: 'coldzera | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLykZrk5ydJ7rz3O_JpIaWQVjbFmblztrA7SXC1xU8ktzjWzt-tcCmUbwB1ApZwQ-NZrFDmxaiJHW2Z'}
+    ]},
+    { id: 'col15fnaticagc', name: 'Autograph Capsule | Fnatic | Kolín nad Rýnem 2015', series: '57', release: '14. srpna 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU6lp684nxuAm2FCL3kJf09CEVvqH_bqY7IamSWTPDkbkk6bU7Girkx04i5G2Ewtr_JHuSPwEpCpdwTPlK7Ed74F163Q', items: [
+      { name: 'pronax | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLhjJnu_DoVuaqrPPA8ePbBWWLBxL9y47c4F3vikxt34DmAn4mhcHqQbFd1XsZxFPlK7EdxTEkePg'},
+      { name: 'flusha | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL3koPz9SMVv6Csbvw4JPTKVjfCkbcgtuc8Gyvhl0kksm7cyN2tdn6TagJ0W5F4R_lK7Ef9iQdlxA'},
+      { name: 'JW | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL7idi3qiFdt6r4OqJsJqOXXmTElegisuM8Sn3qwk4m5T_dyNupci6WaAAmFNIuEtwHbIuH'},
+      { name: 'KRIMZ | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL6jJ_t52wOv6qravA-dPXHWzLIkOtw4eM_F33glhh34j6Bzd__JX-fbQN1Xpt3W6dU5WO2oUh7'},
+      { name: 'olofmeister | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL-kpnm8CdS_OareupsIqTLVjOTkr9157QwF3zgzEt_6mTRmI2tcHmQOAdyXJV5R-UDsUaxjJS5YDqYhyHR'}
+    ]},
+    { id: 'col15kinguinagc', name: 'Autograph Capsule | Team Kinguin | Kolín nad Rýnem 2015', series: '69', release: '14. srpna 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU6lp684nxuAm2FCL6l5jn6CtVoaCsPvFodvOQXmPIxex35rNtGX7klBx15mXcz4z6J3OXPAYjCsByFLYU8k7vHXJSwl8', items: [
+      { name: 'dennis | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL1m5ju9DEVt_Csaadvd6jHV2GUx-p1tbg7F32wkUQi4miHm976dXmVbgVxC8AmRflK7EeZE7VyOA'},
+      { name: 'ScreaM | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLinYTl_C8V6_b8afE1dvbAWjORlehzsuM6THzhlElz4jzSyYr7IniSagchC8QhRflK7EfMHtp2Ug'},
+      { name: 'rain | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLjn5_usyQI66v-afdpefbLXDLClOsi57FqGH7gwksi5GrQzIqhJC2fbgIgWJZuBbldC2K0v0M'},
+      { name: 'Maikelele | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL8n5_r-C5e4_fgbvQ6c6HBDTbGmboh5uMwHCjil0x3tTiHmYmsdXuWaQ8nC5BwE-8Ktg74zIPIec5ntg'},
+      { name: 'fox | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL3kY6urnVf66r4O_Q9c6jKDWKUxb9wtLRoSyvrlkgitjzTnN-odnPEbFJxWIwwG7AJk81Anw'}
+    ]},
+    { id: 'col15nipagc', name: 'Autograph Capsule | Ninjas in Pyjamas | Kolín nad Rýnem 2015', series: '60', release: '14. srpna 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU6lp684nxuAm2FCL_l5jq_DFS4eK3YqVgIePdXj_Bmbh04rE5SXHrw0tx52zXy476In6TagchD5JyRbEO5xe6ldC1PvSiuVKWe6bDMg', items: [
+      { name: 'Xizt | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLpl4z0s3Na7PT_aaZuJvXCWzTHlO0utLdqS361wkgk6jjcm9-odXmWbQIiCJduBbld2PoMKew'},
+      { name: 'f0rest | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL3kYTl7jYV7av4PqA0JKGRWjaWmepw4eJoTSzgxk5z4juBzN2scSmWbAAkApUlRPlK7EcRxa76LQ'},
+      { name: 'GeT_RiGhT | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL2m4Ly9CVT-7z-aqZpIqPAWGGSwuhws-c9GnHkwU4j42qEzIuscCmfZgAnXJEkQuIMrFDmxbyjcAX0'},
+      { name: 'friberg | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL3jJ_i-DBcoaGsa_Q0IafGWzbIx7og5-c7Gi3mkU9ztjvXztf9ci3FZwUkWZZ1ROMU8k7vMGZ90hM'},
+      { name: 'allu | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiLwkpr1s3pf6qv2avQ4cfKSWzLBl-x0tLk_TH2wl0Qj4G7QmNf6cCnDbAMlC5ZuBbldtIrgLKA'}
+    ]},
 
     // KOLEKCE
     { id: 'assaultcol', name: 'Kolekce Assault', release: '14. srpna 2013', type: 'collection', image: 'assets/image/collection/assault.png', items: [
@@ -1663,6 +1480,40 @@ const DATA = {
       { name: "Skládací nůž | Slaughter", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d4_u-V6VgH-qWDHWR_uJ_t-l9AXrrl0905Gjcm4uqcSmWblNzD8Z2QrZbtkK5ldTmY-rqtAba399BzyjgznQejSHMqZo", minFloat: 0.01, maxFloat: 0.26},
       { name: "Rozparovací nůž | Slaughter", rarity: "red", image: "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1c-uaRaalSOvWRHGavzedxuPUnGH7hxk8jtWyByt-peC6RPQAoXJF0FO9Zt0bpw9zuMrjg5QLXjo1BnDK-0H35txVa0w", minFloat: 0.01, maxFloat: 0.26},
       { name: "Karambit | Slaughter", rarity: "red", image: "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SA1iKxOxksd5lRi67gVNx5GzQztqrdH-ea1AjApImFuEJ5EO5wYHmP-2w7gGLgowTz3r5jCwY8G81tFw9kDjw", minFloat: 0.01, maxFloat: 0.26}     
+    ],
+
+    "chroma": [
+      { name: "Bajonet M9 | Damascus Steel", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMWaB_up3veB6TDygqkR3jDGMnYftb3-ePQEjCMQkQuUDsUW7lN22Ze_mtADa3o0RyH3_hyMY6CY94b0GAPU7uvqAmF9xxno", minFloat: 0.0, maxFloat: 0.5},
+      { name: "Bajonet | Damascus Steel", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzn4_v8ydP0PO_V6BsLfGADXKD_uJ_t-l9ASu2zE904DnQyY34JSrGPQAmDsdxQ7MKsRK7k9CxNLnnswDY2tpNmCzgznQe52NAd0k", minFloat: 0.0, maxFloat: 0.5},
+      { name: "Skládací nůž | Damascus Steel", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d4_u-V6V8H_SSA2aDwvtlj-1gSCGn20lx52ncwtn_eXyQb1JzXJR3FOEPsRO5xoDmM77n7gHeiIpCyC6tjyhXrnE8njKBWnQ", minFloat: 0.0, maxFloat: 0.5},
+      { name: "Rozparovací nůž | Damascus Steel", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1c-uaRabVSJPGeD3ST1P1JvOhuRz39xhl06zvWmYn9dnuePVVzXJYlQeFZ4Bfpk4XuY-PnsgfcitpDyi_4iTQJsHiloP4S4w", minFloat: 0.0, maxFloat: 0.5},
+      { name: "Karambit | Damascus Steel", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SH1iUwON3o-J8XBa_nBovp3PUmdetJHyUblInCZF5TeID40bum9znMeKwtleKi4pCyC-q2CofuCxq_a9cBl9itWvl", minFloat: 0.0, maxFloat: 0.5},
+      { name: "Bajonet M9 | Doppler", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMWad_up5oPFlSjuMhRUmoDjWpYPwJiPTcFBzDcQhFuJf4BiwmtzmP7iw5QXc3YsUzn6oiikauCg44uoEAqQl_6bJz1aWfAW50lg", minFloat: 0.0, maxFloat: 0.08},
+      { name: "Bajonet | Doppler", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzn4_v8ydP0POjV6BiMOCfC3Wv0eZ3o-Q6cCW6khUz_T_TydyheXmVZwYoXpR5R-YIsRe6lIazP-7h4Qzbj4hEzSyq3HgY7ix1o7FVS1Hc8lA", minFloat: 0.0, maxFloat: 0.08},
+      { name: "Skládací nůž | Doppler", rarity: "red", image: "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d4_u-V6VgH_ScHnecxPxJoOloXCzgqhEutDWR1N79dy2RbgUhCZZ4Q-ALukS4m9PlNbi25wLfjo5GnyT7jSNJ7Cc4suYcEf1yV0vEDxY", minFloat: 0.0, maxFloat: 0.08},
+      { name: "Rozparovací nůž | Doppler", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1c-uaRaalSJP-DHmuV09FmuOB6SnqMmRQguynLw96hIC2VagV0W5dzQ7VYsBiwldyyZO3m5VaLiN8WxXmt33sd5y5j4vFCD_RERtuZEw", minFloat: 0.0, maxFloat: 0.08},
+      { name: "Karambit | Doppler", rarity: "red", image: "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SA1iUzv5mvOR7cDm7lA4i5wKJk4jxNWXCaQQnA5B5Q-8O4xnpltazNri37gGPgtlDzin7iXhN6y44tb0GUaYg5OSJ2A0QBM1-", minFloat: 0.0, maxFloat: 0.08},
+      { name: "Bajonet M9 | Marble Fade", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Wts2sab1iLvWHMWad_uN3ouNlSha1lBkijDGMnYftb3OTbVRyD8Z1RrNctkS6kobkZLzi7gTW2NpFxH33hi9Nuno65uxXAqs7uvqA7lyFHH4", minFloat: 0.0, maxFloat: 0.08},
+      { name: "Bajonet | Marble Fade", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzn4_v8ydP0POjV6lsMvKfC1iWwOpzj-1gSCGn2xhysWrTn42rdH2SawQnDccjE-ELsxa-mtTjMejr7wXZgoxFn3n2hnhXrnE8oMvxYMA", minFloat: 0.0, maxFloat: 0.08},
+      { name: "Skládací nůž | Marble Fade", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d4_u-V6VgH_2SHGWcxNFwseVscCW6khUz_WqBnt2qIyrBPwMoCcN1R7YCtRa7kofhY7nk4gzajNhEzyT43HhK6CZ1o7FVaZCrJoQ", minFloat: 0.0, maxFloat: 0.08},
+      { name: "Rozparovací nůž | Marble Fade", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1c-uaRaalSLfGBDGuV_uh3tORWQyC0nQlp4TzTnNz_cHifawAiW8QjTe8Lu0K9w9HjY77m4lTXjI1FyCz9hnxBvDErvbgdMZDtHA", minFloat: 0.0, maxFloat: 0.08},
+      { name: "Karambit | Marble Fade", rarity: "red", image: "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1Q7uCvZaZkNM-SA1idwPx0vORWSSi3kCIrujqNjsGveH2RaVRxX5ohEe4Juhawm4fiM-ji4APf2YMXmSz_hyoduytv4uhWT-N7rfLHGBJ4", minFloat: 0.0, maxFloat: 0.08}
+    ],
+
+    "falchion": [
+      { name: "Falchion | Boreal Forest", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-bF1iWzvxzo_VWTSahkBwrjDGMnYftbyjDPVQgCJEhELMOtRG9mtfkP-jr7wyMjoMWny2vjSxMvCc9suxWAqU7uvqAOEaxeJw", minFloat: 0.06, maxFloat: 0.8},
+      { name: "Falchion | Urban Masked", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-AHliEwP5zj_R7TSi9qhEutDWR1IqtI3_EOgYpC5EmQe5esha7kdHnPu3m4gTdg4MRxC6q2yxO6ik-67scEf1yx78TVSg", minFloat: 0.06, maxFloat: 0.8},
+      { name: "Falchion", rarity: "red", image: "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XuWbwcuyMESA4Fdl-4nnpU7iQA3-kKnr8ytd6s2oaahuKPmcACmSlL4u5uVqG37klhh24DnUytaqJXKQbgcmX5RyF-4Puha8xofmZejg-UWA3FLkEz9H"},
+      { name: "Falchion | Night", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-AAVieyOl-pN5lRi67gVN35jjcmNmqcSrDPAR2ApMhQ7UDsBmwwNfvZL_r5wHcgoNFynj-2y9B8G81tDvvgv8m", minFloat: 0.06, maxFloat: 0.8},
+      { name: "Falchion | Stained", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-SH1iWzvx1teVWQyC0nQlp4G-BnNeqc3KVaAAlDJomEOEI4BC4w4W2NLm0tlHWio0XnH332ilM6DErvbhTfwMZNQ"},
+      { name: "Falchion | Scorched", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-AHliUwP5mvORWQyC0nQlpsG2Bmdv_cS7DOwIoDJB4F7MPsBHtkoDmZri25APZjYpNni_3higbvDErvbjw_sgWtw", minFloat: 0.06, maxFloat: 0.8},
+      { name: "Falchion | Fade", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-SD1iWwOpzj-1gSCGn20l-tmjVmIqhdHmWa1AkCJRyFuUItBW9wNTmY7jh5ADa3o5Fy3-sinhXrnE8OtZmGks", minFloat: 0.0, maxFloat: 0.08},
+      { name: "Falchion | Slaughter", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-SA1iKxOxksd5lRi67gVMhsWvXnIurc36UP1RzWJB4QbYCsBC-xoC0N-3gtVHY2N8XmCT_2isb8G81tLxG9DyC", minFloat: 0.01, maxFloat: 0.26},
+      { name: "Falchion | Case Hardened", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-SH1ifyOJztN5lRi67gVMi4z-Hz96tcSiUblcoA5tyTONZsxG4wdPjZLvg4Q3ej99Ezyr2jS1L8G81tJVww3hv"},
+      { name: "Falchion | Safari Mesh", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-AHlidxP1-j_VoQRa_nBovp3Pcwtv7dyqUPw5yDZN5FOAIu0Pqw4fmPuu07gSIiI5Fzy323Xga7C9u_a9cBhYueYQh", minFloat: 0.06, maxFloat: 0.8},
+      { name: "Falchion | Blue Steel", rarity: "red", image: "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-SH1iSzftztN5lRi67gVNxsT7Tntmpdi-XPQAmWJJ5QuRYsBa7loe2P-7lsVTZjtkUnyz_inhK8G81tNS01icZ"},
+      { name: "Falchion | Crimson Web", rarity: "red", image: "https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-bF1iHxOxlj-1gSCGn20t242-Eno34cC6SOgYoCZZzE-JesxawkIG0Pry24lCKj4IRzn-th3xXrnE8QWIt39g", minFloat: 0.06, maxFloat: 0.8},
+      { name: "Falchion | Forest DDPAT", rarity: "red", image: "https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL6kJ_m-B1d7v6tYK1iLs-bF1iUxf53pN5lRi67gVMksWuHntutdi_Cb1IlCZFwROYMuxmxloGyY77msQCNiNhNm3j-2CIa8G81tBGTV0lI", minFloat: 0.06, maxFloat: 0.8}
     ]
   },
 
@@ -1910,48 +1761,52 @@ drawItem() {
     }
   }
 
-  async spin(winner) {
-    const winIdx = 60;
-    
-    // Příprava předmětů
-    const commonPool = state.activeCase.items.filter(item => item.rarity !== 'gold');
-    const poolToUse = commonPool.length > 0 ? commonPool : state.activeCase.items;
+async spin(winner) {
+  const winIdx = 60;
+  const commonPool = state.activeCase.items.filter(it => it.rarity !== 'gold');
+  const poolToUse = commonPool.length > 0 ? commonPool : state.activeCase.items;
 
-    // Naplnění spinneru předmětama
-    for (let i = 0; i < 100; i++) {
-       this.items[i] = this._getFillerItem(poolToUse);
-    }
-
-    this.items[winIdx] = winner;
-
-    // Animace spinneru po roztočení
-    const target = winIdx * this.slotW - (this.canvas.width / 2) + (this.slotW / 2) + (Math.random() * 60 - 30);
-    const start = performance.now();
-    this.duration = Math.floor(Math.random() * (9500 - 8500 + 1)) + 8500;
-
-    return new Promise(res => {
-      const step = (now) => {
-        const p = Math.min((now - start) / this.duration, 1);
-        const ease = 1 - Math.pow(1 - p, 3);
-        this.offset = ease * target;
-
-        const curIdx = Math.floor((this.offset + this.canvas.width / 2) / this.slotW);
-        if (curIdx !== this.lastTickIdx) {
-          audio.playTick(this);
-          this.lastTickIdx = curIdx;
-        }
-
-        this.draw();
-        if (p < 1) {
-          this.raf = requestAnimationFrame(step);
-        } else {
-          this.raf = null;
-          res(winner);
-        }
-      };
-      this.raf = requestAnimationFrame(step);
-    });
+  for (let i = 0; i < 100; i++) {
+    this.items[i] = this._getFillerItem(poolToUse);
   }
+  this.items[winIdx] = winner;
+
+  const target = winIdx * this.slotW - (this.canvas.width / 2) + (this.slotW / 2) + (Math.random() * 60 - 30);
+  const start = performance.now();
+  this.duration = 8500 + Math.random() * 1000;
+
+  return new Promise(res => {
+    const step = (now) => {
+      // Přeskočení
+      if (state.isSkipping) {
+        this.offset = target;
+        this.draw();
+        this.raf = null;
+        return res(winner);
+      }
+
+      const p = Math.min((now - start) / this.duration, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      this.offset = ease * target;
+
+      const curIdx = Math.floor((this.offset + this.canvas.width / 2) / this.slotW);
+      if (curIdx !== this.lastTickIdx) {
+        audio.playTick(this);
+        this.lastTickIdx = curIdx;
+      }
+
+      this.draw();
+
+      if (p < 1) {
+        this.raf = requestAnimationFrame(step);
+      } else {
+        this.raf = null;
+        res(winner);
+      }
+    };
+    this.raf = requestAnimationFrame(step);
+  });
+}
 }
 
 /** -------------------------
@@ -1986,6 +1841,7 @@ const router = {
     window.scrollTo(0, 0);
     if (view === 'home' && state.isSpinning) {
       state.isSpinning = false;
+      state.isSkipping = false;
       state.instances.forEach(s => s.stop());
 
       document.getElementById('openBtn').disabled = false;
@@ -1997,7 +1853,7 @@ const router = {
       if (state.activeCase) {
          audio.playMenuBack();
       }
-      handleFilterChange(); 
+      handleFilterChange();
     }
 
     document.getElementById('view-home').style.display = view === 'home' ? 'block' : 'none';
@@ -2068,6 +1924,7 @@ const router = {
       this.initSpinners();
       this.renderDropTable();
     }
+    updateCounterUI();
   },
 
   initSpinners() {
@@ -2191,72 +2048,70 @@ function resetFilters() {
 }
 
 async function handleOpen() {
-  if (state.isSpinning) return;
+  if (state.isSpinning) {
+    state.isSkipping = true;
+    return;
+  }
+
   audio.playStart();
   state.isSpinning = true;
+  state.isSkipping = false;
 
-  // Particles při otevření
-  const allSpinners = document.querySelectorAll('.spin-canvas');
-  allSpinners.forEach(spinner => {
-    const rect = spinner.getBoundingClientRect();
-    particles.spinBurst(
-      rect.left + rect.width / 2, 
-      rect.top + rect.height / 2, 
-      rect.width, 
-      rect.height * 0.3
-    );
-  });
-  
-  document.getElementById('openBtn').disabled = true;
+  const openBtn = document.getElementById('openBtn');
+  openBtn.innerText = "Přeskočit";
+  openBtn.classList.add('btn-skip');
+
   if(document.getElementById('incBtn')) document.getElementById('incBtn').disabled = true;
   if(document.getElementById('decBtn')) document.getElementById('decBtn').disabled = true;
 
-  // Reset spinneru
+  const rolledWinners = [];
   const promises = state.instances.map(s => {
     s.reset();
-    const win = s.drawItem(); 
-    return s.spin(win);
+    const winningItem = s.drawItem();
+    rolledWinners.push(winningItem);
+    return s.spin(winningItem);
   });
 
-let results = await Promise.all(promises);
+  try {
+    await Promise.all(promises);
 
-  results = results.map(item => {
-    if (item.rarity === 'gold' && item.knives && DATA.knifeCollections[item.knives]) {
-      const collection = DATA.knifeCollections[item.knives];
-      const randomKnife = collection[Math.floor(Math.random() * collection.length)];
-      
-      const wasStatTrak = item.isStatTrak === true;
+    let results = rolledWinners.map(item => {
+      if (item.rarity === 'gold' && item.knives && DATA.knifeCollections[item.knives]) {
+        const pool = DATA.knifeCollections[item.knives];
+        const randomKnife = pool[Math.floor(Math.random() * pool.length)];
+        const wasStatTrak = item.isStatTrak === true;
+        const min = randomKnife.minFloat !== undefined ? randomKnife.minFloat : 0;
+        const max = randomKnife.maxFloat !== undefined ? randomKnife.maxFloat : 1;
+        
+        return { 
+          ...item, 
+          ...randomKnife, 
+          isStatTrak: wasStatTrak,
+          float: Math.random() * (max - min) + min,
+          pattern: Math.floor(Math.random() * 1000) + 1,
+          name: wasStatTrak ? `StatTrak™ ${randomKnife.name}` : randomKnife.name
+        };
+      }
+      return item;
+    });
 
-      const min = randomKnife.minFloat !== undefined ? randomKnife.minFloat : 0;
-      const max = randomKnife.maxFloat !== undefined ? randomKnife.maxFloat : 1;
-      const generatedFloat = Math.random() * (max - min) + min;
+    if (!state.isSpinning) return;
 
-      return { 
-        ...item,
-        ...randomKnife,
-        isStatTrak: wasStatTrak,
-        float: generatedFloat,
-        name: wasStatTrak ? `StatTrak™ ${randomKnife.name}` : randomKnife.name
-      };
-    }
-    return item;
-  });
-
-  if (!state.isSpinning) return; 
-
-  state.lastResults = results;
-  audio.playReveal();
-  showResultsModal();
-  state.lastResults.forEach(r => addHistory(r));
-  
-  state.isSpinning = false;
-
-  // Zapnutí tlačítek
-  document.getElementById('openBtn').disabled = false;
-  if(document.getElementById('incBtn')) document.getElementById('incBtn').disabled = false;
-  if(document.getElementById('decBtn')) document.getElementById('decBtn').disabled = false;
-  
-  if (typeof updateCounterUI === 'function') updateCounterUI();
+    state.lastResults = results;
+    audio.playReveal();
+    showResultsModal();
+    state.lastResults.forEach(r => addHistory(r));
+    
+  } catch (err) {
+    console.error("Chyba při otevírání:", err);
+  } finally {
+    state.isSpinning = false;
+    state.isSkipping = false;
+    updateCounterUI();
+    
+    if(document.getElementById('incBtn')) document.getElementById('incBtn').disabled = false;
+    if(document.getElementById('decBtn')) document.getElementById('decBtn').disabled = false;
+  }
 }
 
 function addHistory(it) {
@@ -2348,8 +2203,6 @@ function showResultsModal() {
   const isPackage = state.activeCase && state.activeCase.type === 'package';
   
   list.innerHTML = state.lastResults.map(r => {
-    // 1. POUŽITÍ JIŽ VYGENEROVANÉHO FLOATU (pokud existuje z handleOpen)
-    // Pokud r.float neexistuje (u běžných zbraní), vygenerujeme ho podle tvé logiky
     let wear = r.float;
     let pattern = r.pattern || Math.floor(Math.random() * 1000) + 1;
 
@@ -2388,7 +2241,6 @@ function showResultsModal() {
        else if (r.rarity === 'red') rarityLabel = 'Mimořádná';
     }
 
-    // 2. ÚPRAVA PODMÍNKY: Nože (zlato) by MĚLY mít float info i v bednách, kde jsou kapsle
     const isKnife = r.rarity === 'gold' || r.name.includes('★');
     const showWear = !isCapsule || isKnife;
 
@@ -2445,9 +2297,26 @@ function showResultsModal() {
 }
 
 function updateCounterUI() {
-  document.getElementById('countVal').innerText = state.openCount;
-  document.getElementById('decBtn').disabled = state.openCount <= 1 || state.isSpinning;
-  document.getElementById('incBtn').disabled = state.openCount >= 5 || state.isSpinning;
+  const btn = document.getElementById('openBtn');
+  const count = state.openCount;
+  
+  if (!state.isSpinning) {
+    btn.classList.remove('btn-skip');
+    btn.disabled = false;
+
+    let buttonText = "";
+    if (count === 1) buttonText = "Otevřít bednu";
+    else if (count >= 2 && count <= 4) buttonText = `Otevřít ${count} bedny`;
+    else buttonText = `Otevřít ${count} beden`;
+    
+    btn.innerText = buttonText;
+    
+    if (document.getElementById('decBtn')) document.getElementById('decBtn').disabled = (count <= 1);
+    if (document.getElementById('incBtn')) document.getElementById('incBtn').disabled = (count >= 5);
+  }
+  
+  const countVal = document.getElementById('countVal');
+  if (countVal) countVal.innerText = count;
 }
 
 function closeModal() {
@@ -2462,8 +2331,21 @@ function closeModal() {
 /*-------------------------
 INIT
 ------------------------- */
-document.getElementById('incBtn').onclick = () => { if (!state.isSpinning) { state.openCount = Math.min(5, state.openCount + 1); updateCounterUI(); router.initSpinners(); } };
-document.getElementById('decBtn').onclick = () => { if (!state.isSpinning) { state.openCount = Math.max(1, state.openCount - 1); updateCounterUI(); router.initSpinners(); } };
+document.getElementById('incBtn').onclick = () => { 
+  if (!state.isSpinning) { 
+    state.openCount = Math.min(5, state.openCount + 1); 
+    updateCounterUI();
+    router.initSpinners(); 
+  } 
+};
+
+document.getElementById('decBtn').onclick = () => { 
+  if (!state.isSpinning) { 
+    state.openCount = Math.max(1, state.openCount - 1); 
+    updateCounterUI();
+    router.initSpinners(); 
+  } 
+};
 document.getElementById('openBtn').onclick = handleOpen;
 document.getElementById('muteBtn').onclick = (e) => { audio.muted = !audio.muted; localStorage.setItem('muted', audio.muted); e.target.innerText = audio.muted ? '🔇 Zvuk vypnutý' : '🔈 Zvuk zapnutý'; };
 document.getElementById('searchInput').addEventListener('input', handleFilterChange);

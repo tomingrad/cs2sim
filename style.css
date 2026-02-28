@@ -137,16 +137,16 @@
               0 0 24px rgba(0, 174, 255, 0.75);
   }
 
-  #openBtn.btn-skip {
-  background-color: #E94B4B !important;
-  border-color: #E94B4B !important;
+  .btn-red {
+  background-color: #EE4444 !important;
+  border-color: #EE4444 !important;
   color: #fff !important;
   box-shadow: 0 0 15px rgba(233, 75, 75, 0.3);
 }
 
-  #openBtn.btn-skip:hover {
-  background-color: #ff5c5c !important;
-  box-shadow: 0 0 25px rgba(233, 75, 75, 0.6) !important;
+  .btn-red:hover {
+  background-color: #EE4444 !important;
+  box-shadow: 0 0 25px rgba(238, 68, 68, 0.6) !important;
   transform: translateY(-2px);
 }
 

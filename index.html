@@ -2699,45 +2699,57 @@ document.getElementById('muteBtn').onclick = (e) => { audio.muted = !audio.muted
 document.getElementById('searchInput').addEventListener('input', handleFilterChange);
 
 document.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    return;
+  }
+
   if (e.repeat) return;
 
   const modal = document.getElementById('modalOverlay');
-  
-  const isModalVisible = modal && 
-                         window.getComputedStyle(modal).display !== 'none' && 
-                         !modal.classList.contains('closing');
+
+  const isModalVisible = modal && window.getComputedStyle(modal).display !== 'none' && !modal.classList.contains('closing');
+
+  const casePage = document.getElementById('view-case');
+  const isCasePageVisible = casePage && window.getComputedStyle(casePage).display !== 'none';
 
   if (e.key === 'Enter') {
     e.preventDefault();
+    
+    if (document.activeElement) document.activeElement.blur();
 
     if (isModalVisible) {
-      if (typeof closeModal === 'function') {
-        closeModal();
-      }
-    } else {
-      const casePage = document.getElementById('view-case');
-      const isCasePageVisible = casePage && window.getComputedStyle(casePage).display !== 'none';
-
-      if (isCasePageVisible) {
-        handleOpen();
-      }
+      if (typeof closeModal === 'function') closeModal();
+    } else if (isCasePageVisible) {
+      handleOpen();
     }
   }
 
   if (e.key === 'Escape' || e.key === 'Esc') {
     e.preventDefault();
     
-    if (state.isSpinning && !state.isSkipping) {
+    if (isModalVisible) {
+      if (typeof closeModal === 'function') closeModal();
+    } 
+    else if (state.isSpinning) {
       state.isSkipping = true;
-    }
-    
-    if (isModalVisible && typeof closeModal === 'function') {
-      closeModal();
+    } 
+    else if (isCasePageVisible) {
+      if (typeof router !== 'undefined' && typeof router.go === 'function') {
+        router.go('home');
+      }
     }
   }
 });
 
-// Prvotní vykreslení beden při načtení stránky
+document.addEventListener('mousedown', () => {
+  setTimeout(() => {
+    if (document.activeElement && document.activeElement.tagName === 'BUTTON') {
+      document.activeElement.blur();
+    }
+  }, 1);
+});
+
 renderCases(DATA.cases);
 
 audio.init();

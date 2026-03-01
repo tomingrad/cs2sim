@@ -161,7 +161,8 @@
   .filter-chip input {display: none;}
 
   .chip-label {
-    display: inline-block;
+    display: flex;
+    align-items: center;
     padding: 8px 16px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -171,6 +172,7 @@
     font-weight: 600;
     transition: all 0.2s ease;
     user-select: none;
+    gap: 6px;
   }
 
   .filter-chip input:checked + .chip-label {
@@ -181,6 +183,13 @@
 
   .filter-chip:hover .chip-label {
     background: rgba(255, 255, 255, 0.1);
+  }
+
+  .filter-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  transform: translateY(1px);
   }
 
   .spinners-container { 
@@ -312,12 +321,6 @@
     content: attr(data-odds);
     display: inline-block;
     visibility: visible;
-  }
-
-  .backBtn:hover{
-    text-shadow: 0 12px 24px rgba(0, 0, 0, 0.5), 
-                 0 0 8px rgb(0, 174, 255);
-    color: var(--accent);
   }
 
   .modal-overlay {

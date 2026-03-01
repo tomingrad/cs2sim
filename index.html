@@ -25,8 +25,14 @@
 <div class="page-container">
   <header style="display:flex; justify-content:space-between; align-items:center; margin: 20px 0">
     <h1 style="margin:0; font-size: 36px; ">CS2 Otevírací Simulátor <span style="font-weight:400; font-size:18px; color:var(--accent)">XD gamba</span></h1>
-    <button onclick="router.go('home')" class="btn" id="backBtn" style="background:var(--glass); border:1px solid var(--border)">⏪ Zpět na výběr beden</button>
-    <button id="muteBtn" class="btn" style="background:var(--glass); border:1px solid var(--border)">🔈 Zvuk zapnutý</button>
+    <button onclick="router.go('home')" class="btn" id="backBtn" style="background:var(--glass); border:1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
+      <img src="assets/image/icon/back.png" class="filter-icon"> 
+      <span>Zpět na hlavní stránku</span>
+    </button>
+    <button id="muteBtn" onclick="audio.toggleMute()" class="btn" style="background:var(--glass); border:1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
+      <img id="muteBtnIcon" src="assets/image/icon/sound_on.png" class="filter-icon">
+      <span id="muteBtnText">Zvuk zapnutý</span>
+    </button>
   </header>
 
   <main id="view-home">
@@ -36,28 +42,40 @@
     <div class="filter-container" style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
   <label class="filter-chip">
     <input type="checkbox" id="filterAll" checked onchange="handleAllFilterChange()">
-    <span class="chip-label">✔️ Vše</span>
+    <span class="chip-label">
+      <img src="assets/image/icon/all.png" class="filter-icon"> Vše
+    </span>
   </label>
   <label class="filter-chip">
     <input type="checkbox" value="case" checked onchange="handleFilterChange()">
-    <span class="chip-label">🧰 Bedny</span>
+    <span class="chip-label">
+      <img src="assets/image/icon/case.png" class="filter-icon"> Bedny
+    </span>
   </label>
   <label class="filter-chip">
     <input type="checkbox" value="package" checked onchange="handleFilterChange()">
-    <span class="chip-label">📦 Balíčky</span>
+    <span class="chip-label">
+      <img src="assets/image/icon/package.png" class="filter-icon"> Balíčky
+    </span>
   </label>
   <label class="filter-chip">
     <input type="checkbox" value="capsule" checked onchange="handleFilterChange()">
-    <span class="chip-label">✉️ Kapsle</span>
+    <span class="chip-label">
+      <img src="assets/image/icon/capsule.png" class="filter-icon"> Kapsle
+    </span>
   </label>
   <label class="filter-chip">
     <input type="checkbox" value="collection" checked onchange="handleFilterChange()">
-    <span class="chip-label">🎁 Kolekce</span>
+    <span class="chip-label">
+      <img src="assets/image/collection/assault.png" class="filter-icon"> Kolekce
+    </span>
   </label>
-    <button id="sortBtn" onclick="toggleSort()" class="btn" style="background:var(--glass); border:1px solid var(--border); padding: 8px 16px; margin-left: auto;">
-    📅 Seřazeno od nejnovějších
+  
+  <button id="sortBtn" onclick="toggleSort()" class="btn" style="background:var(--glass); border:1px solid var(--border); padding: 8px 16px; margin-left: auto; display: flex; align-items: center; gap: 6px;">
+    <img src="assets/image/icon/sort.png" class="filter-icon" alt="Řazení"> 
+    <span id="sortBtnText">Seřazeno od nejnovějších</span>
   </button>
-    </div>
+</div>
     <div id="casesGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:20px"></div>
   </main>
 
@@ -214,6 +232,22 @@ const audio = {
       const playClone = sound.cloneNode();
       playClone.volume = 0.2;
       playClone.play().catch(() => {});
+    }
+  },
+
+  toggleMute() {
+  this.muted = !this.muted;
+  
+  const btnText = document.getElementById('muteBtnText');
+  const btnIcon = document.getElementById('muteBtnIcon');
+
+  if (this.muted) {
+    if (btnText) btnText.innerText = 'Zvuk vypnutý';
+    if (btnIcon) btnIcon.src = 'assets/image/icon/sound_off.png';
+  } else {
+    if (btnText) btnText.innerText = 'Zvuk zapnutý';
+    if (btnIcon) btnIcon.src = 'assets/image/icon/sound_on.png';
+    audio.playMenuBack();
     }
   }
 };
@@ -2182,7 +2216,8 @@ const router = {
     
     if (view === 'home') {
       if (state.activeCase) {
-         audio.playMenuBack();
+        audio.playMenuBack();
+        particles.clear();
       }
       handleFilterChange();
     }
@@ -2193,7 +2228,7 @@ const router = {
     
     const backBtn = document.querySelector('#backBtn');
     if (backBtn) {
-      backBtn.style.display = view === 'home' ? 'none' : 'block';
+      backBtn.style.display = view === 'home' ? 'none' : 'flex';
     }
 
     if (view === 'case') {
@@ -2323,11 +2358,14 @@ function handleAllFilterChange() {
 }
 
 function toggleSort() {
-
   state.sortOrder = state.sortOrder === 'desc' ? 'asc' : 'desc';
   
-  const btn = document.getElementById('sortBtn');
-  btn.innerText = state.sortOrder === 'desc' ? '📅 Seřazeno od nejnovějších' : '📅 Seřazeno od nejstarších';
+  const btnText = document.getElementById('sortBtnText');
+  if (btnText) {
+    btnText.innerText = state.sortOrder === 'desc' 
+      ? 'Seřazeno od nejnovějších' 
+      : 'Seřazeno od nejstarších';
+  }
   
   handleFilterChange();
 }
@@ -2695,7 +2733,6 @@ document.getElementById('decBtn').onclick = () => {
   } 
 };
 document.getElementById('openBtn').onclick = handleOpen;
-document.getElementById('muteBtn').onclick = (e) => { audio.muted = !audio.muted; localStorage.setItem('muted', audio.muted); e.target.innerText = audio.muted ? '🔇 Zvuk vypnutý' : '🔈 Zvuk zapnutý'; };
 document.getElementById('searchInput').addEventListener('input', handleFilterChange);
 
 document.addEventListener('keydown', (e) => {

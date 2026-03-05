@@ -24,12 +24,12 @@
 
 <div class="page-container">
   <header style="display:flex; justify-content:space-between; align-items:center; margin: 16px 0">
-    <h1 style="margin:0; font-size: 36px; ">CS2 Otevírací Simulátor <span style="font-weight:400; font-size:18px; color:var(--accent)">XD gamba</span></h1>
-    <button onclick="router.go('home')" class="btn" id="backBtn" style="background:var(--glass); border:1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
+    <h1 style="margin: 0; font-size: 36px;">CS2 Otevírací Simulátor <span style="font-weight:400; font-size:18px; color:var(--accent)">XD gamba</span></h1>
+    <button onclick="router.go('home')" class="btn" id="backBtn" style="background:var(--panel); border:1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
       <img src="assets/image/icon/back.png" class="filter-icon"> 
       <span>Zpět na hlavní stránku</span>
     </button>
-    <button id="muteBtn" onclick="audio.toggleMute()" class="btn" style="background:var(--glass); border:1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
+    <button id="muteBtn" onclick="audio.toggleMute()" class="btn" style="background:var(--panel); border:1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
       <img id="muteBtnIcon" src="assets/image/icon/sound_on.png" class="filter-icon">
       <span id="muteBtnText">Zvuk zapnutý</span>
     </button>
@@ -37,7 +37,7 @@
 
   <main id="view-home">
     <div style="margin-bottom:20px">
-      <input type="text" id="searchInput" placeholder="Vyhledat bednu, skin nebo samolepku..." style="width:100%; padding:15px; border-radius:12px; border:1px solid var(--border); background:var(--panel); color:#fff">
+      <input type="text" id="searchInput" placeholder="Vyhledat bednu, skin nebo samolepku..." style="width:100%; padding:15px; border-radius:12px; border:1px solid var(--border); background:var(--panel); color:var(--text); font-family: 'Radio Canada Big', sans-serif;">
     </div>
     <div class="filter-container" style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
   <label class="filter-chip">
@@ -71,7 +71,7 @@
     </span>
   </label>
   
-  <button id="sortBtn" onclick="toggleSort()" class="btn" style="background:var(--glass); border:1px solid var(--border); padding: 8px 16px; margin-left: auto; display: flex; align-items: center; gap: 6px;">
+  <button id="sortBtn" onclick="toggleSort()" class="btn" style="background:var(--panel); border:1px solid var(--border); padding: 8px 16px; margin-left: auto; display: flex; align-items: center; gap: 6px;">
     <img src="assets/image/icon/sort.png" class="filter-icon" alt="Řazení"> 
     <span id="sortBtnText">Seřazeno od nejnovějších</span>
   </button>
@@ -341,7 +341,7 @@ const DATA = {
         { name: 'AK-47 | Case Hardened', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiNK0P2nZKFpH_yaCW-Ej7sk5bE8Sn-2lEpz4zndzoyvdHuUPwFzWZYiE7EK4Bi4k9TlY-y24FbAy9USGSiZd5Q', minFloat: 0.0, maxFloat: 0.08},
         { name: 'Desert Eagle | Hypnotic', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7vORfqF_NPmUAVicyOl-pK9qSyyywxgjtmnVytyocnLGPA4iWcYmRLYIu0S-xtbuMLjg51DXjoJC02yg2VjGnh4J', minFloat: 0., maxFloat: 0.08},
         { name: 'AWP | Lightning Strike', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_C9k4_upYLBjKf6UMWaH0dF6ueZhW2frwU1_sW2EmNyvc32RZwMpCpcjQ-EJ4xbtmt3gYezk4wzb3tpAy3mrkGoXubsGIfVN'},
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'} 
+        { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'} 
     ]},
     { id: 'esports13', name: 'eSports 2013 Case', series: '2', release: '14. srpna 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-UnoUwniocSwrHEV7KaobPdud6HEWjXGmbYl6LIwHn2ywhgh5GzXzdmsc3yRalAkD5R3FvlK7Ed7JoXDRQ', items: [
         { name: 'M4A4 | Faded Zebra', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFL0OirarZsI_GeMWWH_uJ_t-l9AXu3zBkhsDyHz4z9dXmVagJzW8MiQbFetBfrkNHhZbjr51CMiN8TyS_gznQeEoYBjXk', minFloat: 0.06, maxFloat: 0.8},
@@ -353,7 +353,7 @@ const DATA = {
         { name: 'AK-47 | Red Laminate', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wipC0POlPPNhIf2sAm6Xyfo4tucxS3rjwRx_42zRwo6pdSnCPwAmX5ohFOIJsUTqwdThNOi0s1TajZUFk3t5vdi_Cw', minFloat: 0.06, maxFloat: 0.8},
         { name: 'AWP | BOOM', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf9Ttk7f6vZZt-Kf2DAmKvzedxuPUnTX7mkxhy62iDzYqhdiqXbw4oWZEkE-IDsRa9lIXlMejktFOMi49MmDK-0H2AgUnw_w', minFloat: 0.06, maxFloat: 0.28},
         { name: 'P90 | Death by Kitty', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk7PO6e694LPyAMXfJkdF6ueZhW2fgkUh042jUnN2geSqTaFN2CcQmQuRfsBXtxtfkN7mztASIg91Bniv8kGoXucYQxgOQ', minFloat: 0.08, maxFloat: 0.32},
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+        { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'}
     ]},
     { id: 'bravocase', name: 'Operation Bravo Case', series: '3', release: '19. září 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj7-lz1QAn4kZjf9CsVuvf7OfQ5IabBVzbHlb915bcwHCjikEp_sTnTn4z6eH6RblQlC8RwFPlK7EdXSP0Ibg', items: [
         { name: 'SG 553 | Wave Spray', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1I_829eLZsOc-ED3GV0tF0ouB_QBa_nBovp3PcwoqtdC3BOwQkCZB3QOIIsxm_kNyyZuzg7w3f2YNEnn6qjS0Y6Clq_a9cBmkkHSs4', minFloat: 0.06, maxFloat: 0.8},
@@ -371,7 +371,7 @@ const DATA = {
         { name: 'AWP | Graphite', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_C9k7OC7ZbRhJc-RHGaGztF6ueZhW2e2k0l2sW_WzN7_cS6SbgV1CsF3TOEI4EOwloGzNLzg5g3fiIpHxC78kGoXuTqeOjwH', minFloat: 0.0, maxFloat: 0.12},
         { name: 'AK-47 | Fire Serpent', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0PSneqF-JeKDC2mE_u995LZWTTuygxIYvzSCkpu3cnvFPQB2DpUkROFY4Rntw93lP7i241DbiI1BxSuviHlKunk_6-sHU71lpPMTRLyP4Q', minFloat: 0.06, maxFloat: 0.76},
         { name: 'Desert Eagle | Golden Koi', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7v-Re6dsLPWAMWWCwPh5j-1gSCGn20om6jyGw9qgJHmQaAcgC8MmR7IMthm5m4W2M7zj7wOIj4pGn32o23hXrnE8VHBG1O4', minFloat: 0.0, maxFloat: 0.12},
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+        { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'}
     ]},
     { id: 'weaponcase2', name: 'CS:GO Weapon Case 2', series: '4', release: '8. listopadu 2013', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bji61XxRCKj0M-xr3IIvqP5PqI_c6LDCjWUkrdw5LUwTivgkE9wsGnUnNr8InzBP1c-SswnzDatg2g', items: [
         { name: 'Tec-9 | Blue Titanium', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiNV0OanfKVjKeWeXTeG_uJ_t-l9AXnikBh-6mvTztz4eHvCOgIiCpFzQOAJ5xPulNK2Nr7q7gHcg9lEm3ngznQe7B1sAb0', minFloat: 0.0, maxFloat: 0.04},
@@ -386,7 +386,7 @@ const DATA = {
         { name: 'P90 | Cold Blooded', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_C9k_P6nfKxoMs-DVzevzedxuPUnSivqkBt_5m7Rw9v8cXmTZ1UjX5Z5EOEIuhK8koHuNe7r51fYjt4XyDK-0H2E4aJrDg', minFloat: 0.0, maxFloat: 0.08},
         { name: 'USP-S | Serum', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSIf2sC2uVwvpkueJWXSy3qhEutDWR1I34J3uXOwFyCsF4TeAJt0bpw9OxNrzh7gyI3t1DmHiq3y5M6HxqsrwcEf1yfEp4lzc', minFloat: 0.0, maxFloat: 0.25},
         { name: 'SSG 08 | Blood in the Water', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1Y-s29YKV_K8-fB2CY1aAmsbFtFnDilkUl5j7UzoqsInmVaFd0XMMlELYDshbuxNPvP-yxtlCMlcsbmlWiixNl', minFloat: 0.06, maxFloat: 0.20},
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+        { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'}
     ]},
     { id: 'dh13package', name: 'DreamHack 2013 Souvenir Package', series: '6', release: '27. listopadu 2013', type: 'package', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjw4k62EiLhjJnt8mxevfSqbqVsJaHKWGWVmOwi5eJtGX7jzUsi6mTXzNb_d3rDPQZzW5okW6dU5dbJcrqx', items: [
         { name: 'R8 Revolver | Bone Mask', rarity: 'gray', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c29eJt5IeCWMWuZxuZi_rNtHX_hwh91sWjXm9qreSqfaAIgD5d3RLNbt0Pqx4e2Mrjn5wHbi99bjXKpUIbZI8w', minFloat: 0.06, maxFloat: 0.8},
@@ -450,7 +450,7 @@ const DATA = {
         { name: 'AWP | Redline', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk7uW-V6diIuKSMWuZxuZi_rUxHS3lzUwm5DjWy976dSiRagd1WJB1RLQP4RK-mtazM-3itQeL2INbjXKpw2eVIZ0', minFloat: 0.1, maxFloat: 0.4},
         { name: 'M4A4 | Asiimov', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0P_6V6V-Kf2cGFicyOl-pK85H3i1wRgk42_Rm9f_In2QawAjXJojRLIP5kTsx9LiPujm71bbitlN02yg2TSwkYTY', minFloat: 0.18, maxFloat: 1.0},
         { name: 'Upilovaná brokovnice | Kraken', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWCmiWx9F5s_VmXzy-hSIrujqNjsH_eXmWaVRyXpF3EOZe5Bm8w93gMbzn4waPg98Tzir8jHwbuC5p4uZUT-N7rZ8ILI16/', minFloat: 0.0, maxFloat: 0.4},
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+        { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'}
     ]},
     { id: 'esports13winter', name: 'eSports 2013 Winter Case', series: '5', release: '18. prosince 2013', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-UnoUwniocSwrHFkvqbgafw-JKHKWTGSw7wmtOMxTX2yw0ki5DyGm4ugcirGPQ4nC5B3EbNetw74zIMdBc4CJw', items: [
         { name: 'Galil AR | Blue Titanium', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0POgV7BkNPGdB3Kdkr5gj-1gSCGn208jsDvRmNmqdn6fbw4iCJp5Q7Nb4xW8xNSzMenk7wbX341AzyitjitXrnE8X82UsFg', minFloat: 0.0, maxFloat: 0.04},
@@ -465,7 +465,7 @@ const DATA = {
         { name: 'AWP | Electric Hive', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf9Ttk5_u4bZthKfebGinElLtytLVtG362x05wsWyByt2scHrGOgd1WZJ1ROBc4xi_ld3gNO7g-UWA3Kwc2RVq', minFloat: 0.0, maxFloat: 0.4},
         { name: 'Desert Eagle | Cobalt Disruption', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7v-RbKB9IeSXC2mDxNFmteBqQCq4qhEutDWR1I36c3OVbFQjDcRwR7EO4EW-x4HvMumzswfWjd8XnCn2iShM53s5t-0cEf1ycu8KccY', minFloat: 0.0, maxFloat: 0.2},
         { name: 'M4A4 | X-Ray', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0Oq8ab1SLaSsAm6Xyfo46LAxTHrgxU8lt2WHmNf7cS-Ub1JxDpQkQecO40OwxN2yZbvg41DciJUFk3vXysuZ3Q', minFloat: 0.0, maxFloat: 0.3},
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+        { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'}
     ]},
     { id: 'stickercapsule', name: 'Sticker Capsule', series: '9', release: '5. února 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ikLvrz-PfRpcKeQCzPEk-p147M_SXrglx8l4m2EnoqvJS2eagchCZQiQeADrFDmxXUYlhnp', items: [
         { name: 'Samolepka | Lucky 13', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1NHWT5ERxu5P840vzRBj_0JPlqiYP6ff6OPM0cvLBDGORmbYhs7NsTii2zBt_tT_Qn9iscH3GO1A-SswnhsokpHo'},
@@ -497,7 +497,7 @@ const DATA = {
         { name: 'CZ75-Auto | Fuchsia Is Now', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a4s2ofbduKPmSMWuZxuZi_uM-Sn_hlhgi4D_RnImrJC3COFIoApB3FLUP4RS9mtSzYu_r7wHZjopbjXKpFZZFzGk', minFloat: 0.0, maxFloat: 0.4},
         { name: 'P250 | Undertow', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiNW0OL8PfRSIvWSCmKU_v53ue99cCW6khUz_W3dzIuueSqWblJ0WMNwFuYK4xawk9S0Y-7n4Afag4JDzSz73XtK5nt1o7FVPKoITvg', minFloat: 0.0, maxFloat: 0.2},
         { name: 'CZ75-Auto | Victoria', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a_s2rfKdlJfSsDX3HlNF6ueZhW2fkk04i5WrXmY2sc3qfPFAlWZd3EOdY4Bi6loCxPu7h51fZjNlGzST5kGoXuTXAF0gA', minFloat: 0.0, maxFloat: 0.75},
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+        { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'}
     ]},
     { id: 'phoenixcase', name: 'Operation Phoenix Weapon Case', series: '11', release: '20. února 2014', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fr2wPtqP5PKVvJPSQDWSSl7sn6eMxHC3hwhl3sDuDztivJHrEagJzWZd3W6dU5fXcT7oM', items: [
         { name: 'UMP-45 | Corporal', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbRSI_-BHmiCwOJJvOhuRz39wUUi4W6Bzdipd3KWOwInXJFyTbEKuhbtloHlMbzm5AbW2YkWzSv5jjQJsHiIsauxOw', minFloat: 0.05, maxFloat: 0.75},
@@ -513,7 +513,7 @@ const DATA = {
         { name: 'Nova | Antique', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSIf6HB3aFxNF6ueZhW2fmwRwl6jyHw96vIn2UbVVzXMdyRuYLt0O7ltPjZbu0tQTejo9Hyn2skGoXucYtjcOH', minFloat: 0.0, maxFloat: 0.3},
         { name: 'AWP | Asiimov', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk7uW-V6V-Kf2cGFidxOp_pewnF3nhxEt0sGnSzN76dH3GOg9xC8FyEORftRe-x9PuYurq71bW3d8UnjK-0H0YSTpMGQ', minFloat: 0.18, maxFloat: 1.0},
         { name: 'AUG | Chameleon', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7uepV6dlIf2WAmKfz-9_ouRWQyC0nQlpt23VztercCjGbg90C8RyQOcMs0G5x93uZLm37wbe2owTz3j9iShI6TErvbi7ZmzWCw', minFloat: 0.0, maxFloat: 0.5},
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+        { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'}
     ]},
     { id: 'stickercapsule2', name: 'Sticker Capsule 2', series: '12', release: '27. února 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ikLvbz6Mac1c_SWCjaUk7tytblqTH3rwxki527Sw9j7c32XbQAhWMYlE7ENrFDmxQkjC0Ti', items: [
         { name: 'Samolepka | Banana', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjNm1PHic4ERmpsj261fmTxy_ncWypXde6aL7aqJvcaiXDDGUwLYv5uNvGHC2l0l0sj-ByN2sIHrBaBhgVMXwKPP2hQ'},
@@ -653,7 +653,7 @@ const DATA = {
         { name: 'USP-S | Orion', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XuWbwcuyMESA4Fdl-4nnpU7iQA3-kKn17jJk_PuibapuJeLdWGLFwL8i4eVsFiqxxUt34jmHnoysJ3qVOAYgCJZwQrRb5EPul4XlYvSiuVIHgy4Xvg', minFloat: 0.0, maxFloat: 0.5},
         { name: 'AK-47 | Vulcan', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSMuWRDGKC_uJ_t-l9AXCxxEh14zjTztivci2ePQZ2W8NzTecD4BKwloLiYeqxtAOIj9gUyyngznQeF7I6QE8', minFloat: 0.0, maxFloat: 0.9},
         { name: 'M4A4 | Howl', rarity: 'red', image: 'https://steamcommunity-a.akamaihd.net/economy/image/pWJghcMk-ZNf7MuJgJ4zuB0uqjSHVPfTiyIYk2R4ex9saVd-mji_gf8113em_m82BSnxc45L99eNKR-BZW5sFWMrQ3SLPLiI70TTfaW0fCcBP7pryh65zoEoLp9-aj4lbnF4fNk8_LvzdMN0or9pGRkzuSzJJLTfnCEU3Cw7aktvZUNz3Dz10_gu0CyvtzwgEWzqfYkZ7oaKdUjDeT84SDszEiXDLaOD', minFloat: 0.0, maxFloat: 0.4},
-        { name: '★ Lovecký nůž ★', rarity: 'gold', image: 'assets/image/rsi_huntsman.png'}
+        { name: '★ Lovecký nůž ★ | Povrchy: Original', rarity: 'gold', image: 'assets/image/rsi_huntsman.png', link: 'https://images.steamusercontent.com/ugc/2068881108145523607/76A30FCBEDDFBF989DD70393F2EC3B83FE1AE4F4/'}
     ]},
     { id: 'huntsmancase', name: 'Huntsman Weapon Case', series: '17', release: '11. června 2014', type: 'case', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frmxY6qr9OqU0cvbKCGTDk7dys7k-S36yzU114GrRmNaoeSmXaVV0WJp0W6dU5Q_KKWwm', items: [
         { name: 'Tec-9 | Isaac', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiFO0Oara_1SIeOaB2qf19F6ueZhW2frlEpz6zyAy477dXrEagFxDcclRO4C5EK8wIa1Nem3s1TdiotNzCn5kGoXuYgN6W8t'},
@@ -671,7 +671,7 @@ const DATA = {
         { name: 'USP-S | Caiman', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSI-WsBWaZzO94j-1gSCGn20t-4WyBn4mocC6XbVN0CMB2RLYMsUG5x9DgN-20tQSNiI1GzS2q3XtXrnE8NAiGp64', minFloat: 0.0, maxFloat: 0.4},
         { name: 'AK-47 | Vulcan', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSMuWRDGKC_uJ_t-l9AXCxxEh14zjTztivci2ePQZ2W8NzTecD4BKwloLiYeqxtAOIj9gUyyngznQeF7I6QE8', minFloat: 0.0, maxFloat: 0.9},
         { name: 'M4A4 | Desert-Strike', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0OanfKVjM-ScHGqvzedxuPUnHnjnxEsi4WTTntqucnuUaA92CZR2E-IDtRa-mobnYeLksQbXg4hDyTK-0H1Bbz5yqg', minFloat: 0.0, maxFloat: 0.7},
-        { name: '★ Lovecký nůž ★', rarity: 'gold', image: 'assets/image/rsi_huntsman.png'}
+        { name: '★ Lovecký nůž ★ | Povrchy: Original', rarity: 'gold', image: 'assets/image/rsi_huntsman.png', link: 'https://images.steamusercontent.com/ugc/2068881108145523607/76A30FCBEDDFBF989DD70393F2EC3B83FE1AE4F4/'}
     ]},
     { id: 'breakoutcase', name: 'Operation Breakout Weapon Case', series: '18', release: '1. července 2014', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fqWxdv_b8O_w5eKXBWWXHw-smtrBvTHDmwEsl4jvWn4z_I3qWZwV1X5ZwW6dU5RcRF1o0', items: [
         { name: 'MP7 | Urban Hazard', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_jdk4uL5JadiLf2SAGOV09F6ueZhW2fgx0gl4WTczdj7I3LFaQYjDcQiE-Beuhe6xIXnP-_l41eKi9pEyH79kGoXuW6iY_I1', minFloat: 0.0, maxFloat: 0.5},
@@ -688,7 +688,7 @@ const DATA = {
         { name: 'Glock-18 | Water Elemental', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2kpnj9h1Y-s2pZKtuK72fB3aFxP11te99cCW6khUz_TjVyompc3-QOFR2DJQkFOMJtBbqk9LlY-7n5QLZjtkTxCWqhixPv311o7FVIf8eASQ', minFloat: 0.0, maxFloat: 0.7},
         { name: 'P90 | Asiimov', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-JaV-KfmeAXGvzedxuPUnTSjikRgksjuBzoz4dXLFb1QoC8QlTLQD4EPqk4LvN-Pns1aMioNBzTK-0H3gQVv65g', minFloat: 0.0, maxFloat: 0.92},
         { name: 'M4A1-S | Cyrex', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_OGMWrEwL9lj-JwXSyrqhEutDWR1N77cimSbQQgC8F5QLYCsELpltTnZuvk7wbcjdhDzy_43yMb6ilvt7kcEf1yDWu2yf8', minFloat: 0.0, maxFloat: 0.5},
-        { name: '★ Motýlek ★', rarity: 'gold', image: 'assets/image/rsi_butterfly.png'}
+        { name: '★ Motýlek ★ | Povrchy: Original', rarity: 'gold', image: 'assets/image/rsi_butterfly.png', link: 'https://images.steamusercontent.com/ugc/2068881108145531815/32C8D6C2BB6DD1A4A10D61DB893DB109C0E5F59F/'}
     ]},
     { id: 'esports14summer', name: 'eSports 2014 Summer Case', series: '19', release: '10. července 2014', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjx-UnoUwniocSwrHZk_OejZaF_bvXGWT6Vkughs-A5H321kUQl5myEm9__dHKQaw8gWZtzQ7VYu0a-lYf5d7S1qrUfUsY', items: [
         { name: 'SSG 08 | Dark Water', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1a4s20baZ_Ic-XD3Wb_uJ_t-l9AXriwk1y6mqDyov9eXyTaAFzD5R4RrFYsRC4k9fhML7itQGPio9EyX_gznQeRZeU19w', minFloat: 0.1, maxFloat: 0.26},
@@ -708,7 +708,7 @@ const DATA = {
         { name: 'P2000 | Corticera', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0PG7V6JsNvWfD1iAk74m4N5lRi67gVNzt2TTyo6gdH6XPwEiCcZ2RucC5BG9kdTvZe-24QSIidhHyimoiC0b8G81tLsWWhFO', minFloat: 0.06, maxFloat: 0.3},
         { name: 'M4A4 | Bullet Rain', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiFO0PC7ZKhoNM-BD26e_uMisbBWQyC0nQlp4GmGydioIH3DPFMjDMd2QrQO5hDtkNK2Ne_htAXd3d0Uyiiriysb5zErvbh6fsb98Q', minFloat: 0.02, maxFloat: 0.46},
         { name: 'AK-47 | Jaguar', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0OKvZrBlJeKsD2zEltF6ueZhW2fhzUwi4WuBzNv6dCiWPVUgApV0TLIM40SwxNLuN-Pl71fdjogXmy79kGoXuYeqaPqj'},
-        { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+        { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'}
     ]},
     { id: 'eslcol14legends', name: 'ESL Cologne 2014 (Legendy)', series: '20', release: '4. srpna 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk7P2iZ6NjJaLDXzOvkb844rY5G33kwE5-42SGyNz7ci6SaVR2DsF5R7MK5hjuk9W1Nrnk4QSNiZUFk3udWK44YA', items: [
         { name: 'Samolepka | Cloud9 | Kolín nad Rýnem 2014', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNagpVrrTgj1x9iwqnJevPGra_U9JabEWjLGmbxzsrc6HHyylERy5zyDmNr6cXrDbQcoFNIuEhUwGBlG'},
@@ -934,7 +934,7 @@ const DATA = {
       { name: 'P250 | Cartel', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiNK0OL8PfRSI_GBGmKc_uJ_t-l9AX2wlh906m7Uy4v_cXqWaA4gCpUmQLMNsBO_ltfiYuPltAHbgthGmyzgznQeqxXZ9kg', minFloat: 0.0, maxFloat: 0.75},
       { name: 'AK-47 | Wasteland Rebel', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0Oa8YaZ4NPWsD2zEltF6ueZhW2fgkEh35m3cmIusIn6TbwMpWJJxReMKtBHsw4HhM7nh4gTc3YJCxXr2kGoXudZyw1tq', minFloat: 0.05, maxFloat: 0.7},
       { name: 'P2000 | Fire Elemental', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL5lYayrXIL0PG7V7Q_cKDDMWGZ0-tJte1sQiy9gRwrjDGMnYftb3-RZldxWJVyF-QLsUG5mofnML_qtg3cjd4TyCr4jXsf63lr4-5TVvA7uvqA-y0nTh8', minFloat: 0.0, maxFloat: 0.6},
-      { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+      { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'}
     ]},
     { id: 'dh14legendsholofoil', name: 'DreamHack 2014 (Legendy – holografické/speciální)', series: '30', release: '21. listopadu 2014', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk6_q5OvQ8dM_DXymUk70vtbFoSyi3wUt0tTvdztr7dH7BOgIoDJZ1QeRe4BXrktHvYrzk-UWA3KlVhG0-', items: [
       { name: 'Fnatic (holografická) | DreamHack 2014', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM6pIinHtAI68on1_lDkfhX-kpmuqnsCvKf2O6Y8IvKQXDLGwL1w5LhtGi2yxBl15mncmY2vJS2Qaw4nWIwwG7B9qjyRQQ'},
@@ -966,7 +966,7 @@ const DATA = {
       { name: 'P250 | Muertos', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiFO0OL8PfRSLfGdCmacwNF6ueZhW2e1lh51sm3UmN37cHuUbQQhXJtwQO4C4BXsxtHjM-624A3a2IoWySiskGoXuSIJMqiP', minFloat: 0.0, maxFloat: 0.6},
       { name: 'AWP | Man-o\'-war', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_C9k7uW-V6NhL-KKMWuZxuZi_uM5HXG3xhh_t2iBnI2ucn3EZwEjDpJ0Q-dY5EPrxNTiYevj7gXa2IhbjXKpQIFOiXU', minFloat: 0.1, maxFloat: 0.2},
       { name: 'Galil AR | Chatterbox', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2n5rp8SNJ0PG7V6NsLPmfMWaS0-9lue5ncCS2kRQyvnPXnIn7eSrEZ1AnD5NxTeII4ESwxN3jN7zl5QHXjdhAnyuo2y9Nv3xs_a9cBuAhdjfO', minFloat: 0.35, maxFloat: 0.85},
-      { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'chroma'}
+      { name: '★ Speciální Předmět ★ | Nože: Chroma', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'chroma', link: 'https://images.steamusercontent.com/ugc/55500653940397451/DE83960012051051422A2AA8C3AC001CE7AB245B/'}
     ]},
     { id: 'chroma2case', name: 'Chroma 2 Case', series: '48', release: '15. dubna 2015', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_fqmwOuKD2PqI6caDBWDeUkO8uteM9SnDglklw6miEn9j6IHKfblNxA5pxW6dU5UH4LtBe', items: [
       { name: 'AK-47 | Elite Build', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSLfGAGmKC2NF6ueZhW2e2wh9y5GjTztirdSqfP1dyCpclR7FZ5xe9wNbhZei25FGPjokXxC2vkGoXuQLr5jvs'},
@@ -984,7 +984,7 @@ const DATA = {
       { name: 'FAMAS | Djinn', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1a_s2oaalsM8-ZB2me_uJ_t-l9AXzhwxt-5TiAzdmgd3yeaQ50DZRxEe5b4BXrm4HkPr7kslfcg9pCznjgznQepOOy8CM'},
       { name: 'M4A1-S | Hyper Beast', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_OGMWrEwL9JuPh5SjuMlxgmoCm6lob-KT-JbwF1WZEjR-YJskK9k9XiYePltAeNjYlAxSn5j34dvCZstb4LB6Ut-7qX0V8Xkv5_2A'},
       { name: 'MAC-10 | Neon Rider', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-dC2ie0-dytfNWQyC0nQlp5DzTntmgdC7COABxX5NxQrUOtUS5w4LgMu6zsVCK2IJCmyisjitM6DErvbicsEA0SQ', minFloat: 0.35, maxFloat: 0.45},
-      { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'chroma'}
+      { name: '★ Speciální Předmět ★ | Nože: Chroma', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'chroma', link: 'https://images.steamusercontent.com/ugc/55500653940397451/DE83960012051051422A2AA8C3AC001CE7AB245B/'}
     ]},
     { id: 'eslkato15challengers', name: 'ESL One Katowice 2015 (Vyzyvatelé – holografické/speciální)', series: '47', release: '26. února 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bjn_lDkShjjoYbh_ilk6uGiY6V5L-eaDWLCkb8jj7E7AX7lx0t25DjWw4mgJX2SagNzDpZ2R-RbsBe5ldyzMLvj7geI3oNCnn_gznQeMZjWuFY', items: [
       { name: 'Samolepka | 3DMAX (holografická) | Katowice 2015', rarity: 'purple', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjM-yOXCW8Vli_YTxuAm2FFKimpvh5R1T4P6hJqU9cPGXWTLIxbsntrM7GnDgx0lxtm7QzomqdHqTPQAmXsRzFrZf5BGm0oqw44vgYjw'},
@@ -1058,7 +1058,7 @@ const DATA = {
       { name: 'SG 553 | Cyrex', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4c8-QF3WV2dF6ueZhW2frlhl14W7Xzt6geXqQP1N0CMRyQuFY5kHsx9HmZejq7wPei91AzCT_kGoXueC0Dzdv'},
       { name: 'AK-47 | Aquamarine Revenge', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiFO0POlPPNSI_-GHGaXxNF3vPVWQyC0nQlp4WvVzturJ3qVb1B1DMd3Q7EO5xW_l9O2ZOLg5gyP2N9BxST_jXwY7TErvbj-FmM1dA'},
       { name: 'AWP | Hyper Beast', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_jdk7uW-V6x0MPWBMWWVwP1ij-1gSCGn20pxtm_WzNuoeHKeaFAnCZUiTe5bt0HqxofmZOrm5Q2IjoMQzS_5iShXrnE8NzWs__c'},
-      { name: '★ Nůž Falchion ★', rarity: 'gold', image: 'assets/image/rsi_falchion.png', knives: 'falchion'}
+      { name: '★ Nůž Falchion ★ | Povrchy: Original', rarity: 'gold', image: 'assets/image/rsi_falchion.png', knives: 'falchion', link: 'https://images.steamusercontent.com/ugc/2068881108145546149/398C60C56CA1524F488E57525107480881E17C0E/'}
     ]},
     { id: 'col15cloud9agc', name: 'Autograph Capsule | Cloud9 G2A | Kolín nad Rýnem 2015', series: '72', release: '14. srpna 2015', type: 'capsule', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU6lp684nxuAm2FCLykpn1-XsVvvOrOvRuJafLDWHDlOx15uQxS3jlkU91sGTWzI3_JH6XPwV0A8dzRvlK7EchNMAfgA', items: [
       { name: 'Samolepka | n0thing | Kolín nad Rýnem 2015', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJai0ki7VeTHjMmuOXSQ61MnpNahpUruRiL_kYLo9CxcoaavOqVrd_LKWD7Ikb8i6LQ9GXCwxkR_422HyY6tcy-XbAEgDJZ0F-MU8k7v25_25yQ'},
@@ -1299,7 +1299,7 @@ const DATA = {
       { name: 'SSG 08 | Big Iron', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1Y-s29e6M9eM-HC2SYz-d1se1gWzCMmRQguynLyYqqJSqQbAIiDMclTbYDtUKwlIfvP7jr4Fbcj4xGzir6jilJ6ils4PFCD_SOjD5UKQ', minFloat: 0.0, maxFloat: 0.64},
       { name: 'M4A1-S | Golden Coil', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_eAMWrEwL9lj_JnTiK2lxQztgKClYP9HifOOV5kFJclQ-Jb5xW-m9CxPuLq4QTfjd0XzyX6jCpL6X5o5OgDVfYn_a2Ci1rfcepqgV49FrE'},
       { name: 'USP-S | Kill Confirmed', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSI-WsG3SA_uV_vO1WTCa9kxQ1vjiBpYPwJiPTcFB2Xpp5TO5cskG9lYCxZu_jsVCL3o4Xnij23ClO5ik9tegFA_It8qHJz1aWe-uc160'},
-      { name: '★ Pěstní dýky ★', rarity: 'gold', image: 'assets/image/rsi_daggers.png', knives: 'daggers'}
+      { name: '★ Pěstní dýky ★ | Povrchy: Original', rarity: 'gold', image: 'assets/image/rsi_daggers.png', knives: 'daggers', link: 'https://images.steamusercontent.com/ugc/2068881108145551458/9DFA87921A2824CDF649669414F23F75C62C8559/'}
     ]},
     { id: 'revolvercase', name: 'Revolver Case', series: '111', release: '11. prosince 2015', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frHIV7qWvOqE9IqSVWGKVlu8v6eM7Girmxkwl4TnWmIv8J36WagEiCpImQvlK7EclOzxxiQ', items: [
       { name: 'Revolver R8 | Crimson Web', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c2mcZt6JfKAMWuZxuZi_rdrHny2wkR_sDuHw4muJXuWOwZyAsdzTeNcu0S4ktfkP77htAOPiYlbjXKp8jg9HbM', minFloat: 0.06, maxFloat: 0.8},
@@ -1319,7 +1319,7 @@ const DATA = {
       { name: 'P90 | Shapewood', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-V7dlIeCWGWifxdF6ueZhW2fglEtz6zjWyo2uJXKeaAF1ApZ2F7YN5BC_w9TjYbzg5VCNg9pEnHiskGoXuQsJgcHb'},
       { name: 'M4A4 | Royal Paladin', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiVI0P_6afBSMv-KD2uv0v9jufNscCW6khUz_W-Az9b8d3LFZ1AnDMAjR-4CsBO9xofhNL_q4wLWjogUzyn43SxM73x1o7FVNN3FvCs', minFloat: 0.0, maxFloat: 0.8},
       { name: 'Revolver R8 | Fade', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c2vaZtrIfSWMXWV1-F6puR7cCW6khUz_W2EnIuheSiVZgIgX8F3Ee9YthLuw9LjMePqswCL34kQzHj6iypPu351o7FV6jjqgC8', minFloat: 0.0, maxFloat: 0.4},
-      { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original'}
+      { name: '★ Speciální Předmět ★ | Nože: Original', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'original', link: 'https://images.steamusercontent.com/ugc/2068881108145516493/C4F605F152050BC29545BA25750A98359B845AD0/'}
     ]},
     { id: 'wildfirecase', name: 'Operation Wildfire Case', series: '112', release: '12. února 2016', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frHMVu6r9MaA6ePPAWjbGwrwm47dtTnu2kUl14mzUnomudnqQaQ4iApF5TPlK7Ee3MsZV-w', items: [
       { name: 'PP-Bizon | Photic Zone', rarity: 'blue', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLs-QB3OZ2-t4j-1gSCGn20hw5GXWntf_eH-Wa1MgX5N2EeBc50G_w9HuZL_h4gGLjd8XxX37iHtXrnE8eXv1H4U'},
@@ -1338,7 +1338,7 @@ const DATA = {
       { name: 'Nova | Hyper Beast', rarity: 'pink', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSKOmDC3WSxO9lpN5lRi67gVMhsGrTmd2seH6XbA4pDZR1EbMCtES8m4fiNenl4FDcid1Az32ri3tM8G81tMCTwFwB', minFloat: 0.0, maxFloat: 0.6},
       { name: 'AK-47 | Fuel Injector', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwlcK3wiVI0POlPPNSM-WDC3WTye9kt-RtcCW6khUz_WuGy9_8dHuRbg5xW5IjQ-BYshK9mta0NLmw4lDa2o0Wni_3iy4f6np1o7FVB0pWHHg'},
       { name: 'M4A4 | Battlestar', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiVI0P_6afBSMPmcAGKV09F6ueZhW2fjxB9_4GqEyN6vdi_BPwQgWZIkRLYD4Ba_kILgYeOz4lbagthBz3_9kGoXuZIYHoDp', minFloat: 0.0, maxFloat: 0.64},
-      { name: '★ Nůž Bowie ★', rarity: 'gold', image: 'assets/image/rsi_bowie.png', knives: 'bowie'}
+      { name: '★ Nůž Bowie ★ | Povrchy: Original', rarity: 'gold', image: 'assets/image/rsi_bowie.png', knives: 'bowie', link: 'https://media.steampowered.com/apps/csgo/blog/images/bowie_gridsmaller.jpg'}
     ]},
     { id: 'chroma3case', name: 'Chroma 3 Case', series: '141', release: '27. dubna 2016', type: 'case', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frHAVuKf7PaJucPLHW2TExb9z4OdvHirixEomtW7cyduvci2VZ1AiCsR2Q_lK7EdW_VBhrw', items: [
       { name: 'Dual Berettas | Ventilators', rarity: 'blue', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1c_M2qfaVhIvWBC3OEwP1JpuRnWyC_lAkooS66lob-KT-JblNxDcMiQe8M5hDtxtfnNrvrswyLjdgWzCyvhytP7ilqt7pXBfdz-rqX0V-MxKZG7g', minFloat: 0.0, maxFloat: 0.45},
@@ -1358,7 +1358,7 @@ const DATA = {
       { name: 'UMP-45 | Primal Saber', rarity: 'pink', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbQ5dc-DHG6dwOJlseNsXRa_nBovp3PRn478JHmePQ8hDcF2Q7YDtxXrk92zYbyw7gXYjIhEyCn_3Hsbui44_a9cBklqRdMs', minFloat: 0.0, maxFloat: 0.77},
       { name: 'PP-Bizon | Judgement of Anubis', rarity: 'red', image: 'https://community.akamai.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLs-QG3WDxNF6ueZhW2fkzU0isDvTnomsdS7BbwF0A8ElROJfshC8wN3jYu-2tQ3c2osTxCitkGoXuVioOA3_', minFloat: 0.0, maxFloat: 0.5},
       { name: 'M4A1-S | Chantico\'s Fire', rarity: 'red', image: 'https://community.fastly.steamstatic.com/economy/image/i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwjFS4_ega6F_H_OGMWrEwL9lj_JmWiWnlBYioQKJk4jxNWXFZ1IgC5MiQuZeuhK4wIXnMuPhslCM2oMTxH75hnxK6Htjse4BVqd25OSJ2DU2Q_CD', minFloat: 0.0, maxFloat: 0.99},
-      { name: '★ Speciální Předmět ★', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'chroma'}
+      { name: '★ Speciální Předmět ★ | Nože: Chroma', rarity: 'gold', image: 'assets/image/rsi_generic_old.png', knives: 'chroma', link: 'https://images.steamusercontent.com/ugc/55500653940397451/DE83960012051051422A2AA8C3AC001CE7AB245B/'}
     ]},
 
     // KOLEKCE
@@ -2045,7 +2045,7 @@ drawItem() {
       const x = i * slotW - offset;
       if (x + slotW < 0 || x > canvas.width) return;
       
-      const rarityData = DATA.rarities[it.rarity] || { color: '#fff' };
+      const rarityData = DATA.rarities[it.rarity] || { color: 'var(--text)' };
       const color = rarityData.color;
       
       const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
@@ -2076,7 +2076,7 @@ drawItem() {
 
           ctx.save();
           ctx.filter = 'blur(15px)';
-          ctx.globalAlpha = 0.25;
+          ctx.globalAlpha = 0.3;
           
           ctx.drawImage(
             it._imgObj, 
@@ -2109,7 +2109,7 @@ drawItem() {
         ctx.shadowColor = color;
         ctx.shadowBlur = 20;
         
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = 'var(--text)';
         ctx.fillText(icon, x + slotW / 2, canvas.height / 2);
         
         ctx.shadowBlur = 0;
@@ -2282,9 +2282,9 @@ const router = {
       
       document.getElementById('caseSubtitle').innerHTML = `
         ${!isCollection ? `
-          <span style="opacity:0.6;">Bedna série č. <span style="color:#fff">${state.activeCase.series || 'Neznámé'}</span>,</span>
+          <span style="opacity:0.6;">Bedna série č. <span style="color:var(--text)">${state.activeCase.series || 'Neznámé'}</span>,</span>
         ` : ''}
-        <span style="opacity:0.6;">Datum vydání: <span style="color:#fff">${state.activeCase.release || 'Neznámý'}</span></span>
+        <span style="opacity:0.6;">Datum vydání: <span style="color:var(--text)">${state.activeCase.release || 'Neznámý'}</span></span>
       `;
 
       this.initSpinners();
@@ -2320,12 +2320,18 @@ renderDropTable() {
     const chance = (it.odds * 100).toFixed(4).replace(/\.?0+$/, '') + '%';
     const [weaponName, skinName] = it.name.includes('|') ? it.name.split('|').map(s => s.trim()) : [it.name, ''];
 
+    let finalSkinName = skinName;
+    if (it.link && skinName.includes(': ')) {
+      const parts = skinName.split(': '); 
+      finalSkinName = `${parts[0]}: <a href="${it.link}" target="_blank" style="color: #fff; text-decoration: underline; position: relative; z-index: 10;">${parts[1]}</a>`;
+    }
+
     return `<div class="drop-card" style="width: 140px; display: flex; flex-direction: column; gap: 6px;">
   
     <div class="drop-card-visual" style="position: relative; width: 100%; height: 100px; background: linear-gradient(0deg, ${color}22 0%, rgba(0,0,0,0) 100%); border-bottom: 4px solid ${color}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('${it.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.25; z-index: 0;"></div>
+    <div style="position: absolute; top: 10px; left: 14px; width: 80%; height: 80%; background: url('${it.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.2; z-index: 0;"></div>
 
-    <div class="drop-card-odds" style="position: absolute; top: 4px; left: 6px; font-size: 10px; font-weight: 800; color: ${color}; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2;">
+    <div class="drop-card-odds" style="position: absolute; top: 4px; left: 4px; font-size: 10px; font-weight: 800; color: ${color}; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2;">
       ${chance}
     </div>
 
@@ -2334,12 +2340,12 @@ renderDropTable() {
     </div>
   </div>
 
-  <div class="drop-card-info" style="text-align: left; padding: 0 2px;">
-    <div style="font-size: 13px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">
+  <div class="drop-card-info" style="text-align: left;">
+    <div style="font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">
       ${weaponName}
     </div>
     <div style="font-size: 12px; font-weight: 400; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">
-      ${skinName}
+      ${finalSkinName}
     </div>
   </div>
   </div>`;
@@ -2531,7 +2537,7 @@ function renderCases(filteredData) {
     grid.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--muted);">
         <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
-        <h2 style="color: #fff; margin-bottom: 10px;">Není tu nic k zobrazení</h2>
+        <h2 style="color: var(--text); margin-bottom: 10px;">Není tu nic k zobrazení</h2>
         <p style="margin-bottom: 20px;">Pravděpodobně je vyhledávací výraz špatně nebo jsou všechny filtry vypnuté</p>
         <button class="btn" onclick="resetFilters()">Resetovat filtry</button>
       </div>
@@ -2564,12 +2570,12 @@ function renderCases(filteredData) {
         
         ${c.type !== 'collection' ? `
           <div style="font-size:12px; color:var(--muted); opacity:0.8; margin-top: 8px;">
-            Bedna série č. <span style="color:#fff">${c.series || 'Neznámé'}</span>
+            Bedna série č. <span style="color:var(--text)">${c.series || 'Neznámé'}</span>
           </div>
         ` : ''}
 
         <div style="font-size:12px; color:var(--muted); opacity:0.8; ${c.type === 'collection' ? 'margin-top: 8px;' : ''}">
-          Datum vydání: <span style="color:#fff">${c.release || 'Neznámý'}</span>
+          Datum vydání: <span style="color:var(--text)">${c.release || 'Neznámý'}</span>
         </div>
       </div>
     `;
@@ -2638,7 +2644,7 @@ function showResultsModal() {
 
     let visualHtml = '';
     if (r.image) {
-      visualHtml = `<img src="${r.image}" style="width: 100%; height: auto; display: block; filter: drop-shadow(0 0 5px rgba(0,0,0,0.25));">`;
+      visualHtml = `<img src="${r.image}" style="height: auto; display: block;">`;
     } else {
       let icon = '🔫';
       if (isKnife) icon = '🔪';
@@ -2650,22 +2656,56 @@ function showResultsModal() {
 
     const souvenirPrefix = isPackage ? '<span style="color:#ffd700">Souvenir </span>' : '';
 
-    return `
-      <div class="result-row" style="border-left: 4px solid ${rarityColor}; display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.03); border-radius: var(--radius);">
-        <div style="flex-grow:1; padding-right: 15px;">
-          <div style="font-size:11px; font-weight:800; text-transform:uppercase; color:${rarityColor}; letter-spacing: 0.5px;">
-            ${rarityLabel}
-          </div>
-          <div style="font-weight:700; margin-bottom: 2px; font-size: 16px; color: #fff;">
-            ${souvenirPrefix}${r.name}
-          </div>
-          ${wearInfoHtml}
-        </div>
-        <div style="width:100px; min-width:100px; display: flex; justify-content: center; align-items: center;">
-          ${visualHtml}
-        </div>
-      </div>
-    `;
+    const [weaponName, skinName] = r.name.includes('|') 
+  ? r.name.split('|').map(s => s.trim()) 
+  : [r.name, ''];
+
+return `
+<div class="result-card" style="width: 230px; display: flex; flex-direction: column; gap: 8px; margin: 10px; flex-shrink: 0;">
+  
+  <div class="result-card-visual" style="
+    position: relative; 
+    width: 100%; 
+    height: 160px; 
+    background: linear-gradient(0deg, ${rarityColor}22 0%, rgba(0,0,0,0) 100%); 
+    border-bottom: 5px solid ${rarityColor}; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 4px; 
+    overflow: hidden;
+    ">
+    <div style="
+      position: absolute; 
+      top: 16px; left: 23px; width: 80%; height: 80%; 
+      background: url('${r.image}') center/contain no-repeat; 
+      filter: blur(15px);
+      opacity: 0.3;
+      z-index: 0;
+    "></div>
+
+    <div style="position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: 800; color: ${rarityColor}; text-transform: uppercase; z-index: 2; opacity: 0.9; letter-spacing: 0.5px;">
+      ${rarityLabel}
+    </div>
+
+    <div style="width: 80%; height: 80%; display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">
+      ${visualHtml.replace('style="', 'style="max-width: 100%; max-height: 100%;')}
+    </div>
+  </div>
+
+  <div class="result-card-info" style="text-align: left;">
+    <div style="font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      ${souvenirPrefix}${weaponName}
+    </div>
+    <div style="font-size: 14px; font-weight: 400; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      ${skinName}
+    </div>
+    <div style="margin-top: 10px;">
+      ${wearInfoHtml}
+    </div>
+  </div>
+
+</div>`;
   }).join('');
   
   const modal = document.getElementById('modalOverlay');
@@ -2719,7 +2759,8 @@ document.getElementById('incBtn').onclick = () => {
   if (!state.isSpinning) { 
     state.openCount = Math.min(5, state.openCount + 1); 
     updateCounterUI();
-    router.initSpinners(); 
+    router.initSpinners();
+    audio.playMenuFilterChange();
   } 
 };
 
@@ -2727,7 +2768,8 @@ document.getElementById('decBtn').onclick = () => {
   if (!state.isSpinning) { 
     state.openCount = Math.max(1, state.openCount - 1); 
     updateCounterUI();
-    router.initSpinners(); 
+    router.initSpinners();
+    audio.playMenuFilterChange();
   } 
 };
 document.getElementById('openBtn').onclick = handleOpen;

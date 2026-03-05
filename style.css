@@ -1,11 +1,11 @@
   :root {
-    --bg: rgb(9, 12, 14);
-    --panel: rgb(13, 17, 20);
+    --bg: rgb(8, 11, 13);
+    --panel: rgb(11, 13, 16);
     --text: #E6E6E6;
     --muted: #B5B5B5;
     --accent: #00aeff;
     --glass: rgb(255, 255, 255, 0.03);
-    --border: rgb(40, 40, 40);
+    --border: rgb(45, 45, 45);
     --radius: 14px;
 
     --r-consumer: #B0C3D9;
@@ -97,7 +97,7 @@
   .case-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 20px rgba(0, 174, 255, 0.5);
+              0 0 24px rgba(0, 174, 255, 0.3);
   border: 2px solid rgba(0, 174, 255, 0.7);
   }
 
@@ -140,7 +140,7 @@
   .btn-red {
   background-color: #EE4444 !important;
   border-color: #EE4444 !important;
-  color: #fff !important;
+  color: var(--text) !important;
   box-shadow: 0 0 15px rgba(233, 75, 75, 0.3);
 }
 
@@ -153,7 +153,7 @@
   .btn:enabled:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 12px rgba(0, 174, 255, 0.5);
+              0 0 px rgba(45, 45, 45, 0.8);
   }
 
   .filter-chip {cursor: pointer;}
@@ -178,7 +178,7 @@
   .filter-chip input:checked + .chip-label {
     background: rgba(0, 174, 255, 0.15);
     border-color: var(--accent);
-    color: #fff;
+    color: var(--text);
   }
 
   .filter-chip:hover .chip-label {
@@ -252,7 +252,7 @@
     align-items: center;
     background: var(--panel); 
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: var(--radius);
     padding: 6px;
     gap: 12px;
   }
@@ -263,7 +263,7 @@
     border-radius: 8px;
     border: none;
     background: var(--glass);
-    color: #fff;
+    color: var(--text);
     cursor: pointer;
     font-weight: 800;
     transition: 0.3s;
@@ -271,12 +271,12 @@
     
   .counter-btn:enabled:hover {
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 12px rgba(0, 174, 255, 0.1);
+              0 0 12px rgb(22, 25, 37);
   }
   
   .btn {
     background: var(--accent);
-    color: #fff;
+    color: var(--text);
     border: none;
     padding: 14px 30px;
     border-radius: var(--radius);
@@ -332,24 +332,32 @@
     transform: translateY(50px);
     pointer-events: none;
   }
+
   .modal {
-    background: var(--panel);
+    background: rgba(10, 10, 10, 0.25);
     border: 1px solid var(--border);
-    border-radius: 24px;
-    width: 100%;
-    max-width: 700px;
-    padding: 30px;
+    border-radius: 28px;
+    padding: 40px;
     text-align: center;
     max-height: 95vh;
     overflow-y: auto;
-    box-shadow: 0 0 60px rgba(0, 174, 255, 0.1);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+    width: fit-content;
+    min-width: 350px;
+    max-width: 95vw;
+    margin: auto;
   }
 
-  .results-list {display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 20px 0;
-  }
+  .results-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 15px;
+    margin-top: 20px;
+    width: 100%;
+}
 
   .result-row {
     display: flex;

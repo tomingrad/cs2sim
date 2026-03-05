@@ -4,8 +4,8 @@
     --text: #E6E6E6;
     --muted: #B5B5B5;
     --accent: #00aeff;
-    --glass: rgba(255, 255, 255, 0.03);
-    --border: rgba(245, 250, 255, 0.075);
+    --glass: rgb(255, 255, 255, 0.03);
+    --border: rgb(40, 40, 40);
     --radius: 14px;
 
     --r-consumer: #B0C3D9;
@@ -295,32 +295,22 @@
   .case-content-area {
     margin-top: 40px;
     border-top: 1px solid var(--border);
-    padding-top: 30px;
+    padding-top: 10px;
   }
 
   .drop-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(10, 1fr);
     gap: 15px;
+    width: 100%;
   }
 
   .drop-card {
-    background: var(--panel);
-    padding: 15px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--muted);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)
   }
 
-  .drop-label-container span {display: inline;}
-
-  .drop-card:hover .drop-label-container span {display: none;}
-
-  .drop-card:hover .drop-label-container::after {
-    content: attr(data-odds);
-    display: inline-block;
-    visibility: visible;
+  .drop-card:hover .drop-card-odds {
+    opacity: 1 !important;
   }
 
   .modal-overlay {

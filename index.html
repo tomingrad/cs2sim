@@ -836,12 +836,20 @@ function handleFilterChange() {
     tagSearch = parts[1].trim();
   }
 
+  const searchWords = normalSearch.split(/\s+/).filter(word => word.length > 0);
+
   let filtered = DATA.cases.filter(c => {
     const matchesType = activeTypes.includes(c.type);
     
+    const textContainsAllWords = (text) => {
+      if (!text) return false;
+      const lowerText = text.toLowerCase();
+      return searchWords.every(word => lowerText.includes(word));
+    };
+
     const matchesName = normalSearch === "" || 
-                        c.name.toLowerCase().includes(normalSearch) || 
-                        c.items.some(it => it.name.toLowerCase().includes(normalSearch));
+                        textContainsAllWords(c.name) || 
+                        c.items.some(it => textContainsAllWords(it.name));
     
     let matchesTags = true;
     if (tagSearch !== "") {

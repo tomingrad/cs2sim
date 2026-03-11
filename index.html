@@ -14,7 +14,7 @@
   <div class="top-history" id="topHistory" role="status" aria-live="polite" style="min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 10px; overflow-x: auto; width: 100%;">
     
     <div id="historyPlaceholder" style="color: var(--muted); font-size: 13px; font-style: italic; white-space: nowrap;">
-      — tady se zobrazí historie otevřených předmětů —
+      — tady se zobrazí otevřené předměty —
     </div>
 
   </div>
@@ -25,11 +25,11 @@
 <div class="page-container">
   <header style="display:flex; justify-content:space-between; align-items:center; margin: 16px 0">
     <h1 style="margin: 0; font-size: 36px;">CS2 Otevírací Simulátor <span style="font-weight:400; font-size:18px; color:var(--accent)">XD gamba</span></h1>
-    <button onclick="router.go('home')" class="btn" id="backBtn" style="background:var(--panel); border:1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
+    <button onclick="router.go('home')" class="btn-generic" id="backBtn">
       <img src="assets/image/icon/back.png" class="filter-icon"> 
       <span>Zpět na hlavní stránku</span>
     </button>
-    <button id="muteBtn" onclick="audio.toggleMute()" class="btn" style="background:var(--panel); border:1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
+    <button id="muteBtn" onclick="audio.toggleMute()" class="btn-generic">
       <img id="muteBtnIcon" src="assets/image/icon/sound_on.png" class="filter-icon">
       <span id="muteBtnText">Zvuk zapnutý</span>
     </button>
@@ -37,7 +37,7 @@
 
   <main id="view-home">
     <div style="margin-bottom:20px">
-      <input type="text" id="searchInput" placeholder="Vyhledat bednu, skin nebo samolepku... (nebo '#' pro hledání podle štítků)" style="width:100%; padding:15px; border-radius:12px; border:1px solid var(--border); background:var(--panel); color:var(--text); font-family: 'Radio Canada Big', sans-serif;">
+      <input type="text" id="searchInput" placeholder="Vyhledat bednu, skin nebo samolepku... (nebo '#' pro hledání podle štítků)" style="width:100%; padding:15px; border-radius:var(--radius); border:1px solid var(--border); background: transparent; color:var(--text); font-family: 'Radio Canada Big', sans-serif;backdrop-filter: blur(10px); box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);">
     </div>
     <div class="filter-container" style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
   <label class="filter-chip">
@@ -71,7 +71,7 @@
     </span>
   </label>
   
-  <button id="sortBtn" onclick="toggleSort()" class="btn" style="background:var(--panel); border:1px solid var(--border); padding: 8px 16px; margin-left: auto; display: flex; align-items: center; gap: 6px;">
+  <button id="sortBtn" onclick="toggleSort()" class="btn-generic" style="margin-left: auto;">
     <img src="assets/image/icon/sort.png" class="filter-icon" alt="Řazení"> 
     <span id="sortBtnText">Seřazeno od nejnovějších</span>
   </button>
@@ -485,7 +485,7 @@ drawItem() {
       
       const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
       grad.addColorStop(0, color + '44');
-      grad.addColorStop(0.5, color + '11');
+      grad.addColorStop(0.5, color + '22');
       grad.addColorStop(1, 'transparent');
 
       ctx.fillStyle = grad;
@@ -510,8 +510,8 @@ drawItem() {
           const imgY = (canvas.height - targetH) / 2;
 
           ctx.save();
-          ctx.filter = 'blur(15px)';
-          ctx.globalAlpha = 0.3;
+
+          ctx.filter = 'drop-shadow(0px 0px 10px rgba(0,0,0,0.3))';
           
           ctx.drawImage(
             it._imgObj, 
@@ -522,14 +522,6 @@ drawItem() {
           );
           
           ctx.restore();
-
-          ctx.drawImage(
-            it._imgObj, 
-            imgX, 
-            imgY, 
-            finalW, 
-            targetH
-          );
         }
       } else {
         ctx.font = '36px Arial';
@@ -702,8 +694,7 @@ const router = {
       const textLayer = `
         <span style="
           position: relative; 
-          z-index: 2; 
-          text-shadow: 0 0px 30px rgba(0,0,0,0.8);
+          z-index: 2;
         ">
           ${state.activeCase.name}
         </span>
@@ -749,7 +740,7 @@ renderDropTable() {
 
     let imageHtml = '';
     if (it.image) {
-      imageHtml = `<img src="${it.image}" style="width: 100px; height: auto; filter: drop-shadow(0 0 3px rgba(0,0,0,0.3));">`;
+      imageHtml = `<img src="${it.image}" style="width: 100px; height: auto; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));">`;
     }
 
     const chance = (it.odds * 100).toFixed(4).replace(/\.?0+$/, '') + '%';
@@ -758,12 +749,12 @@ renderDropTable() {
     let finalSkinName = skinName;
     if (it.link && skinName.includes(': ')) {
       const parts = skinName.split(': '); 
-      finalSkinName = `${parts[0]}: <a href="${it.link}" target="_blank" style="color: #fff; text-decoration: underline; position: relative; z-index: 10;">${parts[1]}</a>`;
+      finalSkinName = `${parts[0]}: <a href="${it.link}" target="_blank" style="color: var(--text); text-decoration: underline; position: relative; z-index: 10;">${parts[1]}</a>`;
     }
 
     return `<div class="drop-card" style="width: 140px; display: flex; flex-direction: column; gap: 6px;">
   
-    <div class="drop-card-visual" style="position: relative; width: 100%; height: 100px; background: linear-gradient(0deg, ${color}22 0%, rgba(0,0,0,0) 100%); border-bottom: 4px solid ${color}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
+    <div class="drop-card-visual" style="position: relative; width: 100%; height: 100px; background: linear-gradient(0deg, ${color}44 0%, rgba(0,0,0,0) 100%); border-bottom: 4px solid ${color}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden; ">
     <div style="position: absolute; top: 10px; left: 14px; width: 80%; height: 80%; background: url('${it.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.2; z-index: 0;"></div>
 
     <div class="drop-card-odds" style="position: absolute; top: 4px; left: 4px; font-size: 10px; font-weight: 800; color: ${color}; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2;">
@@ -776,10 +767,10 @@ renderDropTable() {
   </div>
 
   <div class="drop-card-info" style="text-align: left;">
-    <div style="font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+    <div style="font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgb(0, 0, 0);">
       ${weaponName}
     </div>
-    <div style="font-size: 12px; font-weight: 400; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+    <div style="font-size: 12px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgb(0, 0, 0);">
       ${finalSkinName}
     </div>
   </div>
@@ -1014,7 +1005,7 @@ function renderCases(filteredData) {
     
     if (c.image) {
       // Nastavení obrázku z dat předmětu
-      visualContent = `<img src="${c.image}" alt="${c.name}" style="width: 90px; height: 70px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0px 18px rgba(0,0,0,0.3));">`;
+      visualContent = `<img src="${c.image}" alt="${c.name}" style="width: 90px; height: 70px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0px 18px rgba(0,0,0,0.5));">`;
     } else {
       // Fallback na emoji když neni obrázek
       let emoji = '📦';
@@ -1040,7 +1031,7 @@ function renderCases(filteredData) {
     }
 
     return `
-      <div class="case-card ${newClass}" onclick="router.go('case', '${c.id}')" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+      <div class="case-card ${newClass}" onclick="router.go('case', '${c.id}')">
         ${visualContent}
         <h3 style="margin:0; font-size: 20px;">${c.name}</h3>
         
@@ -1153,10 +1144,10 @@ return `
   </div>
 
   <div class="result-card-info" style="text-align: left;">
-    <div style="font-size: 16px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+    <div style="font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
       ${souvenirPrefix}${weaponName}
     </div>
-    <div style="font-size: 14px; font-weight: 400; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+    <div style="font-size: 14px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
       ${skinName}
     </div>
     <div style="margin-top: 10px;">

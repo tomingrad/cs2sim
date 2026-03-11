@@ -5,8 +5,8 @@
     --muted: #B5B5B5;
     --accent: #00aeff;
     --glass: rgb(255, 255, 255, 0.03);
-    --border: rgb(45, 45, 45);
-    --radius: 14px;
+    --border: rgb(50, 50, 50);
+    --radius: 20px;
 
     --r-consumer: #B0C3D9;
     --r-industrial: #5E98D9;
@@ -23,13 +23,22 @@
   body { 
     margin: 0;
     font-family: 'Radio Canada Big', sans-serif;
-    background: var(--bg);
+    background: url(assets/image/background.jpg) center / cover no-repeat fixed;
     color: var(--text);
     padding-top: 60px;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    scrollbar-width: 0;
+  }
+
+  body::-webkit-scrollbar {
+  display: none;
+  }
+
+  h1, h2, p, span{
+    text-shadow: 0 0 5px rgb(0, 0, 0);
   }
 
   .top-history {
@@ -38,7 +47,9 @@
     left: 0;
     right: 0;
     height: 50px;
-    background: var(--panel);
+    background: transparent;
+    backdrop-filter: blur(5px); 
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
@@ -56,7 +67,9 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: var(--glass);
+    background: transparent;
+    backdrop-filter: blur(10px) brightness(0.8); 
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 11px;
@@ -82,11 +95,18 @@
   }
 
   .case-card {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   position: relative;
-  background: var(--panel);
+  background: transparent;
+  backdrop-filter: blur(10px); 
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 20px 30px;
   text-align: center;
   cursor: pointer;
   transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
@@ -120,7 +140,7 @@
   font-size: 10px;
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 6px;
+  border-radius: 10px;
   z-index: 10;
   box-shadow: 0 2px 5px rgba(0,0,0,0.5);
   }
@@ -142,18 +162,34 @@
   border-color: #EE4444 !important;
   color: var(--text) !important;
   box-shadow: 0 0 15px rgba(233, 75, 75, 0.3);
-}
+  }
 
   .btn-red:hover {
   background-color: #EE4444 !important;
   box-shadow: 0 0 25px rgba(238, 68, 68, 0.6) !important;
   transform: translateY(-2px);
-}
+  }
 
-  .btn:enabled:hover {
+  .btn-generic{
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius);
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .btn-generic:enabled:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 16px rgba(45, 45, 45, 0.8);
+  box-shadow: 0 0 16px rgba(45, 45, 45, 0.8) !important;
   }
 
   .filter-chip {cursor: pointer;}
@@ -165,6 +201,7 @@
     align-items: center;
     padding: 8px 16px;
     background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius);
     color: var(--muted);
@@ -205,6 +242,8 @@
     height: 130px;
     overflow: hidden;
     width: 100%;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
   }
 
   .spinner-instance::after {
@@ -216,14 +255,6 @@
   bottom: 0;
   pointer-events: none;
   z-index: 2;
-  
-  background: linear-gradient(
-    to right,
-    var(--bg) 1%,
-    rgba(11, 13, 16, 0) 20%,
-    rgba(11, 13, 16, 0) 80%,
-    var(--bg) 99%
-    );
   }
 
   .spinner-marker {
@@ -238,7 +269,10 @@
     box-shadow: 0 0 25px rgba(0, 174, 255, 0.6);
   }
 
-  canvas.spin-canvas { width: 100%; height: 100%; }
+  canvas.spin-canvas {
+    width: 100%;
+    height: 100%;
+  }
 
   .controls-row { display: flex;
     justify-content: center;
@@ -250,7 +284,9 @@
   .spin-counter {
     display: flex;
     align-items: center;
-    background: var(--panel); 
+    background: transparent;
+    backdrop-filter: blur(5px); 
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 6px;
@@ -260,9 +296,11 @@
   .counter-btn {
     width: 36px;
     height: 36px;
-    border-radius: 8px;
+    border-radius: 12px;
     border: none;
-    background: var(--glass);
+    background: transparent;
+    backdrop-filter: blur(5px); 
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
     color: var(--text);
     cursor: pointer;
     font-weight: 800;
@@ -294,8 +332,6 @@
 
   .case-content-area {
     margin-top: 40px;
-    border-top: 1px solid var(--border);
-    padding-top: 10px;
   }
 
   .drop-grid {
@@ -358,7 +394,7 @@
     gap: 15px;
     margin-top: 20px;
     width: 100%;
-}
+  }
 
   .result-row {
     display: flex;
@@ -375,12 +411,12 @@
     width: 100%;
     padding: 10px 0;
     text-align: center;
-    color: var(--text);
+    color: var(--muted);
+    backdrop-filter: blur(10px);
     font-size: 12px;
     font-style: italic;
     white-space: nowrap;
-    opacity: 0.7;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--border);
   }
 
   #particlesCanvas {

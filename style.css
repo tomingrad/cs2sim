@@ -5,7 +5,7 @@
     --muted: #B5B5B5;
     --accent: #00aeff;
     --glass: rgb(255, 255, 255, 0.03);
-    --border: rgb(50, 50, 50);
+    --border: rgb(60, 60, 60);
     --radius: 20px;
 
     --r-consumer: #B0C3D9;
@@ -38,7 +38,7 @@
   }
 
   h1, h2, p, span{
-    text-shadow: 0 0 5px rgb(0, 0, 0);
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   }
 
   .top-history {
@@ -49,7 +49,8 @@
     height: 50px;
     background: transparent;
     backdrop-filter: blur(5px); 
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 8px rgba(255, 255, 255, 0.15);
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
@@ -69,14 +70,14 @@
     gap: 8px;
     background: transparent;
     backdrop-filter: blur(10px) brightness(0.8); 
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 6px rgba(255, 255, 255, 0.15);
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 11px;
     font-weight: 600;
     border: 1px solid var(--border);
     animation: slideInTop 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    box-shadow: 0 0 0 rgba(255, 106, 0, 0);
     transition: box-shadow 0.3s;
   }
 
@@ -86,9 +87,8 @@
   }
 
   .page-container {
-    width: 85%;
+    width: 90%;
     margin: 0 auto;
-    padding-bottom: 50px;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -102,12 +102,14 @@
   text-align: center;
   position: relative;
   background: transparent;
-  backdrop-filter: blur(10px); 
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3),
+              inset 0 0 10px rgba(255, 255, 255, 0.15);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px 30px;
+  padding: 25px 30px;
   text-align: center;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   cursor: pointer;
   transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
               border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
@@ -116,33 +118,35 @@
 
   .case-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 24px rgba(0, 174, 255, 0.3);
-  border: 2px solid rgba(0, 174, 255, 0.7);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3), 
+              0 0 25px rgba(0, 174, 255, 0.5),
+              inset 0 0 15px rgba(0, 174, 255, 0.7);
+  border: 2px solid var(--accent);
   }
 
-  .case-card.is-new {border: 1px solid rgba(255, 217, 0, 0.7);}
+  .case-card.is-new {
+    border: 1px solid rgba(255, 217, 0, 0.6);
+  }
 
   .case-card.is-new:hover {
   border: 2px solid var(--r-gold);
   transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3), 
-              0 0 25px rgba(255, 217, 0, 0.5);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3), 
+              0 0 25px rgba(255, 217, 0, 0.5),
+              inset 0 0 15px rgba(255, 217, 0, 0.7);
   }
 
   .case-card.is-new::before {
-  content: "NOVĚ V CS2";
+  content: "NOVĚ V CS2!";
   position: absolute;
   top: 10px;
   right: 10px;
-  background: var(--r-gold);
-  color: #000;
-  font-size: 10px;
+  color: var(--r-gold);
+  text-shadow: 0 0 10px rgba(255, 217, 0, 0.7);
+  font-size: 11px;
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 10px;
   z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
   }
 
   .drop-card:hover {
@@ -179,7 +183,8 @@
     align-items: center;
     gap: 6px;
     backdrop-filter: blur(5px);
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 5px rgba(255, 255, 255, 0.175);
     border-radius: var(--radius);
     font-weight: 800;
     font-size: 14px;
@@ -189,7 +194,9 @@
 
   .btn-generic:enabled:hover {
   transform: translateY(-4px);
-  box-shadow: 0 0 16px rgba(45, 45, 45, 0.8) !important;
+  box-shadow: 0 0 10px rgb(45, 45, 45),
+              inset 0 0 5px rgba(255, 255, 255, 0.175)
+              !important;
   }
 
   .filter-chip {cursor: pointer;}
@@ -200,9 +207,11 @@
     display: flex;
     align-items: center;
     padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
+    background: transparent;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 5px rgba(255, 255, 255, 0.175);
     border-radius: var(--radius);
     color: var(--muted);
     font-size: 14px;
@@ -213,13 +222,15 @@
   }
 
   .filter-chip input:checked + .chip-label {
-    background: rgba(0, 174, 255, 0.15);
+    background: rgba(0, 174, 255, 0.05);
     border-color: var(--accent);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 10px rgba(0, 174, 255, 0.5);
     color: var(--text);
   }
 
   .filter-chip:hover .chip-label {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .filter-icon {
@@ -286,7 +297,8 @@
     align-items: center;
     background: transparent;
     backdrop-filter: blur(5px); 
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 10px rgba(255, 255, 255, 0.1);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 6px;
@@ -332,14 +344,27 @@
 
   .case-content-area {
     margin-top: 40px;
+    padding-bottom: 40px;
+    position: relative;
+    width: 100vw;
+    left: 50%;
+    transform: translateX(-50%);
+    box-sizing: border-box;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 15px rgba(255, 255, 255, 0.075);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
 
   .drop-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 15px;
-    width: 100%;
-    justify-content: center;
+    flex: 1;
+    width: 87.5%;
+    margin: 0 auto;
   }
 
   .drop-card {
@@ -353,8 +378,7 @@
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(15px);
+    background: rgba(0,0,0,0.6);
     display: none;
     align-items: center;
     justify-content: center;
@@ -375,10 +399,12 @@
     border: 1px solid var(--border);
     border-radius: 28px;
     padding: 40px;
+    backdrop-filter: blur(10px) brightness(1.1);
     text-align: center;
     max-height: 95vh;
     overflow-y: auto;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 160px rgb(0, 0, 0),
+                inset 0 0 20px rgba(255, 255, 255, 0.08);
     width: fit-content;
     min-width: 350px;
     max-width: 95vw;
@@ -413,6 +439,8 @@
     text-align: center;
     color: var(--muted);
     backdrop-filter: blur(10px);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.3),
+                inset 0 0 15px rgba(255, 255, 255, 0.075);
     font-size: 12px;
     font-style: italic;
     white-space: nowrap;

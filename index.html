@@ -37,7 +37,7 @@
 
   <main id="view-home">
     <div style="margin-bottom:20px">
-      <input type="text" id="searchInput" placeholder="Vyhledat bednu, skin nebo samolepku... (nebo '#' pro hledání podle štítků)" style="width:100%; padding:15px; border-radius:var(--radius); border:1px solid var(--border); background: transparent; color:var(--text); font-family: 'Radio Canada Big', sans-serif;backdrop-filter: blur(10px); box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);">
+      <input type="text" id="searchInput" placeholder="Vyhledat bednu, skin nebo samolepku... (nebo '#' pro hledání podle štítků)" style="width:100%; padding:15px; border-radius:var(--radius); border:1px solid var(--border); background: transparent; color:var(--text); font-family: 'Radio Canada Big', sans-serif; backdrop-filter: blur(10px); box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.15);">
     </div>
     <div class="filter-container" style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
   <label class="filter-chip">
@@ -75,8 +75,8 @@
     <img src="assets/image/icon/sort.png" class="filter-icon" alt="Řazení"> 
     <span id="sortBtnText">Seřazeno od nejnovějších</span>
   </button>
-</div>
-    <div id="casesGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:20px"></div>
+  </div>
+    <div id="casesGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap:20px; padding-bottom: 50px;"></div>
   </main>
 
   <main id="view-case" style="display:none">
@@ -100,6 +100,11 @@
     </div>
   </main>
 </div>
+
+<footer>
+    <p>Neoficiální web. Obrázky: Counter-Strike 2 © Valve Corporation.</p>
+    <p>cs2sim • vytvořil tomingrad • <a href="https://github.com/tomingrad/cs2sim" target="_blank" style="color: var(--text);">source kód</a></p>
+</footer>
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
@@ -127,8 +132,11 @@ const audio = {
   }
 
   const sounds = {
+  item_drop: 'assets/sound/item_drop.wav',
+  item_purple: 'assets/sound/item_purple.wav',
+  item_pink: 'assets/sound/item_pink.wav',
+  item_red: 'assets/sound/item_red.wav',
   case_tick: 'assets/sound/case_tick.wav',
-  item_open: 'assets/sound/item_open.wav',
   capsule_tick: 'assets/sound/capsule_tick.wav',
   capsule_start: 'assets/sound/capsule_unlock_start.wav',
   menu_case_open: 'assets/sound/menu_case_open.wav',
@@ -227,12 +235,38 @@ const audio = {
   playReveal() {
     if (this.muted) return;
 
-    const soundKey = 'item_open';
+    if (!state.lastResults || state.lastResults.length === 0) return;
+
+    const tierLevels = { 
+      'gray': 1, 'lightblue': 2, 'blue': 3, 
+      'purple': 4, 'pink': 5, 'red': 6, 'gold': 7 
+    };
+    
+    let bestRarity = state.lastResults[0].rarity;
+    let highestLevel = tierLevels[bestRarity] || 1;
+
+    state.lastResults.forEach(item => {
+      const level = tierLevels[item.rarity] || 1;
+      if (level > highestLevel) {
+        highestLevel = level;
+        bestRarity = item.rarity;
+      }
+    });
+
+    let soundKey = 'item_drop';
+    
+    if (bestRarity === 'purple') {
+      soundKey = 'item_purple';
+    } else if (bestRarity === 'pink') {
+      soundKey = 'item_pink';
+    } else if (bestRarity === 'red' || bestRarity === 'gold') {
+      soundKey = 'item_red';
+    }
 
     const sound = this.cache[soundKey];
     if (sound) {
       const playClone = sound.cloneNode();
-      playClone.volume = 0.2;
+      playClone.volume = 0.1;
       playClone.play().catch(() => {});
     }
   },
@@ -476,6 +510,9 @@ drawItem() {
     const {ctx, canvas, items, offset, slotW} = this;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
     items.forEach((it, i) => {
       const x = i * slotW - offset;
       if (x + slotW < 0 || x > canvas.width) return;
@@ -523,27 +560,8 @@ drawItem() {
           
           ctx.restore();
         }
-      } else {
-        ctx.font = '36px Arial';
-        let icon = '🔫';
-        if (it.name.includes('★')) icon = '🔪';
-        else if (state.activeCase && (state.activeCase.type === 'capsule' || it.name.includes('Samolepka'))) icon = '🏷️';
-        else if (state.activeCase && state.activeCase.type === 'package') icon = '📦';
-        
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 20;
-        
-        ctx.fillStyle = 'var(--text)';
-        ctx.fillText(icon, x + slotW / 2, canvas.height / 2);
-        
-        ctx.shadowBlur = 0;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'alphabetic';
       }
-    });
+  });
 }
 
   stop() {
@@ -754,7 +772,7 @@ renderDropTable() {
 
     return `<div class="drop-card" style="width: 140px; display: flex; flex-direction: column; gap: 6px;">
   
-    <div class="drop-card-visual" style="position: relative; width: 100%; height: 100px; background: linear-gradient(0deg, ${color}44 0%, rgba(0,0,0,0) 100%); border-bottom: 4px solid ${color}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden; ">
+    <div class="drop-card-visual" style="position: relative; width: 100%; height: 100px; background: linear-gradient(0deg, ${color}44 0%, rgba(0,0,0,0) 100%); border-bottom: 4px solid ${color}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
     <div style="position: absolute; top: 10px; left: 14px; width: 80%; height: 80%; background: url('${it.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.2; z-index: 0;"></div>
 
     <div class="drop-card-odds" style="position: absolute; top: 4px; left: 4px; font-size: 10px; font-weight: 800; color: ${color}; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2;">
@@ -994,7 +1012,7 @@ function renderCases(filteredData) {
         <img src="assets/image/icon/warning.png" style="width:80px; height: auto">
         <h2 style="color: var(--text); margin-bottom: 10px;">Není tu nic k zobrazení</h2>
         <p style="margin-bottom: 20px;">Pravděpodobně je vyhledávací výraz špatně nebo jsou všechny filtry vypnuté</p>
-        <button class="btn" id="resetBtn" onclick="resetFilters()">Resetovat filtry</button>
+        <button class="btn btn-red" id="resetBtn" onclick="resetFilters()">Resetovat filtry</button>
       </div>
     `;
     return;
@@ -1004,16 +1022,7 @@ function renderCases(filteredData) {
     let visualContent = '';
     
     if (c.image) {
-      // Nastavení obrázku z dat předmětu
-      visualContent = `<img src="${c.image}" alt="${c.name}" style="width: 90px; height: 70px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0px 18px rgba(0,0,0,0.5));">`;
-    } else {
-      // Fallback na emoji když neni obrázek
-      let emoji = '📦';
-      if (c.type === 'case') emoji = '🧰';
-      else if (c.type === 'package') emoji = '📦';
-      else if (c.type === 'capsule') emoji = '✉️';
-      else if (c.type === 'collection') emoji = '🎁';
-      visualContent = `<div style="font-size:40px; margin-bottom:10px">${emoji}</div>`;
+      visualContent = `<img src="${c.image}" alt="${c.name}" style="width: 100px; height: 80px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0px 18px rgba(0,0,0,0.5));">`;
     }
 
     const newClass = c.new === true ? 'is-new' : '';
@@ -1113,13 +1122,6 @@ function showResultsModal() {
     let visualHtml = '';
     if (r.image) {
       visualHtml = `<img src="${r.image}" style="height: auto; display: block;">`;
-    } else {
-      let icon = '🔫';
-      if (isKnife) icon = '🔪';
-      else if (r.name.toLowerCase().includes('rukavice')) icon = '🧤';
-      else if (isCapsule) icon = '🏷️';
-      else if (isPackage) icon = '📦';
-      visualHtml = `<span style="font-size: 40px;">${icon}</span>`;
     }
 
     const souvenirPrefix = isPackage ? '<span style="color:#ffd700">Souvenir </span>' : '';
@@ -1308,11 +1310,5 @@ window.addEventListener('resize', () => {
   state.instances.forEach(s => { s.resize(); s.draw(); });
 });
 </script>
-
-<footer>
-    <p>Neoficiální web. Obrázky: Counter-Strike 2 © Valve Corporation.</p>
-    <p>cs2sim • vytvořil tomingrad • <a href="https://github.com/tomingrad/cs2sim" target="_blank" style="color: var(--text);">source kód</a></p>
-</footer>
-
 </body>
 </html>

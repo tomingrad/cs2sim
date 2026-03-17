@@ -67,7 +67,7 @@
   <label class="filter-chip">
     <input type="checkbox" value="collection" checked onchange="handleFilterChange()">
     <span class="chip-label">
-      <img src="assets/image/collection/assault.png" class="filter-icon"> Kolekce
+      <img src="assets/image/icon/collection.png" class="filter-icon"> Kolekce
     </span>
   </label>
   
@@ -102,8 +102,9 @@
 </div>
 
 <footer>
-    <p>Neoficiální web. Obrázky: Counter-Strike 2 © Valve Corporation.</p>
-    <p>cs2sim • vytvořil tomingrad • <a href="https://github.com/tomingrad/cs2sim" target="_blank" style="color: var(--text);">source kód</a></p>
+    <p>Neoficiální web.</p>
+    <p>Obrázky: <a href="https://www.counter-strike.net" target="_blank">Counter-Strike 2</a> © <a href="https://www.valvesoftware.com/" target="_blank">Valve Corporation</a> • Data: <a href="https://github.com/ByMykel/CSGO-API" target="_blank">CSGO-API</a> — ByMykel</p>
+    <p>cs2sim • vytvořil tomingrad</p>
 </footer>
 
 <div class="modal-overlay" id="modalOverlay">
@@ -114,9 +115,18 @@
   </div>
 </div>
 
-<script src="cases.js"></script>
-
 <script>
+/** -------------------------
+ * GLOBÁLNÍ DATA A KONFIGURACE
+ * ------------------------- */
+window.DATA = { cases: [] };
+
+const TIER_MAP = {
+  '#b0c3d9': 'gray', '#5e98d9': 'lightblue', '#4b69ff': 'blue',
+  '#8847ff': 'purple', '#d32ce6': 'pink', '#eb4b4b': 'red',
+  '#e4ae39': 'gold', '#ffd700': 'gold'
+};
+
 /** -------------------------
  * AUDIO & PARTICLES
  * ------------------------- */
@@ -127,168 +137,73 @@ const audio = {
   cache: {},
 
   init() {
-  if (!this.ctx) {
-    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-
-  const sounds = {
-  item_drop: 'assets/sound/item_drop.wav',
-  item_purple: 'assets/sound/item_purple.wav',
-  item_pink: 'assets/sound/item_pink.wav',
-  item_red: 'assets/sound/item_red.wav',
-  case_tick: 'assets/sound/case_tick.wav',
-  capsule_tick: 'assets/sound/capsule_tick.wav',
-  capsule_start: 'assets/sound/capsule_unlock_start.wav',
-  menu_case_open: 'assets/sound/menu_case_open.wav',
-  menu_back: 'assets/sound/menu_back.wav',
-  menu_filter_change: 'assets/sound/menu_filter_change.wav'
-  };
-
-  for (const [key, path] of Object.entries(sounds)) {
-    if (!this.cache[key]) {
-      const a = new Audio();
-      // Povolení stahování z jiného serveru
-      a.crossOrigin = "anonymous"; 
-      a.src = path;
-      a.volume = 0.4;
-      a.load();
-      this.cache[key] = a;
-    }
-  }
-},
-
-  playMenuSelect() {
-    if (this.muted) return;
-    
-    if (!this.ctx) this.init();
-
-    const sound = this.cache['menu_case_open'];
-    if (sound) {
-      const s = sound.cloneNode();
-      s.volume = 0.15; 
-      s.play().catch(() => {});
+    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const sounds = {
+      item_drop: 'assets/sound/item_drop.wav', item_purple: 'assets/sound/item_purple.wav',
+      item_pink: 'assets/sound/item_pink.wav', item_red: 'assets/sound/item_red.wav',
+      case_tick: 'assets/sound/case_tick.wav', capsule_tick: 'assets/sound/capsule_tick.wav',
+      capsule_start: 'assets/sound/capsule_unlock_start.wav', menu_case_open: 'assets/sound/menu_case_open.wav',
+      menu_back: 'assets/sound/menu_back.wav', menu_filter_change: 'assets/sound/menu_filter_change.wav'
+    };
+    for (const [key, path] of Object.entries(sounds)) {
+      if (!this.cache[key]) {
+        const a = new Audio();
+        a.crossOrigin = "anonymous"; 
+        a.src = path;
+        a.volume = 0.4;
+        a.load();
+        this.cache[key] = a;
+      }
     }
   },
-
-  playMenuBack() {
-    if (this.muted) return;
-    if (!this.ctx) this.init();
-
-    const sound = this.cache['menu_back'];
-    if (sound) {
-      const s = sound.cloneNode();
-      s.volume = 0.2;
-      s.play().catch(() => {});
-    }
-  },
-
+  playMenuSelect() { if (!this.muted) { this.init(); this._play('menu_case_open', 0.15); } },
+  playMenuBack() { if (!this.muted) { this.init(); this._play('menu_back', 0.2); } },
+  playStart() { if (!this.muted) this._play('capsule_start', 0.2); },
   playMenuFilterChange() {
     if (this.muted) return;
-    if (!this.ctx) this.init();
-
     const now = Date.now();
-    if (now - this.lastTick < 60) return; 
+    if (now - this.lastTick < 60) return;
     this.lastTick = now;
-
-    const sound = this.cache['menu_filter_change'];
-    if (sound) {
-      const s = sound.cloneNode();
-      s.volume = 0.2;
-      s.play().catch(() => {});
-    }
+    this.init();
+    this._play('menu_filter_change', 0.2);
   },
-
-  playStart() {
-    if (this.muted) return;
-    
-    const soundKey = 'capsule_start';
-
-    const sound = this.cache[soundKey];
-    if (sound) {
-      const s = sound.cloneNode();
-      s.volume = 0.2;
-      s.play().catch(() => {});
-    }
-  },
-
   playTick() {
     if (this.muted) return;
     const now = Date.now();
-    if (now - this.lastTick < 40) return; 
+    if (now - this.lastTick < 40) return;
     this.lastTick = now;
-
-    // Výběr zvuku podle typu bedny
-    let soundKey = 'case_tick';
-    if (state.activeCase && state.activeCase.type === 'capsule' || state.activeCase.type === 'collection') {
-      soundKey = 'capsule_tick';
-    }
-
-    const sound = this.cache[soundKey];
-    if (sound) {
-      //cloneNode() - přehrát zvuk vícekrát přes sebe
-      const playClone = sound.cloneNode();
-      playClone.volume = 0.1;
-      playClone.play().catch(() => {});
-    }
+    const key = (state.activeCase && ['capsule', 'collection'].includes(state.activeCase.type)) ? 'capsule_tick' : 'case_tick';
+    this._play(key, 0.1);
   },
-
   playReveal() {
-    if (this.muted) return;
-
-    if (!state.lastResults || state.lastResults.length === 0) return;
-
-    const tierLevels = { 
-      'gray': 1, 'lightblue': 2, 'blue': 3, 
-      'purple': 4, 'pink': 5, 'red': 6, 'gold': 7 
-    };
-    
-    let bestRarity = state.lastResults[0].rarity;
-    let highestLevel = tierLevels[bestRarity] || 1;
-
-    state.lastResults.forEach(item => {
-      const level = tierLevels[item.rarity] || 1;
-      if (level > highestLevel) {
-        highestLevel = level;
-        bestRarity = item.rarity;
-      }
-    });
-
-    let soundKey = 'item_drop';
-    
-    if (bestRarity === 'purple') {
-      soundKey = 'item_purple';
-    } else if (bestRarity === 'pink') {
-      soundKey = 'item_pink';
-    } else if (bestRarity === 'red' || bestRarity === 'gold') {
-      soundKey = 'item_red';
-    }
-
-    const sound = this.cache[soundKey];
+    if (this.muted || !state.lastResults || state.lastResults.length === 0) return;
+    const weights = { 'gray': 1, 'lightblue': 2, 'blue': 3, 'purple': 4, 'pink': 5, 'red': 6, 'gold': 7 };
+    const winner = state.lastResults.reduce((prev, curr) => (weights[curr.rarity] > weights[prev.rarity]) ? curr : prev);
+    let key = 'item_drop';
+    if (winner.rarity === 'purple') key = 'item_purple';
+    else if (winner.rarity === 'pink') key = 'item_pink';
+    else if (['red', 'gold'].includes(winner.rarity)) key = 'item_red';
+    this._play(key, 0.1);
+  },
+  _play(key, vol) {
+    const sound = this.cache[key];
     if (sound) {
-      const playClone = sound.cloneNode();
-      playClone.volume = 0.1;
-      playClone.play().catch(() => {});
+      const s = sound.cloneNode();
+      s.volume = vol;
+      s.play().catch(() => {});
     }
   },
-
   toggleMute() {
-  this.muted = !this.muted;
-  
-  const btnText = document.getElementById('muteBtnText');
-  const btnIcon = document.getElementById('muteBtnIcon');
-
-  if (this.muted) {
-    if (btnText) btnText.innerText = 'Zvuk vypnutý';
-    if (btnIcon) btnIcon.src = 'assets/image/icon/sound_off.png';
-  } else {
-    if (btnText) btnText.innerText = 'Zvuk zapnutý';
-    if (btnIcon) btnIcon.src = 'assets/image/icon/sound_on.png';
-    audio.playMenuBack();
-    }
+    this.muted = !this.muted;
+    localStorage.setItem('muted', this.muted);
+    const btnText = document.getElementById('muteBtnText');
+    const btnIcon = document.getElementById('muteBtnIcon');
+    if (btnText) btnText.innerText = this.muted ? 'Zvuk vypnutý' : 'Zvuk zapnutý';
+    if (btnIcon) btnIcon.src = this.muted ? 'assets/image/icon/sound_off.png' : 'assets/image/icon/sound_on.png';
+    if (!this.muted) this.playMenuBack();
   }
 };
 
-// Logika particles
 const particles = {
   canvas: document.getElementById('particlesCanvas'),
   ctx: document.getElementById('particlesCanvas').getContext('2d'),
@@ -299,88 +214,189 @@ const particles = {
     this.loop();
   },
   spinBurst(x, y, w, h) {
-  const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00aeff';
-  
-  for (let i = 0; i < 250; i++) {
-    this.list.push({
-      x: x + (Math.random() - 0.5) * w * 5,
-      y: y + (Math.random() - 0.5) * h * 1.5,
-      color: accentColor,
-      vx: -(Math.random() * 25 + 10), 
-      vy: (Math.random() - 0.5) * 0.5,
-      size: Math.random() * 3 + 3,
-      life: 3.0, 
-      decay: Math.random() * 0.02 + 0.01,
-      noGravity: true
-    });
-  }
-},
+    const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00aeff';
+    for (let i = 0; i < 250; i++) {
+      this.list.push({
+        x: x + (Math.random() - 0.5) * w * 5, y: y + (Math.random() - 0.5) * h * 1.5,
+        color: accentColor, vx: -(Math.random() * 25 + 10), vy: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 3 + 3, life: 3.0, decay: Math.random() * 0.02 + 0.01, noGravity: true
+      });
+    }
+  },
   burst(x, y, color, count) {
     for (let i = 0; i < count; i++) {
       this.list.push({
-        x, y, color,
-        vx: (Math.random() - 0.5) * 24,
-        vy: (Math.random() - 0.5) * 12 - 4,
-        size: Math.random() * 8 + 4,
-        life: 10,
-        decay: Math.random() * 0.02 + 0.01,
-        noGravity: false, 
-        angle: Math.random() * Math.PI * 2,
-        av: (Math.random() - 0.5) * 0.2
+        x, y, color, vx: (Math.random() - 0.5) * 24, vy: (Math.random() - 0.5) * 12 - 4,
+        size: Math.random() * 8 + 4, life: 10, decay: Math.random() * 0.02 + 0.01,
+        noGravity: false, angle: Math.random() * Math.PI * 2, av: (Math.random() - 0.5) * 0.2
       });
     }
   },
   loop() {
-  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  this.list = this.list.filter(p => {
-    p.x += p.vx; 
-    p.y += p.vy; 
-    if (!p.noGravity) p.vy += 0.1;
-    
-    if (p.angle !== undefined) p.angle += p.av; 
-    
-    p.life -= p.decay;
-    if (p.life <= 0) return false;
-
-    this.ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
-    this.ctx.fillStyle = p.color;
-
-    this.ctx.save();
-    this.ctx.translate(p.x, p.y);
-    this.ctx.rotate(p.angle || 0);
-    
-    this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-    
-    this.ctx.restore();
-    
-    return true;
-  });
-  requestAnimationFrame(() => this.loop());
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.list = this.list.filter(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (!p.noGravity) p.vy += 0.1;
+      if (p.angle !== undefined) p.angle += p.av;
+      p.life -= p.decay;
+      if (p.life <= 0) return false;
+      this.ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+      this.ctx.fillStyle = p.color;
+      this.ctx.save();
+      this.ctx.translate(p.x, p.y);
+      this.ctx.rotate(p.angle || 0);
+      this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      this.ctx.restore();
+      return true;
+    });
+    requestAnimationFrame(() => this.loop());
   },
-  clear(){
-    this.list = [];
-  }
+  clear() { this.list = []; }
 };
 
 /** -------------------------
- * SPINNER
+ * DATA PARSER & LOGIC
  * ------------------------- */
+const monthMap = {
+  ledna: 0, února: 1, března: 2, dubna: 3, května: 4, června: 5,
+  července: 6, srpna: 7, září: 8, října: 9, listopadu: 10, prosince: 11
+};
 
- function calculateMissingOdds() {
-  const TIER_WEIGHTS = {
-    'gray':       15625,
-    'lightblue':  3125,
-    'blue':       625,
-    'purple':     125,
-    'pink':       25,
-    'red':        5,
-    'gold':       2
-  };
+function formatDateCzech(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string' || dateStr === 'Neznámé') return 'Neznámé';
+
+  const months = [
+    "ledna", "února", "března", "dubna", "května", "června",
+    "července", "srpna", "září", "října", "listopadu", "prosince"
+  ];
+
+  const standardized = dateStr.replace(/\//g, '-');
+  const parts = standardized.split('-');
+  
+  if (parts.length === 3) {
+    let day, month, year;
+    if (parts[0].length === 4) {
+      year = parseInt(parts[0]);
+      month = parseInt(parts[1]) - 1;
+      day = parseInt(parts[2]);
+    } 
+    else {
+      day = parseInt(parts[0]);
+      month = parseInt(parts[1]) - 1;
+      year = parseInt(parts[2]);
+    }
+
+    if (!isNaN(day) && months[month]) {
+      return `${day}. ${months[month]} ${year}`;
+    }
+  }
+
+  return dateStr;
+}
+
+async function loadAndTransformData() {
+  try {
+    const [cratesRes, collectionsRes, skinsRes] = await Promise.all([
+      fetch('assets/data/crates.json'),
+      fetch('assets/data/collections.json'),
+      fetch('assets/data/skins.json')
+    ]);
+
+    const cratesDB = await cratesRes.json();
+    const collectionsDB = await collectionsRes.json();
+    const skinsDB = await skinsRes.json();
+
+    DATA.skinsMap = {};
+    skinsDB.forEach(s => {
+      const cleanKey = s.name
+        .replace(/StatTrak™/g, '') 
+        .replace(/StatTrak/g, '')  
+        .replace(/[★()]/g, '')     
+        .replace(/\s+/g, ' ')      
+        .trim()
+        .toLowerCase();
+
+      DATA.skinsMap[cleanKey] = {
+        min_float: s.min_float !== undefined ? s.min_float : 0,
+        max_float: s.max_float !== undefined ? s.max_float : 1
+      };
+    });
+
+    const transformItem = (item, isCollection = false) => {
+      let rawType = item.type ? item.type.toLowerCase() : (isCollection ? 'collection' : 'case');
+      let normalizedType = 'case';
+      
+      if (rawType.includes('capsule') || rawType.includes('kapsle')) {
+        normalizedType = 'capsule';
+      } else if (rawType.includes('package') || rawType.includes('souvenir')) {
+        normalizedType = 'package';
+      } else if (rawType.includes('collection') || isCollection) {
+        normalizedType = 'collection';
+      }
+
+      const c = {
+        id: item.id,
+        name: item.name,
+        type: normalizedType,
+        release: formatDateCzech(item.first_sale_date),
+        series: item.def_index || null,
+        image: item.image || '', 
+        items: [],
+        rareItems: []
+      };
+
+      if (item.contains) {
+        c.items = item.contains.map(inner => ({
+          name: inner.name,
+          image: inner.image,
+          color: inner.rarity.color.toLowerCase(),
+          rarityLabel: inner.rarity.name,
+          rarity: TIER_MAP[inner.rarity.color.toLowerCase()] || 'blue',
+          paintIndex: inner.paint_index
+        }));
+      }
+
+      if (item.contains_rare && item.contains_rare.length > 0) {
+        c.rareItems = item.contains_rare.map(inner => ({
+          name: inner.name,
+          image: inner.image,
+          color: '#eb4b4b',
+          rarityLabel: inner.rarity.name,
+          rarity: 'red',
+          paintIndex: inner.paint_index
+        }));
+
+        const specialName = (item.loot_list && item.loot_list.name) ? item.loot_list.name : '★ Speciální Předmět ★';
+        const specialImage = (item.loot_list && item.loot_list.image) ? item.loot_list.image : 'assets/image/rsi_generic_old.png';
+
+        c.items.push({
+          name: specialName,
+          image: specialImage, 
+          color: '#FFD700',
+          rarityLabel: 'Výjimečně vzácný předmět',
+          rarity: 'gold',
+          isPlaceholder: true
+        });
+      }
+      return c;
+    };
+
+    const transformedCrates = cratesDB.map(c => transformItem(c, false));
+    const transformedCollections = collectionsDB.map(c => transformItem(c, true));
+    DATA.cases = [...transformedCrates, ...transformedCollections];
+
+    calculateMissingOdds();
+    console.log(`Načteno ${transformedCrates.length} beden. Mapa: ${Object.keys(DATA.skinsMap).length} položek.`);
+    
+  } catch(e) { 
+    console.error("Chyba při načítání dat:", e); 
+  }
+}
+
+function calculateMissingOdds() {
+  const TIER_WEIGHTS = { 'gray': 15625, 'lightblue': 3125, 'blue': 625, 'purple': 125, 'pink': 25, 'red': 5, 'gold': 2 };
 
   DATA.cases.forEach(c => {
-    const needsCalc = c.items.some(it => it.odds === undefined);
-    if (!needsCalc) return;
-
     const rarityCounts = {};
     c.items.forEach(it => {
       if (!rarityCounts[it.rarity]) rarityCounts[it.rarity] = 0;
@@ -389,35 +405,27 @@ const particles = {
 
     let totalBoxWeight = 0;
     for (const [rarity, count] of Object.entries(rarityCounts)) {
-      if (TIER_WEIGHTS[rarity]) {
-        totalBoxWeight += TIER_WEIGHTS[rarity];
-      }
+      if (TIER_WEIGHTS[rarity]) totalBoxWeight += TIER_WEIGHTS[rarity];
     }
 
     c.items.forEach(it => {
       if (it.odds === undefined && TIER_WEIGHTS[it.rarity]) {
         const groupOdds = TIER_WEIGHTS[it.rarity] / totalBoxWeight;
-        let rawItemOdds = groupOdds / rarityCounts[it.rarity];
-        let percent = rawItemOdds * 100;
-        percent = parseFloat(percent.toFixed(2));
-        it.odds = percent / 100;
+        let percent = (groupOdds / rarityCounts[it.rarity]) * 100;
+        it.odds = parseFloat(percent.toFixed(2)) / 100;
       }
     });
   });
 }
-calculateMissingOdds();
 
+/** -------------------------
+ * SPINNER & UI COMPONENTS
+ * ------------------------- */
 class Spinner {
   constructor(id, items) {
-    this.id = id; 
-    this.pool = items;
-    this.items = []; 
-    this.offset = 0; 
-    this.raf = null;
-    this.slotW = 160; 
-    this.lastTickIdx = -1;
+    this.id = id; this.pool = items; this.items = []; 
+    this.offset = 0; this.raf = null; this.slotW = 160; this.lastTickIdx = -1;
   }
-
   mount(parent) {
     const div = document.createElement('div');
     div.className = 'spinner-instance';
@@ -425,224 +433,132 @@ class Spinner {
     parent.appendChild(div);
     this.canvas = div.querySelector('canvas');
     this.ctx = this.canvas.getContext('2d');
-    this.resize(); 
-    this.reset();
+    this.resize(); this.reset();
   }
-
   resize() {
     this.canvas.width = this.canvas.parentElement.offsetWidth;
     this.canvas.height = this.canvas.parentElement.offsetHeight;
   }
-
-  // Realistickej spinner
   _getFillerItem(pool) {
     const totalWeight = pool.reduce((sum, it) => sum + it.odds, 0);
     const r = Math.random() * totalWeight;
-    
-    let acc = 0;
-    let selected = pool[0];
-
+    let acc = 0, selected = pool[0];
     for (const it of pool) {
       acc += it.odds;
-      if (r <= acc) {
-        selected = it;
-        break;
-      }
+      if (r <= acc) { selected = it; break; }
     }
-    
     const itemCopy = { ...selected };
-    
-    // StatTrak
-    if (state.activeCase && state.activeCase.type === 'case') {
-        if (Math.random() < 0.1) {
-            itemCopy.name = "StatTrak™ " + itemCopy.name;
-        }
+    if (state.activeCase && state.activeCase.type === 'case' && Math.random() < 0.1 && !itemCopy.isPlaceholder) {
+        itemCopy.name = "StatTrak™ " + itemCopy.name;
     }
-    
     return itemCopy;
   }
-
   reset() {
-    this.offset = 0;
-    this.lastTickIdx = -1;
-
+    this.offset = 0; this.lastTickIdx = -1;
     const commonPool = state.activeCase.items.filter(item => item.rarity !== 'gold');
     const pool = commonPool.length > 0 ? commonPool : state.activeCase.items;
-
-    for (let i = 0; i < 100; i++) {
-      this.items[i] = this._getFillerItem(pool);
-    }
-
+    for (let i = 0; i < 100; i++) this.items[i] = this._getFillerItem(pool);
     this.draw();
   }
-
-  // Určení výherního předmětu
-drawItem() {
+  drawItem() {
     const r = Math.random();
-    let acc = 0;
-    let selectedItem = null;
-    
+    let acc = 0, selectedItem = null;
     for (const i of this.pool) { 
       acc += i.odds; 
-      if (r <= acc) {
-        selectedItem = { ...i }; 
-        break;
-      }
+      if (r <= acc) { selectedItem = { ...i }; break; }
     }
-
     if (!selectedItem) selectedItem = { ...this.pool[0] };
-
-    selectedItem.isStatTrak = false; // Výchozí stav
-    if (state.activeCase && state.activeCase.type === 'case') {
-      if (Math.random() < 0.1) {
-        selectedItem.isStatTrak = true;
-        
-        if (selectedItem.rarity !== 'gold') {
-          selectedItem.name = "StatTrak™ " + selectedItem.name;
-        }
-      }
+    selectedItem.isStatTrak = false;
+    if (state.activeCase && state.activeCase.type === 'case' && Math.random() < 0.1) {
+      selectedItem.isStatTrak = true;
+      if (selectedItem.rarity !== 'gold') selectedItem.name = "StatTrak™ " + selectedItem.name;
     }
-    
     return selectedItem;
   }
-
   draw() {
     const {ctx, canvas, items, offset, slotW} = this;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
     items.forEach((it, i) => {
       const x = i * slotW - offset;
       if (x + slotW < 0 || x > canvas.width) return;
-      
-      const rarityData = DATA.rarities[it.rarity] || { color: 'var(--text)' };
-      const color = rarityData.color;
-      
+      const color = it.color || '#b0c3d9';
       const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
-      grad.addColorStop(0, color + '44');
-      grad.addColorStop(0.5, color + '22');
-      grad.addColorStop(1, 'transparent');
-
-      ctx.fillStyle = grad;
-      ctx.fillRect(x + 4, 10, slotW - 8, canvas.height - 20);
-      
-      ctx.fillStyle = color; 
-      ctx.fillRect(x + 4, canvas.height - 14, slotW - 8, 4);
+      grad.addColorStop(0, color + '44'); grad.addColorStop(0.5, color + '22'); grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad; ctx.fillRect(x + 4, 10, slotW - 8, canvas.height - 20);
+      ctx.fillStyle = color; ctx.fillRect(x + 4, canvas.height - 14, slotW - 8, 4);
 
       if (it.image) {
         if (!it._imgObj) {
-          it._imgObj = new Image();
-          it._imgObj.src = it.image;
-          it._imgObj.onload = () => this.draw();
+          it._imgObj = new Image(); it._imgObj.src = it.image; it._imgObj.onload = () => this.draw();
         }
-        
         if (it._imgObj.complete) {
-          const targetH = 82; 
-          const aspect = it._imgObj.naturalWidth / it._imgObj.naturalHeight;
-          const finalW = targetH * aspect;
-          
-          const imgX = x + (slotW - finalW) / 2;
-          const imgY = (canvas.height - targetH) / 2;
-
-          ctx.save();
-
-          ctx.filter = 'drop-shadow(0px 0px 10px rgba(0,0,0,0.3))';
-          
-          ctx.drawImage(
-            it._imgObj, 
-            imgX, 
-            imgY,
-            finalW, 
-            targetH
-          );
-          
+          const targetH = 82; const finalW = targetH * (it._imgObj.naturalWidth / it._imgObj.naturalHeight);
+          ctx.save(); ctx.filter = 'drop-shadow(0px 0px 10px rgba(0,0,0,0.3))';
+          ctx.drawImage(it._imgObj, x + (slotW - finalW) / 2, (canvas.height - targetH) / 2, finalW, targetH);
           ctx.restore();
         }
+      } else if (it.isPlaceholder) {
+        ctx.fillStyle = color;
+        ctx.font = '30px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', x + slotW / 2, canvas.height / 2 + 10);
       }
-  });
-}
-
+    });
+  }
   stop() {
-    if (this.raf) {
-      cancelAnimationFrame(this.raf);
-      this.raf = null;
-    }
+    if (this.raf) { cancelAnimationFrame(this.raf); this.raf = null; }
   }
+  async spin(winner) {
+    const winIdx = 60;
+    const commonPool = state.activeCase.items.filter(it => it.rarity !== 'gold');
+    for (let i = 0; i < 100; i++) this.items[i] = this._getFillerItem(commonPool.length > 0 ? commonPool : state.activeCase.items);
+    this.items[winIdx] = winner;
 
-async spin(winner) {
-  const winIdx = 60;
-  const commonPool = state.activeCase.items.filter(it => it.rarity !== 'gold');
-  const poolToUse = commonPool.length > 0 ? commonPool : state.activeCase.items;
+    const target = winIdx * this.slotW - (this.canvas.width / 2) + (this.slotW / 2) + (Math.random() * 60 - 30);
+    const start = performance.now();
+    this.duration = 8500 + Math.random() * 1000;
 
-  for (let i = 0; i < 100; i++) {
-    this.items[i] = this._getFillerItem(poolToUse);
-  }
-  this.items[winIdx] = winner;
+    return new Promise(res => {
+      const step = (now) => {
+        if (state.isSkipping) { this.offset = target; this.draw(); this.raf = null; return res(winner); }
+        const p = Math.min((now - start) / this.duration, 1);
+        this.offset = (1 - Math.pow(1 - p, 3)) * target;
 
-  const target = winIdx * this.slotW - (this.canvas.width / 2) + (this.slotW / 2) + (Math.random() * 60 - 30);
-  const start = performance.now();
-  this.duration = 8500 + Math.random() * 1000;
+        const curIdx = Math.floor((this.offset + this.canvas.width / 2) / this.slotW);
+        if (curIdx !== this.lastTickIdx) { audio.playTick(); this.lastTickIdx = curIdx; }
 
-  return new Promise(res => {
-    const step = (now) => {
-      
-      if (state.isSkipping) {
-        this.offset = target;
         this.draw();
-        this.raf = null;
-        return res(winner);
-      }
-
-      const p = Math.min((now - start) / this.duration, 1);
-      const ease = 1 - Math.pow(1 - p, 3);
-      this.offset = ease * target;
-
-      const curIdx = Math.floor((this.offset + this.canvas.width / 2) / this.slotW);
-      if (curIdx !== this.lastTickIdx) {
-        audio.playTick(this);
-        this.lastTickIdx = curIdx;
-      }
-
-      this.draw();
-
-      if (p < 1) {
-        this.raf = requestAnimationFrame(step);
-      } else {
-        this.raf = null;
-        res(winner);
-      }
-    };
-    this.raf = requestAnimationFrame(step);
-  });
-}
+        if (p < 1) this.raf = requestAnimationFrame(step);
+        else { this.raf = null; res(winner); }
+      };
+      this.raf = requestAnimationFrame(step);
+    });
+  }
 }
 
 /** -------------------------
- * STATE & ACTIONS
+ * STATE & ROUTER
  * ------------------------- */
-const state = {
-  isSpinning: false,
-  openCount: 1,
-  instances: [],
-  activeCase: null,
-  lastResults: [],
-  sortOrder: 'desc'
-};
+const state = { isSpinning: false, openCount: 1, instances: [], activeCase: null, lastResults: [], sortOrder: 'desc' };
 
-const monthMap = {
-  ledna: 0, února: 1, března: 2, dubna: 3, května: 4, června: 5,
-  července: 6, srpna: 7, září: 8, října: 9, listopadu: 10, prosince: 11
-};
-
-// Převod čísel na měsíce (filtr)
 function parseReleaseDate(dateStr) {
-  if (!dateStr || dateStr === 'Neznámé') return 0;
-  const parts = dateStr.replace('.', '').split(' ');
-  const day = parseInt(parts[0]);
-  const month = monthMap[parts[1]] || 0;
-  const year = parseInt(parts[2]);
+  if (!dateStr || typeof dateStr !== 'string' || dateStr === 'Neznámé') return 0;
+
+  if (dateStr.includes('-') || dateStr.includes('/')) {
+    const standardized = dateStr.replace(/\//g, '-');
+    const parts = standardized.split('-');
+    if (parts[0].length === 4) return new Date(parts[0], parts[1]-1, parts[2]).getTime();
+    return new Date(parts[2], parts[1]-1, parts[0]).getTime();
+  }
+
+  const parts = dateStr.replace(/\./g, '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return 0;
+
+  const day = parseInt(parts[0]) || 1;
+  const month = monthMap[parts[1]?.toLowerCase()] || 0;
+  const year = parseInt(parts[2]) || 2024;
+
   return new Date(year, month, day).getTime();
 }
 
@@ -650,20 +566,12 @@ const router = {
   go(view, id) {
     window.scrollTo(0, 0);
     if (view === 'home' && state.isSpinning) {
-      state.isSpinning = false;
-      state.isSkipping = false;
+      state.isSpinning = state.isSkipping = false;
       state.instances.forEach(s => s.stop());
-
-      document.getElementById('openBtn').disabled = false; 
-      document.getElementById('incBtn').disabled = false;
-      document.getElementById('decBtn').disabled = false;
+      ['openBtn', 'incBtn', 'decBtn'].forEach(btn => document.getElementById(btn).disabled = false);
     }
-    
     if (view === 'home') {
-      if (state.activeCase) {
-        audio.playMenuBack();
-        particles.clear();
-      }
+      if (state.activeCase) { audio.playMenuBack(); particles.clear(); }
       handleFilterChange();
     }
 
@@ -672,525 +580,311 @@ const router = {
     document.querySelector('header h1').style.display = view === 'home' ? 'block' : 'none';
     
     const backBtn = document.querySelector('#backBtn');
-    if (backBtn) {
-      backBtn.style.display = view === 'home' ? 'none' : 'flex';
-    }
+    if (backBtn) backBtn.style.display = view === 'home' ? 'none' : 'flex';
 
     if (view === 'case') {
-      const searchInput = document.getElementById('searchInput');
-      
       state.activeCase = DATA.cases.find(c => c.id === id);
-
       const titleEl = document.getElementById('caseTitle');
+      titleEl.style.cssText = 'position: relative; display: flex; justify-content: center; align-items: center; overflow: visible; z-index: 1;';
       
-      titleEl.style.position = 'relative';
-      titleEl.style.display = 'flex';
-      titleEl.style.justifyContent = 'center';
-      titleEl.style.alignItems = 'center';
-      titleEl.style.overflow = 'visible';
-      titleEl.style.zIndex = '1';
-
-      let bgLayer = '';
-      if (state.activeCase.image) {
-        bgLayer = `
-          <img src="${state.activeCase.image}" 
-               style="
-                 position: absolute;
-                 top: 50%;
-                 left: 50%;
-                 transform: translate(-50%, -40%);
-                 width: 300px;
-                 height: auto;
-                 opacity: 0.3;
-                 filter: blur(10px);
-                 z-index: -1;
-                 pointer-events: none;
-               ">
-        `;
-      }
-
-      const textLayer = `
-        <span style="
-          position: relative; 
-          z-index: 2;
-        ">
-          ${state.activeCase.name}
-        </span>
-      `;
-
-      titleEl.innerHTML = bgLayer + textLayer;
-
-      const isCollection = state.activeCase.type === 'collection';
+      const bgLayer = state.activeCase.image ? `<img src="${state.activeCase.image}" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%); width: 300px; height: auto; opacity: 0.3; filter: blur(10px); z-index: -1; pointer-events: none;">` : '';
+      titleEl.innerHTML = bgLayer + `<span style="position: relative; z-index: 2;">${state.activeCase.name}</span>`;
 
       audio.playMenuSelect();
-      
       document.getElementById('caseSubtitle').innerHTML = `
-        ${!isCollection ? `
-          <span>Bedna série č. <span style="color:var(--text)">${state.activeCase.series || 'Neznámé'}</span>,</span>
-        ` : ''}
-          <span>Datum vydání: <span style="color:var(--text)">${state.activeCase.release || 'Neznámý'}</span></span>
-      `;
+        <span>Datum vydání: <span style="color:var(--text)">${state.activeCase.release}</span></span>`;
 
       this.initSpinners();
       this.renderDropTable();
     }
     updateCounterUI();
   },
-
   initSpinners() {
     const container = document.getElementById('spinnersContainer');
-    container.innerHTML = ''; 
-    state.instances = [];
+    container.innerHTML = ''; state.instances = [];
     for (let i=0; i < state.openCount; i++) {
       const s = new Spinner(i, state.activeCase.items);
-      s.mount(container); 
-      state.instances.push(s);
+      s.mount(container); state.instances.push(s);
     }
   },
+  renderDropTable() {
+    const grid = document.getElementById('dropGrid');
+    if (!state.activeCase) return;
 
-renderDropTable() {
-  const grid = document.getElementById('dropGrid');
-  if (!state.activeCase) return;
+    const rarityOrder = {
+      'gray': 1,
+      'lightblue': 2,
+      'blue': 3,
+      'purple': 4,
+      'pink': 5,
+      'red': 6,
+      'gold': 7
+    };
 
-  grid.innerHTML = state.activeCase.items.map(it => {
-    const rarityData = DATA.rarities[it.rarity];
-    const color = rarityData.color;
+    const sortedItems = [...state.activeCase.items].sort((a, b) => {
+      const orderA = rarityOrder[a.rarity] || 99;
+      const orderB = rarityOrder[b.rarity] || 99;
+      return orderA - orderB;
+    });
 
-    let imageHtml = '';
-    if (it.image) {
-      imageHtml = `<img src="${it.image}" style="width: 100px; height: auto; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));">`;
-    }
+    grid.innerHTML = sortedItems.map(it => {
+      const color = it.color || '#b0c3d9';
+      const imageHtml = it.image ? `<img src="${it.image}" style="width: 100px; height: auto; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); max-width: 100%; max-height: 100%;">` : `<span style="font-size:40px; color:${color};">★</span>`;
+      const chance = (it.odds * 100).toFixed(4).replace(/\.?0+$/, '') + '%';
+      const [weaponName, skinName] = it.name.includes('|') ? it.name.split('|').map(s => s.trim()) : [it.name, ''];
 
-    const chance = (it.odds * 100).toFixed(4).replace(/\.?0+$/, '') + '%';
-    const [weaponName, skinName] = it.name.includes('|') ? it.name.split('|').map(s => s.trim()) : [it.name, ''];
-
-    let finalSkinName = skinName;
-    if (it.link && skinName.includes(': ')) {
-      const parts = skinName.split(': '); 
-      finalSkinName = `${parts[0]}: <a href="${it.link}" target="_blank" style="color: var(--text); text-decoration: underline; position: relative; z-index: 10;">${parts[1]}</a>`;
-    }
-
-    return `<div class="drop-card" style="width: 140px; display: flex; flex-direction: column; gap: 6px;">
-  
-    <div class="drop-card-visual" style="position: relative; width: 100%; height: 100px; background: linear-gradient(0deg, ${color}44 0%, rgba(0,0,0,0) 100%); border-bottom: 4px solid ${color}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
-    <div style="position: absolute; top: 10px; left: 14px; width: 80%; height: 80%; background: url('${it.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.2; z-index: 0;"></div>
-
-    <div class="drop-card-odds" style="position: absolute; top: 4px; left: 4px; font-size: 10px; font-weight: 800; color: ${color}; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2;">
-      ${chance}
-    </div>
-
-    <div style="width: 90%; height: 90%; display: flex; align-items: center; justify-content: center; z-index: 1, position: relative;">
-      ${imageHtml.replace('style="', 'style="max-width: 100%; max-height: 100%;')}
-    </div>
-  </div>
-
-  <div class="drop-card-info" style="text-align: left;">
-    <div style="font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgb(0, 0, 0);">
-      ${weaponName}
-    </div>
-    <div style="font-size: 12px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgb(0, 0, 0);">
-      ${finalSkinName}
-    </div>
-  </div>
-  </div>`;
+      return `<div class="drop-card" style="width: 140px; display: flex; flex-direction: column; gap: 6px;">
+      <div class="drop-card-visual" style="position: relative; width: 100%; height: 100px; background: linear-gradient(0deg, ${color}44 0%, rgba(0,0,0,0) 100%); border-bottom: 4px solid ${color}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
+        ${it.image ? `<div style="position: absolute; top: 10px; left: 14px; width: 80%; height: 80%; background: url('${it.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.2; z-index: 0;"></div>` : ''}
+        <div class="drop-card-odds" style="position: absolute; top: 4px; left: 4px; font-size: 10px; font-weight: 800; color: ${color}; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2;">${chance}</div>
+        <div style="width: 90%; height: 90%; display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">${imageHtml}</div>
+      </div>
+      <div class="drop-card-info" style="text-align: left;">
+        <div style="font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgb(0, 0, 0);">${weaponName}</div>
+        <div style="font-size: 12px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgb(0, 0, 0);">${skinName}</div>
+      </div></div>`;
     }).join('');
-  }
 }
+};
 
+/** -------------------------
+ * UI & EVENTS
+ * ------------------------- */
 function handleAllFilterChange() {
-  const allCheckbox = document.getElementById('filterAll');
-  const otherCheckboxes = document.querySelectorAll('.filter-chip input:not(#filterAll)');
-  
-  otherCheckboxes.forEach(cb => {
-    cb.checked = allCheckbox.checked;
-  });
-  
+  const allCb = document.getElementById('filterAll');
+  document.querySelectorAll('.filter-chip input:not(#filterAll)').forEach(cb => cb.checked = allCb.checked);
   handleFilterChange();
 }
 
 function toggleSort() {
   state.sortOrder = state.sortOrder === 'desc' ? 'asc' : 'desc';
-  
-  const btnText = document.getElementById('sortBtnText');
-  if (btnText) {
-    btnText.innerText = state.sortOrder === 'desc' 
-      ? 'Seřazeno od nejnovějších' 
-      : 'Seřazeno od nejstarších';
-  }
-  
+  document.getElementById('sortBtnText').innerText = state.sortOrder === 'desc' ? 'Seřazeno od nejnovějších' : 'Seřazeno od nejstarších';
   handleFilterChange();
 }
 
 function handleFilterChange() {
-  const allCheckbox = document.getElementById('filterAll');
-  const otherCheckboxes = Array.from(document.querySelectorAll('.filter-chip input:not(#filterAll)'));
-
+  const allCb = document.getElementById('filterAll');
+  const others = Array.from(document.querySelectorAll('.filter-chip input:not(#filterAll)'));
   audio.playMenuFilterChange();
 
-  const allOthersChecked = otherCheckboxes.every(cb => cb.checked);
-  const someOthersUnchecked = otherCheckboxes.some(cb => !cb.checked);
+  if (others.every(cb => cb.checked)) allCb.checked = true;
+  else if (others.some(cb => !cb.checked)) allCb.checked = false;
 
-  if (allOthersChecked) allCheckbox.checked = true;
-  else if (someOthersUnchecked) allCheckbox.checked = false;
+  const searchVal = document.getElementById('searchInput').value.toLowerCase();
+  const activeTypes = others.filter(cb => cb.checked).map(cb => cb.value);
 
-  const rawSearchTerm = document.getElementById('searchInput').value.toLowerCase();
-  const activeTypes = otherCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
-
-  let normalSearch = rawSearchTerm;
-  let tagSearch = "";
-
-  if (rawSearchTerm.includes('#')) {
-    const parts = rawSearchTerm.split('#');
-    normalSearch = parts[0].trim();
-    tagSearch = parts[1].trim();
-  }
-
-  const searchWords = normalSearch.split(/\s+/).filter(word => word.length > 0);
+  const [normalSearch, tagSearch] = searchVal.includes('#') ? searchVal.split('#').map(s => s.trim()) : [searchVal, ""];
+  const words = normalSearch.split(/\s+/).filter(w => w.length > 0);
 
   let filtered = DATA.cases.filter(c => {
-    const matchesType = activeTypes.includes(c.type);
-    
-    const textContainsAllWords = (text) => {
-      if (!text) return false;
-      const lowerText = text.toLowerCase();
-      return searchWords.every(word => lowerText.includes(word));
-    };
-
-    const matchesName = normalSearch === "" || 
-                        textContainsAllWords(c.name) || 
-                        c.items.some(it => textContainsAllWords(it.name));
-    
-    let matchesTags = true;
-    if (tagSearch !== "") {
-      if (c.tags && Array.isArray(c.tags)) {
-        matchesTags = c.tags.some(tag => tag.toLowerCase().includes(tagSearch));
-      } else {
-        matchesTags = false;
-      }
-    }
-
-    return matchesType && matchesName && matchesTags;
+    if (!activeTypes.includes(c.type)) return false;
+    const containsAll = text => !text ? false : words.every(w => text.toLowerCase().includes(w));
+    const nameMatch = normalSearch === "" || containsAll(c.name) || c.items.some(it => containsAll(it.name));
+    const tagMatch = tagSearch === "" || (c.tags && c.tags.some(t => t.toLowerCase().includes(tagSearch)));
+    return nameMatch && tagMatch;
   });
 
-  filtered.sort((a, b) => {
-    const dateA = parseReleaseDate(a.release);
-    const dateB = parseReleaseDate(b.release);
-    return state.sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
-  });
-
+  filtered.sort((a, b) => state.sortOrder === 'desc' ? parseReleaseDate(b.release) - parseReleaseDate(a.release) : parseReleaseDate(a.release) - parseReleaseDate(b.release));
   renderCases(filtered);
 }
 
-document.getElementById('searchInput').addEventListener('input', handleFilterChange);
-
 function resetFilters() {
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) searchInput.value = '';
-
-  const allCheckbox = document.getElementById('filterAll');
-  if (allCheckbox) {
-    allCheckbox.checked = true;
-    handleAllFilterChange();
-  } else {
-    renderCases(DATA.cases);
-  }
+  document.getElementById('searchInput').value = '';
+  const allCb = document.getElementById('filterAll');
+  if (allCb) { allCb.checked = true; handleAllFilterChange(); }
+  else renderCases(DATA.cases);
 }
 
 async function handleOpen() {
-  if (state.isSpinning) {
-    state.isSkipping = true;
-    return;
-  }
+  if (state.isSpinning) { state.isSkipping = true; return; }
 
   audio.playStart();
-  state.isSpinning = true;
-  state.isSkipping = false;
+  state.isSpinning = true; state.isSkipping = false;
+  const btn = document.getElementById('openBtn');
+  btn.innerText = "Přeskočit"; btn.classList.add('btn-red');
+  ['incBtn', 'decBtn'].forEach(id => { if (document.getElementById(id)) document.getElementById(id).disabled = true; });
 
-  const openBtn = document.getElementById('openBtn');
-  openBtn.innerText = "Přeskočit";
-  openBtn.classList.add('btn-red');
-
-  if(document.getElementById('incBtn')) document.getElementById('incBtn').disabled = true;
-  if(document.getElementById('decBtn')) document.getElementById('decBtn').disabled = true;
-
-  const allSpinners = document.querySelectorAll('.spin-canvas');
-  allSpinners.forEach(spinner => {
-    const rect = spinner.getBoundingClientRect();
-    if (particles && typeof particles.spinBurst === 'function') {
-      particles.spinBurst(
-        rect.left + rect.width / 2, 
-        rect.top + rect.height / 2, 
-        rect.width, 
-        rect.height * 0.3
-      );
-    }
+  document.querySelectorAll('.spin-canvas').forEach(canvas => {
+    const rect = canvas.getBoundingClientRect();
+    particles.spinBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, rect.width, rect.height * 0.3);
   });
-  
+
   const rolledWinners = [];
   const promises = state.instances.map(s => {
     s.reset();
-    const winningItem = s.drawItem();
-    rolledWinners.push(winningItem);
-    return s.spin(winningItem);
+    const w = s.drawItem();
+    rolledWinners.push(w);
+    return s.spin(w);
   });
 
   try {
     await Promise.all(promises);
 
-    let results = rolledWinners.map(item => {
-      if (item.rarity === 'gold' && item.knives && DATA.knifeCollections[item.knives]) {
-        const pool = DATA.knifeCollections[item.knives];
-        const randomKnife = pool[Math.floor(Math.random() * pool.length)];
+    state.lastResults = rolledWinners.map(item => {
+      if (item.isPlaceholder && state.activeCase.rareItems && state.activeCase.rareItems.length > 0) {
+        const rarePool = state.activeCase.rareItems;
+        const randomRare = rarePool[Math.floor(Math.random() * rarePool.length)];
         const wasStatTrak = item.isStatTrak === true;
-        const min = randomKnife.minFloat !== undefined ? randomKnife.minFloat : 0;
-        const max = randomKnife.maxFloat !== undefined ? randomKnife.maxFloat : 1;
-        
         return { 
-          ...item, 
-          ...randomKnife, 
+          ...randomRare, 
           isStatTrak: wasStatTrak,
-          float: Math.random() * (max - min) + min,
+          float: Math.random(), 
           pattern: Math.floor(Math.random() * 1000) + 1,
-          name: wasStatTrak ? `StatTrak™ ${randomKnife.name}` : randomKnife.name
+          name: wasStatTrak ? `StatTrak™ ${randomRare.name}` : randomRare.name
         };
       }
       return item;
     });
 
     if (!state.isSpinning) return;
-
-    state.lastResults = results;
     audio.playReveal();
     showResultsModal();
     state.lastResults.forEach(r => addHistory(r));
-    
-  } catch (err) {
-    console.error("Chyba při otevírání:", err);
-  } finally {
-    state.isSpinning = false;
-    state.isSkipping = false;
-    updateCounterUI();
-  }
+  } catch (err) { console.error(err); } 
+  finally { state.isSpinning = state.isSkipping = false; updateCounterUI(); }
 }
 
 function addHistory(it) {
   const container = document.getElementById('topHistory');
-  const placeholder = document.getElementById('historyPlaceholder');
-  
-  if (placeholder) {
-    placeholder.remove();
-    container.style.justifyContent = 'flex-start';
-  }
+  const ph = document.getElementById('historyPlaceholder');
+  if (ph) { ph.remove(); container.style.justifyContent = 'flex-start'; }
 
   const node = document.createElement('div');
-  node.className = 'history-node';
+  node.className = 'history-node new-item';
+  const prefix = (state.activeCase && state.activeCase.type === 'package') ? '<span style="color:#ffd700; font-weight:bold">Souvenir</span>' : '';
+  node.innerHTML = `<span style="color:${it.color || '#b0c3d9'}">●</span> ${prefix}${it.name}`;
   
-  const isPackage = state.activeCase && state.activeCase.type === 'package';
-  const souvenirPrefix = isPackage ? '<span style="color:#ffd700; font-weight:bold">Souvenir</span>' : '';
-
-  node.innerHTML = `
-    <span style="color:${DATA.rarities[it.rarity].color}">●</span> 
-    ${souvenirPrefix}${it.name}
-  `;
-  
-  node.classList.add('new-item');
   setTimeout(() => node.classList.remove('new-item'), 1000);
-
   container.prepend(node);
-
-  if (container.children.length > 30) {
-    container.lastElementChild.remove();
-  }
+  if (container.children.length > 30) container.lastElementChild.remove();
 }
 
 function renderCases(filteredData) {
   const grid = document.getElementById('casesGrid');
   
   if (filteredData.length === 0) {
-    grid.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--muted);">
-        <img src="assets/image/icon/warning.png" style="width:80px; height: auto">
-        <h2 style="color: var(--text); margin-bottom: 10px;">Není tu nic k zobrazení</h2>
-        <p style="margin-bottom: 20px;">Pravděpodobně je vyhledávací výraz špatně nebo jsou všechny filtry vypnuté</p>
-        <button class="btn btn-red" id="resetBtn" onclick="resetFilters()">Resetovat filtry</button>
-      </div>
-    `;
+    grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--muted);"><img src="assets/image/icon/warning.png" style="width:80px; height: auto"><h2 style="color: var(--text); margin-bottom: 10px;">Není tu nic k zobrazení</h2><p style="margin-bottom: 20px;">Pravděpodobně je vyhledávací výraz špatně nebo jsou všechny filtry vypnuté</p><button class="btn btn-red" id="resetBtn" onclick="resetFilters()">Resetovat filtry</button></div>`;
     return;
   }
 
+  const now = Date.now();
+  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+
   grid.innerHTML = filteredData.map(c => {
-    let visualContent = '';
+    const releaseTime = parseReleaseDate(c.release);
     
-    if (c.image) {
-      visualContent = `<img src="${c.image}" alt="${c.name}" style="width: 100px; height: 80px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0px 18px rgba(0,0,0,0.5));">`;
-    }
-
-    const newClass = c.new === true ? 'is-new' : '';
-
-    const searchVal = document.getElementById('searchInput').value;
-    const isTagSearch = searchVal.includes('#');
-    let tagsHtml = '';
-
-    if (isTagSearch && c.tags && Array.isArray(c.tags) && c.tags.length > 0) {
-      tagsHtml = `
-        <div style="font-size:12px; color:var(--muted);">
-          Štítky: <span style="color:var(--accent)">#${c.tags.join(', ')}</span>
-        </div>
-      `;
-    }
+    const isNew = releaseTime > 0 && (now - releaseTime) <= thirtyDaysMs;
+    const newClass = isNew ? ' is-new' : '';
 
     return `
-      <div class="case-card ${newClass}" onclick="router.go('case', '${c.id}')">
-        ${visualContent}
-        <h3 style="margin:0; font-size: 20px;">${c.name}</h3>
-        
-        ${c.type !== 'collection' ? `
-          <div style="font-size:12px; color:var(--muted); margin-top: 8px;">
-            Bedna série č. <span style="color:var(--text)">${c.series || 'Neznámé'}</span>
-          </div>
-        ` : ''}
-
-        <div style="font-size:12px; color:var(--muted); ${c.type === 'collection' ? 'margin-top: 8px;' : ''}">
-          Datum vydání: <span style="color:var(--text)">${c.release || 'Neznámý'}</span>
-        </div>
-          ${tagsHtml}
-        </div>
+    <div class="case-card${newClass}" onclick="router.go('case', '${c.id}')">
+      ${c.image ? `<img src="${c.image}" style="width: 100px; height: 80px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0px 18px rgba(0,0,0,0.5));">` : ''}
+      <h3 style="margin:0; font-size: 20px;">${c.name}</h3>
+      <div style="font-size:12px; color:var(--muted); margin-top: 8px">Datum vydání: <span style="color:var(--text)">${c.release}</span></div>
+    </div>
     `;
   }).join('');
 }
 
 function showResultsModal() {
-  if (particles && typeof particles.clear === 'function') {
-    particles.clear();
-  }
-  
+  if (particles && typeof particles.clear === 'function') particles.clear();
   const list = document.getElementById('resultsList');
   
-  const isCapsule = state.activeCase && state.activeCase.type === 'capsule';
-  const isPackage = state.activeCase && state.activeCase.type === 'package';
+  const activeCase = state.activeCase;
+  const isCapsule = activeCase && activeCase.type === 'capsule';
+  const caseName = activeCase && activeCase.name ? activeCase.name.toLowerCase() : '';
+  const isPackage = activeCase && (activeCase.type === 'package' && caseName.includes('souvenir package'));
   
+  const isAgents = caseName.includes('agenti');
+  const isCharms = caseName.includes('kolekce přívěsků');
+
   list.innerHTML = state.lastResults.map(r => {
-    let wear = r.float;
-    let pattern = r.pattern || Math.floor(Math.random() * 1000) + 1;
+    if (!r.float) {
+      // Čištění názvu pro vyhledávání (ignorujeme StatTrak™, hvězdičky, atd.)
+      const searchName = r.name
+        .replace(/StatTrak™/g, '')
+        .replace(/StatTrak/g, '')
+        .replace(/[★()]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
 
-    if (wear === undefined) {
-      const min = (r.minFloat !== undefined) ? r.minFloat : 0.00;
-      const max = (r.maxFloat !== undefined) ? r.maxFloat : 1.00;
+      const skinData = DATA.skinsMap ? DATA.skinsMap[searchName] : null;
       
-      const roll = Math.random() * 100;
-      let globalWear = 0;
-      if (roll <= 3) globalWear = Math.random() * 0.07;
-      else if (roll <= 27) globalWear = 0.07 + Math.random() * (0.15 - 0.07);
-      else if (roll <= 60) globalWear = 0.15 + Math.random() * (0.38 - 0.15);
-      else if (roll <= 84) globalWear = 0.38 + Math.random() * (0.45 - 0.38);
-      else globalWear = 0.45 + Math.random() * (1.00 - 0.45);
-
-      wear = min + (globalWear * (max - min));
+      if (skinData) {
+        const min = skinData.min_float;
+        const max = skinData.max_float;
+        r.float = Math.random() * (max - min) + min;
+      } else {
+        r.float = Math.random();
+      }
     }
+    
+    let wear = r.float;
+    let wearName = wear <= 0.07 ? "Zbrusu nový" : wear <= 0.15 ? "Lehce opotřebený" : wear <= 0.38 ? "Opotřebený" : wear <= 0.45 ? "Silně opotřebený" : "Poničený bojem";
 
-    const wearFixed = wear.toFixed(9);
-
-    let wearName = "";
-    if (wear <= 0.07) wearName = "Zbrusu nový";
-    else if (wear <= 0.15) wearName = "Lehce opotřebený";
-    else if (wear <= 0.38) wearName = "Opotřebený";
-    else if (wear <= 0.45) wearName = "Silně opotřebený";
-    else wearName = "Poničený bojem";
-
-    let rarityLabel = DATA.rarities[r.rarity].label;
-    const rarityColor = DATA.rarities[r.rarity].color;
-
-    // Speciální labely pro kapsle
-    if (isCapsule) {
-       if (r.rarity === 'blue') rarityLabel = 'Vyšší třída';
-       else if (r.rarity === 'purple') rarityLabel = 'Významná';
-       else if (r.rarity === 'pink') rarityLabel = 'Exotická';
-       else if (r.rarity === 'red') rarityLabel = 'Mimořádná';
-    }
-
+    let rarityLabel = r.rarityLabel || 'Předmět';
+    const rarityColor = r.color || '#b0c3d9';
     const isKnife = r.rarity === 'gold' || r.name.includes('★');
-    const showWear = !isCapsule || isKnife;
 
-    const wearInfoHtml = !showWear ? '' : `
-      <div style="font-size:12px; color: var(--muted); line-height: 1.4; margin-top: 4px;">
+    const maxPattern = isCharms ? 100000 : 1000;
+    if (!r.pattern) {
+      r.pattern = Math.floor(Math.random() * maxPattern) + 1;
+    }
+    const pattern = r.pattern;
+
+    let wearInfoContent = '';
+    if (isCharms) {
+      wearInfoContent = `<div>Číslo šablony vzorku: <strong>${pattern.toLocaleString()}</strong></div>`;
+    } else if (!(isCapsule || isAgents) || isKnife) {
+      wearInfoContent = `
         <div>Číslo šablony vzorku: <strong>${pattern}</strong></div>
-        <div>Opotřebení: <strong>${wearFixed}</strong></div>
+        <div>Opotřebení: <strong>${wear.toFixed(9)}</strong></div>
         <div>Povrch: <strong>${wearName}</strong></div>
-      </div>
-    `;
-
-    let visualHtml = '';
-    if (r.image) {
-      visualHtml = `<img src="${r.image}" style="height: auto; display: block;">`;
+      `;
     }
 
-    const souvenirPrefix = isPackage ? '<span style="color:#ffd700">Souvenir </span>' : '';
+    const wearInfoHtml = wearInfoContent ? `
+      <div style="font-size:12px; color: var(--muted); line-height: 1.4; margin-top: 4px;">
+        ${wearInfoContent}
+      </div>` : '';
 
-    const [weaponName, skinName] = r.name.includes('|') 
-  ? r.name.split('|').map(s => s.trim()) 
-  : [r.name, ''];
+    const prefix = isPackage ? '<span style="color:#ffd700">Souvenir </span>' : '';
+    const [weaponName, skinName] = r.name.includes('|') ? r.name.split('|').map(s => s.trim()) : [r.name, ''];
 
-return `
-  <div class="result-card" style="width: 230px; display: flex; flex-direction: column; gap: 8px; margin: 10px; flex-shrink: 0;">
-  
-  <div class="result-card-visual" style="position: relative; width: 100%; height: 160px; background: linear-gradient(0deg, ${rarityColor}22 0%, rgba(0,0,0,0) 100%); border-bottom: 5px solid ${rarityColor}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
-  <div style="position: absolute; top: 16px; left: 23px; width: 80%; height: 80%; background: url('${r.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.3; z-index: 0;"></div>
-
-    <div style="position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: 800; color: ${rarityColor}; text-transform: uppercase; z-index: 2; opacity: 0.9; letter-spacing: 0.5px;">
-      ${rarityLabel}
-    </div>
-
-    <div style="width: 80%; height: 80%; display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">
-      ${visualHtml.replace('style="', 'style="max-width: 100%; max-height: 100%;')}
-    </div>
-  </div>
-
-  <div class="result-card-info" style="text-align: left;">
-    <div style="font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-      ${souvenirPrefix}${weaponName}
-    </div>
-    <div style="font-size: 14px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-      ${skinName}
-    </div>
-    <div style="margin-top: 10px;">
-      ${wearInfoHtml}
-    </div>
-  </div>
-
-</div>`;
+    return `
+      <div class="result-card" style="width: 230px; display: flex; flex-direction: column; gap: 8px; margin: 10px; flex-shrink: 0;">
+        <div class="result-card-visual" style="position: relative; width: 100%; height: 160px; background: linear-gradient(0deg, ${rarityColor}22 0%, rgba(0,0,0,0) 100%); border-bottom: 5px solid ${rarityColor}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
+          ${r.image ? `<div style="position: absolute; top: 16px; left: 23px; width: 80%; height: 80%; background: url('${r.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.3; z-index: 0;"></div>` : ''}
+          <div style="position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: 800; color: ${rarityColor}; text-transform: uppercase; z-index: 2; opacity: 0.9; letter-spacing: 0.5px;">${rarityLabel}</div>
+          <div style="width: 80%; height: 80%; display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">
+            ${r.image ? `<img src="${r.image}" style="max-width: 100%; max-height: 100%; display: block;">` : `<span style="font-size:60px; color:${rarityColor};">★</span>`}
+          </div>
+        </div>
+        <div class="result-card-info" style="text-align: left;">
+          <div style="font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${prefix}${weaponName}</div>
+          <div style="font-size: 14px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${skinName}</div>
+          <div style="margin-top: 10px;">${wearInfoHtml}</div>
+        </div>
+      </div>`;
   }).join('');
   
   const modal = document.getElementById('modalOverlay');
-  modal.style.display = 'flex';
-  modal.classList.remove('closing');
-  
+  modal.style.display = 'flex'; modal.classList.remove('closing');
   state.lastResults.forEach((r, idx) => {
-    const color = DATA.rarities[r.rarity].color;
-    setTimeout(() => {
-      particles.burst(window.innerWidth/2, window.innerHeight/2, color, 80);
-    }, idx * 150);
+    setTimeout(() => particles.burst(window.innerWidth/2, window.innerHeight/2, r.color || '#b0c3d9', 80), idx * 150);
   });
 }
 
 function updateCounterUI() {
   const btn = document.getElementById('openBtn');
   const count = state.openCount;
-  
   if (!state.isSpinning) {
-    btn.classList.remove('btn-red');
-    btn.disabled = false;
-
-    let buttonText = "";
-    if (count === 1) buttonText = "Otevřít bednu";
-    else if (count >= 2 && count <= 4) buttonText = `Otevřít ${count} bedny`;
-    else buttonText = `Otevřít ${count} beden`;
-    
-    btn.innerText = buttonText;
-    
+    btn.classList.remove('btn-red'); btn.disabled = false;
+    btn.innerText = count === 1 ? "Otevřít bednu" : (count <= 4 ? `Otevřít ${count} bedny` : `Otevřít ${count} beden`);
     if (document.getElementById('decBtn')) document.getElementById('decBtn').disabled = (count <= 1);
     if (document.getElementById('incBtn')) document.getElementById('incBtn').disabled = (count >= 5);
   }
-  
   const countVal = document.getElementById('countVal');
   if (countVal) countVal.innerText = count;
 }
@@ -1198,117 +892,56 @@ function updateCounterUI() {
 function closeModal() {
   const modal = document.getElementById('modalOverlay');
   modal.classList.add('closing');
-  setTimeout(() => {
-    modal.style.display = 'none';
-    modal.classList.remove('closing');
-  }, 400);
+  setTimeout(() => { modal.style.display = 'none'; modal.classList.remove('closing'); }, 400);
   audio.playMenuBack();
 }
-/*-------------------------
-INIT
-------------------------- */
-document.getElementById('incBtn').onclick = () => { 
-  if (!state.isSpinning) { 
-    state.openCount = Math.min(5, state.openCount + 1); 
-    updateCounterUI();
-    router.initSpinners();
-    audio.playMenuFilterChange();
-  } 
-};
 
-document.getElementById('decBtn').onclick = () => { 
-  if (!state.isSpinning) { 
-    state.openCount = Math.max(1, state.openCount - 1); 
-    updateCounterUI();
-    router.initSpinners();
-    audio.playMenuFilterChange();
-  } 
-};
+/** -------------------------
+ * INIT & LISTENERS
+ * ------------------------- */
+document.getElementById('incBtn').onclick = () => { if (!state.isSpinning) { state.openCount = Math.min(5, state.openCount + 1); updateCounterUI(); router.initSpinners(); audio.playMenuFilterChange(); } };
+document.getElementById('decBtn').onclick = () => { if (!state.isSpinning) { state.openCount = Math.max(1, state.openCount - 1); updateCounterUI(); router.initSpinners(); audio.playMenuFilterChange(); } };
 document.getElementById('openBtn').onclick = handleOpen;
 document.getElementById('searchInput').addEventListener('input', handleFilterChange);
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Tab') {
-    e.preventDefault();
-    return;
-  }
-
+  if (e.key === 'Tab') { e.preventDefault(); return; }
   if (e.repeat) return;
-
-  if (['1', '2', '3', '4', '5'].includes(e.key)) {
-    if (document.activeElement && document.activeElement.id === 'searchInput') return;
-
-    if (!state.isSpinning) {
-      const newCount = parseInt(e.key);
-      
-      if (state.openCount !== newCount) {
-        state.openCount = newCount;
-        updateCounterUI();
-        
-        const casePage = document.getElementById('view-case');
-        if (casePage && window.getComputedStyle(casePage).display !== 'none' && state.activeCase) {
-          router.initSpinners();
-        }
-        
-        audio.playMenuFilterChange();
-      }
+  if (['1', '2', '3', '4', '5'].includes(e.key) && (!document.activeElement || document.activeElement.id !== 'searchInput')) {
+    if (!state.isSpinning && state.openCount !== parseInt(e.key)) {
+      state.openCount = parseInt(e.key); updateCounterUI();
+      if (document.getElementById('view-case').style.display !== 'none') router.initSpinners();
+      audio.playMenuFilterChange();
     }
   }
-
   const modal = document.getElementById('modalOverlay');
-
-  const isModalVisible = modal && window.getComputedStyle(modal).display !== 'none' && !modal.classList.contains('closing');
-
-  const casePage = document.getElementById('view-case');
-  const isCasePageVisible = casePage && window.getComputedStyle(casePage).display !== 'none';
-
+  const isModalVis = modal && window.getComputedStyle(modal).display !== 'none' && !modal.classList.contains('closing');
   if (e.key === 'Enter') {
-    e.preventDefault();
-    
-    if (document.activeElement) document.activeElement.blur();
-
-    if (isModalVisible) {
-      if (typeof closeModal === 'function') closeModal();
-    } else if (isCasePageVisible) {
-      handleOpen();
-    }
+    e.preventDefault(); if (document.activeElement) document.activeElement.blur();
+    if (isModalVis) closeModal(); else if (document.getElementById('view-case').style.display !== 'none') handleOpen();
   }
-
   if (e.key === 'Escape' || e.key === 'Esc') {
     e.preventDefault();
-    
-    if (isModalVisible) {
-      if (typeof closeModal === 'function') closeModal();
-    } 
-    else if (state.isSpinning) {
-      state.isSkipping = true;
-    } 
-    else if (isCasePageVisible) {
-      if (typeof router !== 'undefined' && typeof router.go === 'function') {
-        router.go('home');
-      }
-    }
+    if (isModalVis) closeModal(); else if (state.isSpinning) state.isSkipping = true; else if (document.getElementById('view-case').style.display !== 'none') router.go('home');
   }
 });
 
-document.addEventListener('mousedown', () => {
-  setTimeout(() => {
-    if (document.activeElement && document.activeElement.tagName === 'BUTTON') {
-      document.activeElement.blur();
-    }
-  }, 1);
-});
+document.addEventListener('mousedown', () => setTimeout(() => { if (document.activeElement && document.activeElement.tagName === 'BUTTON') document.activeElement.blur(); }, 1));
 
-renderCases(DATA.cases);
+async function startApp() {
+  await loadAndTransformData();
+  renderCases(DATA.cases);
+  audio.init();
+  particles.init();
+  router.go('home');
+  window.addEventListener('resize', () => {
+    particles.canvas.width = window.innerWidth; particles.canvas.height = window.innerHeight;
+    state.instances.forEach(s => { s.resize(); s.draw(); });
+  });
+}
 
-audio.init();
-particles.init();
-router.go('home');
-window.addEventListener('resize', () => {
-  particles.canvas.width = window.innerWidth;
-  particles.canvas.height = window.innerHeight;
-  state.instances.forEach(s => { s.resize(); s.draw(); });
-});
+startApp();
+
 </script>
 </body>
 </html>

@@ -342,7 +342,8 @@ async function loadAndTransformData() {
         series: item.def_index || null,
         image: item.image || '', 
         items: [],
-        rareItems: []
+        rareItems: [],
+        tags: item.tags || []
       };
 
       if (item.contains) {
@@ -373,7 +374,7 @@ async function loadAndTransformData() {
           name: specialName,
           image: specialImage, 
           color: '#FFD700',
-          rarityLabel: 'Výjimečně vzácný předmět',
+          rarityLabel: '★ Speciální Předmět ★',
           rarity: 'gold',
           isPlaceholder: true
         });
@@ -390,6 +391,15 @@ async function loadAndTransformData() {
     
   } catch(e) { 
     console.error("Chyba při načítání dat:", e); 
+  }
+}
+
+function searchByTag(tagValue) {
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.value = tagValue;
+    handleFilterChange();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
@@ -769,18 +779,34 @@ function renderCases(filteredData) {
 
   const now = Date.now();
   const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+  
+  const searchInputVal = document.getElementById('searchInput').value;
+  const isSearchingTags = searchInputVal.includes('#');
 
   grid.innerHTML = filteredData.map(c => {
     const releaseTime = parseReleaseDate(c.release);
-    
     const isNew = releaseTime > 0 && (now - releaseTime) <= thirtyDaysMs;
     const newClass = isNew ? ' is-new' : '';
+
+    let tagsHtml = '';
+    if (isSearchingTags && c.tags && c.tags.length > 0) {
+      const formattedTags = c.tags.map(t => 
+        `<span 
+          style="color: var(--accent); cursor: pointer;" 
+          onmouseover="this.style.textDecoration='underline'" 
+          onmouseout="this.style.textDecoration='none'"
+          onclick="event.stopPropagation(); searchByTag('#${t}')">#${t}</span>`
+      ).join(', ');
+      
+      tagsHtml = `<div style="font-size:12px; color:var(--muted); margin-top: 4px; z-index: 2; position: relative;">Štítky: ${formattedTags}</div>`;
+    }
 
     return `
     <div class="case-card${newClass}" onclick="router.go('case', '${c.id}')">
       ${c.image ? `<img src="${c.image}" style="width: 100px; height: 80px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0px 18px rgba(0,0,0,0.5));">` : ''}
       <h3 style="margin:0; font-size: 20px;">${c.name}</h3>
       <div style="font-size:12px; color:var(--muted); margin-top: 8px">Datum vydání: <span style="color:var(--text)">${c.release}</span></div>
+      ${tagsHtml}
     </div>
     `;
   }).join('');

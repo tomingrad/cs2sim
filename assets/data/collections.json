@@ -3,6 +3,7 @@
   "id": "collection-set-dust",
   "name": "Kolekce Dust",
   "first_sale_date": "14-08-2013",
+  "tags": ["armsdeal"],
   "crates": [],
   "contains": [
    {
@@ -115,6 +116,7 @@
   "id": "collection-set-aztec",
   "name": "Kolekce Aztec",
   "first_sale_date": "14-08-2013",
+  "tags": ["armsdeal"],
   "crates": [],
   "contains": [
    {
@@ -194,6 +196,7 @@
   "id": "collection-set-vertigo",
   "name": "Kolekce Vertigo",
   "first_sale_date": "14-08-2013",
+  "tags": ["armsdeal"],
   "crates": [
    {
     "id": "crate-4666",
@@ -279,6 +282,7 @@
   "id": "collection-set-inferno",
   "name": "Kolekce Inferno",
   "first_sale_date": "14-08-2013",
+  "tags": ["armsdeal"],
   "crates": [
    {
     "id": "crate-4023",
@@ -399,6 +403,7 @@
   "id": "collection-set-militia",
   "name": "Kolekce Militia",
   "first_sale_date": "14-08-2013",
+  "tags": ["armsdeal"],
   "crates": [],
   "contains": [
    {
@@ -533,6 +538,7 @@
   "id": "collection-set-nuke",
   "name": "Kolekce Nuke",
   "first_sale_date": "14-08-2013",
+  "tags": ["armsdeal"],
   "crates": [
    {
     "id": "crate-4025",
@@ -686,6 +692,7 @@
   "id": "collection-set-office",
   "name": "Kolekce Office",
   "first_sale_date": "14-08-2013",
+  "tags": ["armsdeal"],
   "crates": [],
   "contains": [
    {
@@ -765,6 +772,7 @@
   "id": "collection-set-assault",
   "name": "Kolekce Assault",
   "first_sale_date": "14-08-2013",
+  "tags": ["armsdeal"],
   "crates": [],
   "contains": [
    {
@@ -855,6 +863,7 @@
   "id": "collection-set-bravo-ii",
   "name": "Kolekce Alpha",
   "first_sale_date": "19-09-2013",
+  "tags": ["bravo"],
   "crates": [],
   "contains": [
    {
@@ -1043,7 +1052,7 @@
  {
   "id": "collection-set-dust-2",
   "name": "Kolekce Dust 2",
-  "first_sale_date": "14-08-2013",
+  "first_sale_date": "27-11-2013",
   "crates": [
    {
     "id": "crate-4006",
@@ -2554,6 +2563,7 @@
   "id": "collection-set-overpass",
   "name": "Kolekce Overpass",
   "first_sale_date": "01-07-2014",
+  "tags": ["breakout"],
   "crates": [
    {
     "id": "crate-4028",
@@ -2823,6 +2833,7 @@
   "id": "collection-set-cobblestone",
   "name": "Kolekce Cobblestone",
   "first_sale_date": "01-07-2014",
+  "tags": ["breakout"],
   "crates": [
    {
     "id": "crate-4027",
@@ -3052,6 +3063,7 @@
   "id": "collection-set-baggage",
   "name": "Kolekce Baggage",
   "first_sale_date": "01-07-2014",
+  "tags": ["breakout"],
   "crates": [],
   "contains": [
    {
@@ -3447,6 +3459,7 @@
   "id": "collection-set-gods-and-monsters",
   "name": "Kolekce Gods and Monsters",
   "first_sale_date": "26-05-2015",
+  "tags": ["bloodhound"],
   "crates": [],
   "contains": [
    {
@@ -3614,6 +3627,7 @@
   "id": "collection-set-chopshop",
   "name": "Kolekce Chop Shop",
   "first_sale_date": "26-05-2015",
+  "tags": ["bloodhound"],
   "crates": [],
   "contains": [
    {
@@ -3803,6 +3817,7 @@
   "id": "collection-set-kimono",
   "name": "Kolekce Rising Sun",
   "first_sale_date": "26-05-2015",
+  "tags": ["bloodhound"],
   "crates": [],
   "contains": [
    {
@@ -4526,6 +4541,7 @@
   "id": "collection-set-stmarc",
   "name": "Kolekce St. Marc",
   "first_sale_date": "18-11-2019",
+  "tags": ["shatteredweb"],
   "crates": [],
   "contains": [
    {
@@ -4737,6 +4753,7 @@
   "id": "collection-set-canals",
   "name": "Kolekce Canals",
   "first_sale_date": "18-11-2019",
+  "tags": ["shatteredweb"],
   "crates": [],
   "contains": [
    {
@@ -4948,6 +4965,7 @@
   "id": "collection-set-norse",
   "name": "Kolekce Norse",
   "first_sale_date": "18-11-2019",
+  "tags": ["shatteredweb"],
   "crates": [],
   "contains": [
    {
@@ -5159,6 +5177,7 @@
   "id": "collection-set-op9-characters",
   "name": "Agenti operace Shattered Web",
   "first_sale_date": "18-11-2019",
+  "tags": ["shatteredweb"],
   "crates": [],
   "contains": [
    {
@@ -5392,6 +5411,7 @@
   "id": "collection-set-op10-characters",
   "name": "Agenti operace Broken Fang",
   "first_sale_date": "03-12-2020",
+  "tags": ["brokenfang"],
   "crates": [],
   "contains": [
    {
@@ -5605,6 +5625,7 @@
   "id": "collection-set-op11-characters",
   "name": "Agenti operace Riptide",
   "first_sale_date": "21-09-2021",
+  "tags": ["riptide"],
   "crates": [],
   "contains": [
    {
@@ -5828,6 +5849,7 @@
   "id": "collection-set-dust-2-2021",
   "name": "Kolekce Dust 2 2021",
   "first_sale_date": "22-09-2021",
+  "tags": ["riptide"],
   "crates": [
    {
     "id": "crate-4811",
@@ -6081,6 +6103,7 @@
   "id": "collection-set-mirage-2021",
   "name": "Kolekce Mirage 2021",
   "first_sale_date": "22-09-2021",
+  "tags": ["riptide"],
   "crates": [
    {
     "id": "crate-4810",
@@ -6344,6 +6367,7 @@
   "id": "collection-set-op10-ct",
   "name": "Kolekce Control",
   "first_sale_date": "03-12-2020",
+  "tags": ["brokenfang"],
   "crates": [],
   "contains": [
    {
@@ -6566,6 +6590,7 @@
   "id": "collection-set-op10-t",
   "name": "Kolekce Havoc",
   "first_sale_date": "03-12-2020",
+  "tags": ["brokenfang"],
   "crates": [],
   "contains": [
    {
@@ -6788,6 +6813,7 @@
   "id": "collection-set-op10-ancient",
   "name": "Kolekce Ancient",
   "first_sale_date": "03-12-2020",
+  "tags": ["brokenfang"],
   "crates": [
    {
     "id": "crate-4813",
@@ -7051,6 +7077,7 @@
   "id": "collection-set-train-2021",
   "name": "Kolekce Train 2021",
   "first_sale_date": "22-09-2021",
+  "tags": ["riptide"],
   "crates": [],
   "contains": [
    {
@@ -7300,6 +7327,7 @@
   "id": "collection-set-vertigo-2021",
   "name": "Kolekce Vertigo 2021",
   "first_sale_date": "22-09-2021",
+  "tags": ["riptide"],
   "crates": [
    {
     "id": "crate-4815",
@@ -7801,6 +7829,7 @@
   "id": "collection-set-graphic-design",
   "name": "Kolekce Graphic Design",
   "first_sale_date": "01-10-2024",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -7990,6 +8019,7 @@
   "id": "collection-set-overpass-2024",
   "name": "Kolekce Overpass 2024",
   "first_sale_date": "01-10-2024",
+  "tags": ["zbrojnice"],
   "crates": [
    {
     "id": "crate-5221",
@@ -8185,6 +8215,7 @@
   "id": "collection-set-realism-camo",
   "name": "Kolekce Sport & Field",
   "first_sale_date": "01-10-2024",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -8374,6 +8405,7 @@
   "id": "collection-set-timed-drops-achroma",
   "name": "Kolekce Achroma",
   "first_sale_date": "21-01-2026",
+  "tags": ["tydennibalicek"],
   "crates": [],
   "contains": [
    {
@@ -8607,6 +8639,7 @@
   "id": "collection-set-timed-drops-cool",
   "name": "Kolekce Ascent",
   "first_sale_date": "31-03-2025",
+  "tags": ["tydennibalicek"],
   "crates": [],
   "contains": [
    {
@@ -8928,6 +8961,7 @@
   "id": "collection-set-timed-drops-exuberant",
   "name": "Kolekce Harlequin",
   "first_sale_date": "21-01-2026",
+  "tags": ["tydennibalicek"],
   "crates": [],
   "contains": [
    {
@@ -9150,6 +9184,7 @@
   "id": "collection-set-timed-drops-neutral",
   "name": "Kolekce Boreal",
   "first_sale_date": "31-03-2025",
+  "tags": ["tydennibalicek"],
   "crates": [],
   "contains": [
    {
@@ -9482,6 +9517,7 @@
   "id": "collection-set-timed-drops-warm",
   "name": "Kolekce Radiant",
   "first_sale_date": "31-03-2025",
+  "tags": ["tydennibalicek"],
   "crates": [],
   "contains": [
    {
@@ -9803,6 +9839,7 @@
   "id": "collection-set-train-2025",
   "name": "Kolekce Train 2025",
   "first_sale_date": "31-03-2025",
+  "tags": ["zbrojnice"],
   "crates": [
    {
     "id": "crate-5126",
@@ -10003,6 +10040,7 @@
   "id": "collection-set-community-2025",
   "name": "Kolekce komunitních samolepek 2025",
   "first_sale_date": "01-10-2025",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -10306,6 +10344,7 @@
   "id": "collection-set-kc-drboom",
   "name": "Kolekce přívěsků Dr. Boom",
   "first_sale_date": "01-10-2025",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -10539,6 +10578,7 @@
   "id": "collection-set-kc-missinglink",
   "name": "Kolekce přívěsků Missing Link",
   "first_sale_date": "02-10-2025",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -10722,6 +10762,7 @@
   "id": "collection-set-kc-ml-community-01",
   "name": "Kolekce přívěsků Missing Link (komunita)",
   "first_sale_date": "01-10-2025",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -10965,6 +11006,7 @@
   "id": "collection-set-kc-weapon-01",
   "name": "Kolekce přívěsků Small Arms",
   "first_sale_date": "02-10-2025",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -11138,6 +11180,7 @@
   "id": "collection-set-stkr-craft-01",
   "name": "Elemental Craft Sticker Pack",
   "first_sale_date": "02-10-2024",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -11411,6 +11454,7 @@
   "id": "collection-set-stkr-craft-02",
   "name": "Character Craft Sticker Pack",
   "first_sale_date": "02-10-2024",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -11674,6 +11718,7 @@
   "id": "collection-set-sugarface2",
   "name": "Kolekce samolepek Sugarface 2",
   "first_sale_date": "01-10-2025",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -11777,6 +11822,7 @@
   "id": "collection-4617",
   "name": "Kolekce CS:GO Graffiti #3",
   "first_sale_date": "03-12-2020",
+  "tags": ["brokenfang"],
   "crates": [],
   "contains": [
    {
@@ -14831,6 +14877,7 @@
   "id": "collection-4618",
   "name": "Kolekce Trolling Graffiti",
   "first_sale_date": "18-11-2019",
+  "tags": ["shatteredweb"],
   "type": "Package",
   "crates": [],
   "contains": [
@@ -18076,6 +18123,7 @@
   "id": "collection-4621",
   "name": "Kolekce CS:GO Graffiti #2",
   "first_sale_date": "18-11-2019",
+  "tags": ["shatteredweb"],
   "type": "Package",
   "crates": [],
   "contains": [

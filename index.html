@@ -215,19 +215,19 @@ const particles = {
   },
   spinBurst(x, y, w, h) {
     const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00aeff';
-    for (let i = 0; i < 250; i++) {
+    for (let i = 0; i < 300; i++) {
       this.list.push({
-        x: x + (Math.random() - 0.5) * w * 5, y: y + (Math.random() - 0.5) * h * 1.5,
+        x: x + (Math.random() - 0.5) * w * 5, y: y + (Math.random() - 0.5) * h * 2,
         color: accentColor, vx: -(Math.random() * 25 + 10), vy: (Math.random() - 0.5) * 0.5,
-        size: Math.random() * 3 + 3, life: 3.0, decay: Math.random() * 0.02 + 0.01, noGravity: true
+        size: Math.random() * 4 + 3, life: 4.0, decay: Math.random() * 0.02 + 0.01, noGravity: true
       });
     }
   },
   burst(x, y, color, count) {
     for (let i = 0; i < count; i++) {
       this.list.push({
-        x, y, color, vx: (Math.random() - 0.5) * 24, vy: (Math.random() - 0.5) * 12 - 4,
-        size: Math.random() * 8 + 4, life: 10, decay: Math.random() * 0.02 + 0.01,
+        x, y, color, vx: (Math.random() - 0.5) * 32, vy: (Math.random() - 0.5) * 12 - 4,
+        size: Math.random() * 8 + 4, life: 20, decay: Math.random() * 0.02 + 0.01,
         noGravity: false, angle: Math.random() * Math.PI * 2, av: (Math.random() - 0.5) * 0.2
       });
     }
@@ -387,7 +387,7 @@ async function loadAndTransformData() {
     DATA.cases = [...transformedCrates, ...transformedCollections];
 
     calculateMissingOdds();
-    console.log(`Načteno ${transformedCrates.length} beden. Mapa: ${Object.keys(DATA.skinsMap).length} položek.`);
+    console.log(`Načteno ${transformedCrates.length} beden a ${transformedCollections.length} kolekcí (${Object.keys(DATA.skinsMap).length} položek)`);
     
   } catch(e) { 
     console.error("Chyba při načítání dat:", e); 
@@ -434,7 +434,7 @@ function calculateMissingOdds() {
 class Spinner {
   constructor(id, items) {
     this.id = id; this.pool = items; this.items = []; 
-    this.offset = 0; this.raf = null; this.slotW = 160; this.lastTickIdx = -1;
+    this.offset = 0; this.raf = null; this.slotW = 190; this.lastTickIdx = -1;
   }
   mount(parent) {
     const div = document.createElement('div');
@@ -496,14 +496,14 @@ class Spinner {
       const grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
       grad.addColorStop(0, color + '44'); grad.addColorStop(0.5, color + '22'); grad.addColorStop(1, 'transparent');
       ctx.fillStyle = grad; ctx.fillRect(x + 4, 10, slotW - 8, canvas.height - 20);
-      ctx.fillStyle = color; ctx.fillRect(x + 4, canvas.height - 14, slotW - 8, 4);
+      ctx.fillStyle = color; ctx.fillRect(x + 4, canvas.height - 16, slotW - 8, 5);
 
       if (it.image) {
         if (!it._imgObj) {
           it._imgObj = new Image(); it._imgObj.src = it.image; it._imgObj.onload = () => this.draw();
         }
         if (it._imgObj.complete) {
-          const targetH = 82; const finalW = targetH * (it._imgObj.naturalWidth / it._imgObj.naturalHeight);
+          const targetH = 100; const finalW = targetH * (it._imgObj.naturalWidth / it._imgObj.naturalHeight);
           ctx.save(); ctx.filter = 'drop-shadow(0px 0px 10px rgba(0,0,0,0.3))';
           ctx.drawImage(it._imgObj, x + (slotW - finalW) / 2, (canvas.height - targetH) / 2, finalW, targetH);
           ctx.restore();
@@ -639,7 +639,7 @@ const router = {
 
     grid.innerHTML = sortedItems.map(it => {
       const color = it.color || '#b0c3d9';
-      const imageHtml = it.image ? `<img src="${it.image}" style="width: 100px; height: auto; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); max-width: 100%; max-height: 100%;">` : `<span style="font-size:40px; color:${color};">★</span>`;
+      const imageHtml = it.image ? `<img src="${it.image}" style="width: 110px; height: auto; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); max-width: 100%; max-height: 100%;">` : `<span style="font-size:40px; color:${color};">★</span>`;
       const chance = (it.odds * 100).toFixed(4).replace(/\.?0+$/, '') + '%';
       const [weaponName, skinName] = it.name.includes('|') ? it.name.split('|').map(s => s.trim()) : [it.name, ''];
 
@@ -647,7 +647,7 @@ const router = {
       <div class="drop-card-visual" style="position: relative; width: 100%; height: 100px; background: linear-gradient(0deg, ${color}44 0%, rgba(0,0,0,0) 100%); border-bottom: 4px solid ${color}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
         ${it.image ? `<div style="position: absolute; top: 10px; left: 14px; width: 80%; height: 80%; background: url('${it.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.2; z-index: 0;"></div>` : ''}
         <div class="drop-card-odds" style="position: absolute; top: 4px; left: 4px; font-size: 10px; font-weight: 800; color: ${color}; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2;">${chance}</div>
-        <div style="width: 90%; height: 90%; display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">${imageHtml}</div>
+        <div style="display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">${imageHtml}</div>
       </div>
       <div class="drop-card-info" style="text-align: left;">
         <div style="font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgb(0, 0, 0);">${weaponName}</div>
@@ -803,7 +803,7 @@ function renderCases(filteredData) {
 
     return `
     <div class="case-card${newClass}" onclick="router.go('case', '${c.id}')">
-      ${c.image ? `<img src="${c.image}" style="width: 100px; height: 80px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0px 18px rgba(0,0,0,0.5));">` : ''}
+      ${c.image ? `<img src="${c.image}" style="width: 110px; height: 90px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0px 18px rgba(0,0,0,0.5));">` : ''}
       <h3 style="margin:0; font-size: 20px;">${c.name}</h3>
       <div style="font-size:12px; color:var(--muted); margin-top: 8px">Datum vydání: <span style="color:var(--text)">${c.release}</span></div>
       ${tagsHtml}
@@ -881,9 +881,9 @@ function showResultsModal() {
     return `
       <div class="result-card" style="width: 230px; display: flex; flex-direction: column; gap: 8px; margin: 10px; flex-shrink: 0;">
         <div class="result-card-visual" style="position: relative; width: 100%; height: 160px; background: linear-gradient(0deg, ${rarityColor}22 0%, rgba(0,0,0,0) 100%); border-bottom: 5px solid ${rarityColor}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
-          ${r.image ? `<div style="position: absolute; top: 16px; left: 23px; width: 80%; height: 80%; background: url('${r.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.3; z-index: 0;"></div>` : ''}
+          ${r.image ? `<div style="position: absolute; top: 16px; left: 23px; height: 80%; background: url('${r.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.3; z-index: 0;"></div>` : ''}
           <div style="position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: 800; color: ${rarityColor}; text-transform: uppercase; z-index: 2; opacity: 0.9; letter-spacing: 0.5px;">${rarityLabel}</div>
-          <div style="width: 80%; height: 80%; display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">
+          <div style="height: 90%; display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">
             ${r.image ? `<img src="${r.image}" style="max-width: 100%; max-height: 100%; display: block;">` : `<span style="font-size:60px; color:${rarityColor};">★</span>`}
           </div>
         </div>

@@ -102,7 +102,7 @@
               inset 0 0 10px rgba(255, 255, 255, 0.15);
   outline: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 25px 30px;
+  padding: 20px 30px;
   text-align: center;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   cursor: pointer;
@@ -244,12 +244,14 @@
     margin: 24px auto;
     display: flex;
     flex-direction: column;
-    gap: 12px; 
+    gap: 12px;
+    position: relative;
+    z-index: 10;
   }
 
   .spinner-instance { 
     position: relative;
-    height: 130px;
+    height: 150px;
     overflow: hidden;
     width: 100%;
     -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
@@ -273,7 +275,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    height: 92.5%;
+    height: 93%;
     background: var(--accent);
     transform: translateX(-50%); z-index: 5;
     box-shadow: 0 0 25px rgba(0, 174, 255, 0.6);
@@ -350,7 +352,7 @@
     transform: translateX(-50%);
     box-sizing: border-box;
     text-align: center;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px)  contrast(1.025);
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.3),
                 inset 0 0 15px rgba(255, 255, 255, 0.075);
     border-top: 1px solid var(--border);
@@ -398,12 +400,12 @@
     border: 1px solid var(--border);
     border-radius: 28px;
     padding: 40px;
-    backdrop-filter: blur(10px) brightness(1.1);
+    backdrop-filter: blur(10px);
     text-align: center;
     max-height: 95vh;
     overflow-y: auto;
     box-shadow: 0 0 160px rgb(0, 0, 0),
-                inset 0 0 20px rgba(255, 255, 255, 0.08);
+                inset 0 0 12px rgba(255, 255, 255, 0.15);
     width: fit-content;
     min-width: 350px;
     max-width: 95vw;

@@ -434,7 +434,7 @@ function calculateMissingOdds() {
 class Spinner {
   constructor(id, items) {
     this.id = id; this.pool = items; this.items = []; 
-    this.offset = 0; this.raf = null; this.slotW = 190; this.lastTickIdx = -1;
+    this.offset = 0; this.raf = null; this.slotW = 180; this.lastTickIdx = -1;
   }
   mount(parent) {
     const div = document.createElement('div');
@@ -504,7 +504,7 @@ class Spinner {
         }
         if (it._imgObj.complete) {
           const targetH = 100; const finalW = targetH * (it._imgObj.naturalWidth / it._imgObj.naturalHeight);
-          ctx.save(); ctx.filter = 'drop-shadow(0px 0px 10px rgba(0,0,0,0.3))';
+          ctx.save(); ctx.filter = 'drop-shadow(0px 0px 8px rgba(0,0,0,0.3))';
           ctx.drawImage(it._imgObj, x + (slotW - finalW) / 2, (canvas.height - targetH) / 2, finalW, targetH);
           ctx.restore();
         }
@@ -639,7 +639,7 @@ const router = {
 
     grid.innerHTML = sortedItems.map(it => {
       const color = it.color || '#b0c3d9';
-      const imageHtml = it.image ? `<img src="${it.image}" style="width: 110px; height: auto; filter: drop-shadow(0 0 10px rgba(0,0,0,0.3)); max-width: 100%; max-height: 100%;">` : `<span style="font-size:40px; color:${color};">★</span>`;
+      const imageHtml = it.image ? `<img src="${it.image}" style="width: 110px; height: auto; max-width: 100%; max-height: 100%;">` : `<span style="font-size:40px; color:${color};">★</span>`;
       const chance = (it.odds * 100).toFixed(4).replace(/\.?0+$/, '') + '%';
       const [weaponName, skinName] = it.name.includes('|') ? it.name.split('|').map(s => s.trim()) : [it.name, ''];
 

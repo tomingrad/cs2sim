@@ -821,12 +821,11 @@ function showResultsModal() {
   const caseName = activeCase && activeCase.name ? activeCase.name.toLowerCase() : '';
   const isPackage = activeCase && (activeCase.type === 'package' && caseName.includes('souvenir package'));
   
-  const isAgents = caseName.includes('agenti');
+  const noFloat = caseName.includes('agenti') || caseName.includes('sticker pack') || caseName.includes('samolepek');
   const isCharms = caseName.includes('kolekce přívěsků');
 
   list.innerHTML = state.lastResults.map(r => {
     if (!r.float) {
-      // Čištění názvu pro vyhledávání (ignorujeme StatTrak™, hvězdičky, atd.)
       const searchName = r.name
         .replace(/StatTrak™/g, '')
         .replace(/StatTrak/g, '')
@@ -862,7 +861,7 @@ function showResultsModal() {
     let wearInfoContent = '';
     if (isCharms) {
       wearInfoContent = `<div>Číslo šablony vzorku: <strong>${pattern.toLocaleString()}</strong></div>`;
-    } else if (!(isCapsule || isAgents) || isKnife) {
+    } else if (!(isCapsule || noFloat) || isKnife) {
       wearInfoContent = `
         <div>Číslo šablony vzorku: <strong>${pattern}</strong></div>
         <div>Opotřebení: <strong>${wear.toFixed(9)}</strong></div>

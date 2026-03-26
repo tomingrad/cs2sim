@@ -143,7 +143,9 @@ const audio = {
       item_pink: 'assets/sound/item_pink.wav', item_red: 'assets/sound/item_red.wav',
       case_tick: 'assets/sound/case_tick.wav', capsule_tick: 'assets/sound/capsule_tick.wav',
       capsule_start: 'assets/sound/capsule_unlock_start.wav', menu_case_open: 'assets/sound/menu_case_open.wav',
-      menu_back: 'assets/sound/menu_back.wav', menu_filter_change: 'assets/sound/menu_filter_change.wav'
+      menu_back: 'assets/sound/menu_back.wav', menu_filter_change: 'assets/sound/menu_filter_change.wav',
+      item_close: 'assets/sound/item_close.wav', item_claim: 'assets/sound/item_claim.wav',
+      item_drop_2: 'assets/sound/item_drop_2.wav'
     };
     for (const [key, path] of Object.entries(sounds)) {
       if (!this.cache[key]) {
@@ -158,7 +160,8 @@ const audio = {
   },
   playMenuSelect() { if (!this.muted) { this.init(); this._play('menu_case_open', 0.15); } },
   playMenuBack() { if (!this.muted) { this.init(); this._play('menu_back', 0.2); } },
-  playStart() { if (!this.muted) this._play('capsule_start', 0.2); },
+  playStart() { if (!this.muted) { const isCollection = state.activeCase && state.activeCase.type === 'collection'; this._play(isCollection ? 'item_claim' : 'capsule_start', 0.2);}},
+  playItemClose() { if (!this.muted) this._play('item_close', 0.2); },
   playMenuFilterChange() {
     if (this.muted) return;
     const now = Date.now();
@@ -177,6 +180,8 @@ const audio = {
   },
   playReveal() {
     if (this.muted || !state.lastResults || state.lastResults.length === 0) return;
+    const isCollection = state.activeCase && state.activeCase.type === 'collection';
+    if (isCollection) { this._play('item_drop_2', 0.2); return; };
     const weights = { 'gray': 1, 'lightblue': 2, 'blue': 3, 'purple': 4, 'pink': 5, 'red': 6, 'gold': 7 };
     const winner = state.lastResults.reduce((prev, curr) => (weights[curr.rarity] > weights[prev.rarity]) ? curr : prev);
     let key = 'item_drop';
@@ -612,6 +617,11 @@ const router = {
   initSpinners() {
     const container = document.getElementById('spinnersContainer');
     container.innerHTML = ''; state.instances = [];
+    const isCollection = state.activeCase && state.activeCase.type === 'collection';
+    if (isCollection) {
+        container.style.display = 'none';
+        return; 
+  } else { container.style.display = 'block'; }
     for (let i=0; i < state.openCount; i++) {
       const s = new Spinner(i, state.activeCase.items);
       s.mount(container); state.instances.push(s);
@@ -705,53 +715,96 @@ function resetFilters() {
   else renderCases(DATA.cases);
 }
 
+function rollItemFromActiveCase() {
+  const pool = state.activeCase.items;
+  const r = Math.random();
+  let acc = 0, selectedItem = null;
+  for (const i of pool) { 
+    acc += i.odds; 
+    if (r <= acc) { selectedItem = { ...i }; break; }
+  }
+  if (!selectedItem) selectedItem = { ...pool[0] };
+  selectedItem.isStatTrak = false;
+  
+  if (state.activeCase.type === 'case' && Math.random() < 0.1) {
+    selectedItem.isStatTrak = true;
+    if (selectedItem.rarity !== 'gold') selectedItem.name = "StatTrak™ " + selectedItem.name;
+  }
+  return selectedItem;
+}
+
 async function handleOpen() {
-  if (state.isSpinning) { state.isSkipping = true; return; }
+  const isCollection = state.activeCase && state.activeCase.type === 'collection';
+
+  if (state.isSpinning) { 
+    if (!isCollection) state.isSkipping = true;
+    return; 
+  }
 
   audio.playStart();
-  state.isSpinning = true; state.isSkipping = false;
+  state.isSpinning = true; 
+  state.isSkipping = false;
+  
   const btn = document.getElementById('openBtn');
-  btn.innerText = "Přeskočit"; btn.classList.add('btn-red');
   ['incBtn', 'decBtn'].forEach(id => { if (document.getElementById(id)) document.getElementById(id).disabled = true; });
 
-  document.querySelectorAll('.spin-canvas').forEach(canvas => {
-    const rect = canvas.getBoundingClientRect();
-    particles.spinBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, rect.width, rect.height * 0.3);
-  });
+  let rolledWinners = [];
 
-  const rolledWinners = [];
-  const promises = state.instances.map(s => {
-    s.reset();
-    const w = s.drawItem();
-    rolledWinners.push(w);
-    return s.spin(w);
-  });
+  if (isCollection) {
+    btn.innerText = state.openCount > 1 ? "Získávání předmětů..." : "Získávání předmětu...";
+    btn.disabled = true;
+    
+    await new Promise(resolve => setTimeout(resolve, 1250));
+    
+    for (let i = 0; i < state.openCount; i++) {
+        rolledWinners.push(rollItemFromActiveCase());
+    }
+  } 
+  else {
+    btn.innerText = "Přeskočit"; 
+    btn.classList.add('btn-red');
 
-  try {
-    await Promise.all(promises);
-
-    state.lastResults = rolledWinners.map(item => {
-      if (item.isPlaceholder && state.activeCase.rareItems && state.activeCase.rareItems.length > 0) {
-        const rarePool = state.activeCase.rareItems;
-        const randomRare = rarePool[Math.floor(Math.random() * rarePool.length)];
-        const wasStatTrak = item.isStatTrak === true;
-        return { 
-          ...randomRare, 
-          isStatTrak: wasStatTrak,
-          float: Math.random(), 
-          pattern: Math.floor(Math.random() * 1000) + 1,
-          name: wasStatTrak ? `StatTrak™ ${randomRare.name}` : randomRare.name
-        };
-      }
-      return item;
+    document.querySelectorAll('.spin-canvas').forEach(canvas => {
+      const rect = canvas.getBoundingClientRect();
+      particles.spinBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, rect.width, rect.height * 0.3);
     });
 
-    if (!state.isSpinning) return;
-    audio.playReveal();
-    showResultsModal();
-    state.lastResults.forEach(r => addHistory(r));
-  } catch (err) { console.error(err); } 
-  finally { state.isSpinning = state.isSkipping = false; updateCounterUI(); }
+    const promises = state.instances.map(s => {
+      s.reset();
+      const w = s.drawItem();
+      rolledWinners.push(w);
+      return s.spin(w);
+    });
+
+    try {
+      await Promise.all(promises);
+    } catch (err) { console.error(err); } 
+  }
+
+  state.lastResults = rolledWinners.map(item => {
+    if (item.isPlaceholder && state.activeCase.rareItems && state.activeCase.rareItems.length > 0) {
+      const rarePool = state.activeCase.rareItems;
+      const randomRare = rarePool[Math.floor(Math.random() * rarePool.length)];
+      const wasStatTrak = item.isStatTrak === true;
+      return { 
+        ...randomRare, 
+        isStatTrak: wasStatTrak,
+        float: Math.random(), 
+        pattern: Math.floor(Math.random() * 1000) + 1,
+        name: wasStatTrak ? `StatTrak™ ${randomRare.name}` : randomRare.name
+      };
+    }
+    return item;
+  });
+
+  if (!state.isSpinning) return;
+
+  audio.playReveal();
+  showResultsModal();
+  state.lastResults.forEach(r => addHistory(r));
+  
+  state.isSpinning = state.isSkipping = false; 
+  updateCounterUI();
 }
 
 function addHistory(it) {
@@ -761,7 +814,13 @@ function addHistory(it) {
 
   const node = document.createElement('div');
   node.className = 'history-node new-item';
-  const prefix = (state.activeCase && state.activeCase.type === 'package') ? '<span style="color:#ffd700; font-weight:bold">Souvenir</span>' : '';
+
+  const activeCase = state.activeCase;
+  const caseName = activeCase && activeCase.name ? activeCase.name.toLowerCase() : '';
+  const isPackage = activeCase && (activeCase.type === 'package' && caseName.includes('souvenir package'));
+  
+  const prefix = isPackage ? '<span style="color:#ffd700; font-weight:bold">Souvenir </span>' : '';
+  
   node.innerHTML = `<span style="color:${it.color || '#b0c3d9'}">●</span> ${prefix}${it.name}`;
   
   setTimeout(() => node.classList.remove('new-item'), 1000);
@@ -904,9 +963,17 @@ function showResultsModal() {
 function updateCounterUI() {
   const btn = document.getElementById('openBtn');
   const count = state.openCount;
+  const isCollection = state.activeCase && state.activeCase.type === 'collection';
+
   if (!state.isSpinning) {
     btn.classList.remove('btn-red'); btn.disabled = false;
-    btn.innerText = count === 1 ? "Otevřít bednu" : (count <= 4 ? `Otevřít ${count} bedny` : `Otevřít ${count} beden`);
+    
+    if (isCollection) {
+      btn.innerText = count === 1 ? "Získat předmět" : (count <= 4 ? `Získat ${count} předměty` : `Získat ${count} předmětů`);
+    } else {
+      btn.innerText = count === 1 ? "Otevřít bednu" : (count <= 4 ? `Otevřít ${count} bedny` : `Otevřít ${count} beden`);
+    }
+    
     if (document.getElementById('decBtn')) document.getElementById('decBtn').disabled = (count <= 1);
     if (document.getElementById('incBtn')) document.getElementById('incBtn').disabled = (count >= 5);
   }
@@ -918,7 +985,7 @@ function closeModal() {
   const modal = document.getElementById('modalOverlay');
   modal.classList.add('closing');
   setTimeout(() => { modal.style.display = 'none'; modal.classList.remove('closing'); }, 400);
-  audio.playMenuBack();
+  audio.playItemClose();
 }
 
 /** -------------------------

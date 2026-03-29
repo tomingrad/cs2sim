@@ -323,7 +323,8 @@ async function loadAndTransformData() {
 
       DATA.skinsMap[cleanKey] = {
         min_float: s.min_float !== undefined ? s.min_float : 0,
-        max_float: s.max_float !== undefined ? s.max_float : 1
+        max_float: s.max_float !== undefined ? s.max_float : 1,
+        paint_index: s.paint_index
       };
     });
 
@@ -353,6 +354,7 @@ async function loadAndTransformData() {
 
       if (item.contains) {
         c.items = item.contains.map(inner => ({
+          id: inner.id,
           name: inner.name,
           image: inner.image,
           color: inner.rarity.color.toLowerCase(),
@@ -660,8 +662,8 @@ const router = {
         <div style="display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">${imageHtml}</div>
       </div>
       <div class="drop-card-info" style="text-align: left;">
-        <div style="font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgb(0, 0, 0);">${weaponName}</div>
-        <div style="font-size: 12px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgb(0, 0, 0);">${skinName}</div>
+        <div style="font-size: 13px; font-weight: 700; color: var(--text); overflow: hidden; text-shadow: 0 0 5px rgb(0, 0, 0);">${weaponName}</div>
+        <div style="font-size: 12px; font-weight: 400; color: var(--muted); overflow: hidden; text-shadow: 0 0 5px rgb(0, 0, 0);">${skinName}</div>
       </div></div>`;
     }).join('');
 }
@@ -884,8 +886,9 @@ function showResultsModal() {
   const isCharms = caseName.includes('kolekce přívěsků');
 
   list.innerHTML = state.lastResults.map(r => {
-    if (!r.float) {
-      const searchName = r.name
+    const isSticker = (r.id && String(r.id).toLowerCase().includes('sticker'));
+    
+    const searchName = r.name
         .replace(/StatTrak™/g, '')
         .replace(/StatTrak/g, '')
         .replace(/[★()]/g, '')
@@ -893,8 +896,16 @@ function showResultsModal() {
         .trim()
         .toLowerCase();
 
-      const skinData = DATA.skinsMap ? DATA.skinsMap[searchName] : null;
-      
+    const skinData = DATA.skinsMap ? DATA.skinsMap[searchName] : null;
+    let catalogNumber = null;
+
+    if (skinData) {
+        catalogNumber = skinData.paint_index;
+    } else if (r.paintIndex) {
+        catalogNumber = r.paintIndex;
+    }
+
+    if (!r.float) {
       if (skinData) {
         const min = skinData.min_float;
         const max = skinData.max_float;
@@ -918,10 +929,17 @@ function showResultsModal() {
     const pattern = r.pattern;
 
     let wearInfoContent = '';
+    
+    const catalogHtml = catalogNumber ? `<div>Katalogové číslo: <strong>${catalogNumber}</strong></div>` : '';
+
     if (isCharms) {
-      wearInfoContent = `<div>Číslo šablony vzorku: <strong>${pattern.toLocaleString()}</strong></div>`;
+      wearInfoContent = `
+        ${catalogHtml}
+        <div>Číslo šablony vzorku: <strong>${pattern.toLocaleString()}</strong></div>
+      `;
     } else if (!(isCapsule || noFloat) || isKnife) {
       wearInfoContent = `
+        ${catalogHtml}
         <div>Číslo šablony vzorku: <strong>${pattern}</strong></div>
         <div>Opotřebení: <strong>${wear.toFixed(9)}</strong></div>
         <div>Povrch: <strong>${wearName}</strong></div>
@@ -936,18 +954,22 @@ function showResultsModal() {
     const prefix = isPackage ? '<span style="color:#ffd700">Souvenir </span>' : '';
     const [weaponName, skinName] = r.name.includes('|') ? r.name.split('|').map(s => s.trim()) : [r.name, ''];
 
+    const stickerBg = (isSticker && r.image) ? 
+      `<div style="position: absolute; inset: 5px; background: url('assets/image/sticker_bg.png') center/contain no-repeat; z-index: 0; opacity: 1;"></div>` : '';
+
     return `
       <div class="result-card" style="width: 230px; display: flex; flex-direction: column; gap: 8px; margin: 10px; flex-shrink: 0;">
         <div class="result-card-visual" style="position: relative; width: 100%; height: 160px; background: linear-gradient(0deg, ${rarityColor}22 0%, rgba(0,0,0,0) 100%); border-bottom: 5px solid ${rarityColor}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
-          ${r.image ? `<div style="position: absolute; top: 16px; left: 23px; height: 80%; background: url('${r.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.3; z-index: 0;"></div>` : ''}
-          <div style="position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: 800; color: ${rarityColor}; text-transform: uppercase; z-index: 2; opacity: 0.9; letter-spacing: 0.5px;">${rarityLabel}</div>
+          ${r.image ? `<div style="position: absolute; top: 16px; left: 23px; height: 80%; width: 80%; background: url('${r.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.3; z-index: 0;"></div>` : ''}
+          ${stickerBg}
           <div style="height: 90%; display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">
             ${r.image ? `<img src="${r.image}" style="max-width: 100%; max-height: 100%; display: block;">` : `<span style="font-size:60px; color:${rarityColor};">★</span>`}
           </div>
         </div>
         <div class="result-card-info" style="text-align: left;">
-          <div style="font-size: 16px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${prefix}${weaponName}</div>
-          <div style="font-size: 14px; font-weight: 400; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${skinName}</div>
+          <div style="font-size: 10px; font-weight: 800; color: ${rarityColor}; text-transform: uppercase; z-index: 2; opacity: 0.9; letter-spacing: 0.5px;">${rarityLabel}</div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text); overflow: hidden;">${prefix}${weaponName}</div>
+          <div style="font-size: 15px; font-weight: 400; color: var(--muted); overflow: hidden;">${skinName}</div>
           <div style="margin-top: 10px;">${wearInfoHtml}</div>
         </div>
       </div>`;

@@ -142,10 +142,10 @@ const audio = {
       item_drop: 'assets/sound/item_drop.wav', item_purple: 'assets/sound/item_purple.wav',
       item_pink: 'assets/sound/item_pink.wav', item_red: 'assets/sound/item_red.wav',
       case_tick: 'assets/sound/case_tick.wav', capsule_tick: 'assets/sound/capsule_tick.wav',
-      capsule_start: 'assets/sound/capsule_unlock_start.wav', menu_case_open: 'assets/sound/menu_case_open.wav',
+      capsule_start: 'assets/sound/capsule_unlock_start.wav', case_select: 'assets/sound/case_select.wav',
       menu_back: 'assets/sound/menu_back.wav', menu_filter_change: 'assets/sound/menu_filter_change.wav',
       item_close: 'assets/sound/item_close.wav', item_claim: 'assets/sound/item_claim.wav',
-      item_drop_2: 'assets/sound/item_drop_2.wav'
+      item_drop_2: 'assets/sound/item_drop_2.wav', view_market: 'assets/sound/view_market.wav'
     };
     for (const [key, path] of Object.entries(sounds)) {
       if (!this.cache[key]) {
@@ -158,17 +158,18 @@ const audio = {
       }
     }
   },
-  playMenuSelect() { if (!this.muted) { this.init(); this._play('menu_case_open', 0.15); } },
+  playCaseSelect() { if (!this.muted) { this.init(); this._play('case_select', 0.15); } },
   playMenuBack() { if (!this.muted) { this.init(); this._play('menu_back', 0.2); } },
   playStart() { if (!this.muted) { const isCollection = state.activeCase && state.activeCase.type === 'collection'; this._play(isCollection ? 'item_claim' : 'capsule_start', 0.2);}},
   playItemClose() { if (!this.muted) this._play('item_close', 0.2); },
+  playViewMarket() { if (!this.muted) this._play('view_market', 0.15); },
   playMenuFilterChange() {
     if (this.muted) return;
     const now = Date.now();
     if (now - this.lastTick < 60) return;
     this.lastTick = now;
     this.init();
-    this._play('menu_filter_change', 0.2);
+    this._play('menu_filter_change', 0.3);
   },
   playTick() {
     if (this.muted) return;
@@ -375,7 +376,7 @@ async function loadAndTransformData() {
         }));
 
         const specialName = (item.loot_list && item.loot_list.name) ? item.loot_list.name : '★ Speciální Předmět ★';
-        const specialImage = (item.loot_list && item.loot_list.image) ? item.loot_list.image : 'assets/image/rsi_generic_old.png';
+        const specialImage = (item.loot_list && item.loot_list.image) ? item.loot_list.image : 'https://raw.githubusercontent.com/ByMykel/counter-strike-image-tracker/main/static/panorama/images/econ/weapon_cases/default_rare_item_png.png';
 
         c.items.push({
           name: specialName,
@@ -607,7 +608,7 @@ const router = {
       const bgLayer = state.activeCase.image ? `<img src="${state.activeCase.image}" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%); width: 300px; height: auto; opacity: 0.3; filter: blur(10px); z-index: -1; pointer-events: none;">` : '';
       titleEl.innerHTML = bgLayer + `<span style="position: relative; z-index: 2;">${state.activeCase.name}</span>`;
 
-      audio.playMenuSelect();
+      audio.playCaseSelect();
       document.getElementById('caseSubtitle').innerHTML = `
         <span>Datum vydání: <span style="color:var(--text)">${state.activeCase.release}</span></span>`;
 
@@ -654,19 +655,27 @@ const router = {
       const imageHtml = it.image ? `<img src="${it.image}" style="width: 110px; height: auto; max-width: 100%; max-height: 100%;">` : `<span style="font-size:40px; color:${color};">★</span>`;
       const chance = (it.odds * 100).toFixed(4).replace(/\.?0+$/, '') + '%';
       const [weaponName, skinName] = it.name.includes('|') ? it.name.split('|').map(s => s.trim()) : [it.name, ''];
+      const cleanSearchName = skinName ? `${weaponName} ${skinName}` : weaponName;
+      const marketUrl = `https://steamcommunity.com/market/search?appid=730&q=${encodeURIComponent(cleanSearchName)}`;
 
       return `<div class="drop-card" style="width: 140px; display: flex; flex-direction: column; gap: 6px;">
       <div class="drop-card-visual" style="position: relative; width: 100%; height: 100px; background: linear-gradient(0deg, ${color}44 0%, rgba(0,0,0,0) 100%); border-bottom: 4px solid ${color}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
         ${it.image ? `<div style="position: absolute; top: 10px; left: 14px; width: 80%; height: 80%; background: url('${it.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.2; z-index: 0;"></div>` : ''}
         <div class="drop-card-odds" style="position: absolute; top: 4px; left: 4px; font-size: 10px; font-weight: 800; color: ${color}; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 2;">${chance}</div>
-        <div style="display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">${imageHtml}</div>
+        
+        <div style="display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">
+          <a href="${marketUrl}" target="_blank" onclick="audio.playViewMarket()" style="text-decoration: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            ${imageHtml}
+          </a>
+        </div>
+
       </div>
       <div class="drop-card-info" style="text-align: left;">
         <div style="font-size: 13px; font-weight: 700; color: var(--text); overflow: hidden; text-shadow: 0 0 5px rgb(0, 0, 0);">${weaponName}</div>
         <div style="font-size: 12px; font-weight: 400; color: var(--muted); overflow: hidden; text-shadow: 0 0 5px rgb(0, 0, 0);">${skinName}</div>
       </div></div>`;
     }).join('');
-}
+  }
 };
 
 /** -------------------------
@@ -950,10 +959,10 @@ function showResultsModal() {
       <div style="font-size:12px; color: var(--muted); line-height: 1.4; margin-top: 4px;">
         ${wearInfoContent}
       </div>` : '';
-
     const prefix = isPackage ? '<span style="color:#ffd700">Souvenir </span>' : '';
     const [weaponName, skinName] = r.name.includes('|') ? r.name.split('|').map(s => s.trim()) : [r.name, ''];
-
+    const cleanSearchName = skinName ? `${weaponName} ${skinName}` : weaponName;
+    const marketUrl = `https://steamcommunity.com/market/search?appid=730&q=${encodeURIComponent(cleanSearchName)}`;
     const stickerBg = (isSticker && r.image) ? 
       `<div style="position: absolute; inset: 5px; background: url('assets/image/sticker_bg.png') center/contain no-repeat; z-index: 0; opacity: 1;"></div>` : '';
 
@@ -962,8 +971,10 @@ function showResultsModal() {
         <div class="result-card-visual" style="position: relative; width: 100%; height: 160px; background: linear-gradient(0deg, ${rarityColor}22 0%, rgba(0,0,0,0) 100%); border-bottom: 5px solid ${rarityColor}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
           ${r.image ? `<div style="position: absolute; top: 16px; left: 23px; height: 80%; width: 80%; background: url('${r.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.3; z-index: 0;"></div>` : ''}
           ${stickerBg}
-          <div style="height: 90%; display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">
-            ${r.image ? `<img src="${r.image}" style="max-width: 100%; max-height: 100%; display: block;">` : `<span style="font-size:60px; color:${rarityColor};">★</span>`}
+          <div style="display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">
+            <a href="${marketUrl}" target="_blank" onclick="audio.playViewMarket()" style="text-decoration: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+              ${r.image ? `<img src="${r.image}" style="max-width: 90%; max-height: 90%; display: block;">` : `<span style="font-size:60px; color:${rarityColor};">★</span>`}
+            </a>
           </div>
         </div>
         <div class="result-card-info" style="text-align: left;">

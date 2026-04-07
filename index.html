@@ -37,7 +37,7 @@
 
   <main id="view-home">
     <div style="margin-bottom:20px">
-      <input type="text" id="searchInput" placeholder="Vyhledat bednu, skin nebo samolepku... (nebo '#' pro hledání podle štítků)" style="width:100%; padding:15px; border-radius:var(--radius); border:1px solid var(--border); background: transparent; color:var(--text); font-family: 'Radio Canada Big', sans-serif; backdrop-filter: blur(10px); box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.15);">
+      <input type="text" id="searchInput" placeholder="Vyhledat bednu, skin nebo samolepku... (nebo '#' pro hledání podle štítků)" style="width:100%; padding:15px; border-radius:var(--radius); border:1px solid var(--border); background: transparent; color:var(--text); font-family: 'Radio Canada Big', sans-serif; font-size: 14px; backdrop-filter: blur(10px); box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.15);">
     </div>
     <div class="filter-container" style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
   <label class="filter-chip">
@@ -605,7 +605,7 @@ const router = {
       const titleEl = document.getElementById('caseTitle');
       titleEl.style.cssText = 'position: relative; display: flex; justify-content: center; align-items: center; overflow: visible; z-index: 1;';
       
-      const bgLayer = state.activeCase.image ? `<img src="${state.activeCase.image}" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%); width: 300px; height: auto; opacity: 0.3; filter: blur(10px); z-index: -1; pointer-events: none;">` : '';
+      const bgLayer = state.activeCase.image ? `<img src="${state.activeCase.image}" style="position: absolute; top: 90%; left: 50%; transform: translate(-50%, -40%); width: 400px; height: auto; opacity: 0.25; filter: blur(20px); z-index: -1; pointer-events: none;">` : '';
       titleEl.innerHTML = bgLayer + `<span style="position: relative; z-index: 2;">${state.activeCase.name}</span>`;
 
       audio.playCaseSelect();
@@ -652,7 +652,7 @@ const router = {
 
     grid.innerHTML = sortedItems.map(it => {
       const color = it.color || '#b0c3d9';
-      const imageHtml = it.image ? `<img src="${it.image}" style="width: 110px; height: auto; max-width: 100%; max-height: 100%;">` : `<span style="font-size:40px; color:${color};">★</span>`;
+      const imageHtml = it.image ? `<img src="${it.image}" style="width: 120px; height: auto; max-width: 100%; max-height: 100%;">` : `<span style="font-size:40px; color:${color};">★</span>`;
       const chance = (it.odds * 100).toFixed(4).replace(/\.?0+$/, '') + '%';
       const [weaponName, skinName] = it.name.includes('|') ? it.name.split('|').map(s => s.trim()) : [it.name, ''];
       const cleanSearchName = skinName ? `${weaponName} ${skinName}` : weaponName;
@@ -963,17 +963,14 @@ function showResultsModal() {
     const [weaponName, skinName] = r.name.includes('|') ? r.name.split('|').map(s => s.trim()) : [r.name, ''];
     const cleanSearchName = skinName ? `${weaponName} ${skinName}` : weaponName;
     const marketUrl = `https://steamcommunity.com/market/search?appid=730&q=${encodeURIComponent(cleanSearchName)}`;
-    const stickerBg = (isSticker && r.image) ? 
-      `<div style="position: absolute; inset: 5px; background: url('assets/image/sticker_bg.png') center/contain no-repeat; z-index: 0; opacity: 1;"></div>` : '';
 
     return `
       <div class="result-card" style="width: 230px; display: flex; flex-direction: column; gap: 8px; margin: 10px; flex-shrink: 0;">
         <div class="result-card-visual" style="position: relative; width: 100%; height: 160px; background: linear-gradient(0deg, ${rarityColor}22 0%, rgba(0,0,0,0) 100%); border-bottom: 5px solid ${rarityColor}; display: flex; align-items: center; justify-content: center; padding: 4px; overflow: hidden;">
           ${r.image ? `<div style="position: absolute; top: 16px; left: 23px; height: 80%; width: 80%; background: url('${r.image}') center/contain no-repeat; filter: blur(15px); opacity: 0.3; z-index: 0;"></div>` : ''}
-          ${stickerBg}
           <div style="display: flex; align-items: center; justify-content: center; z-index: 1; position: relative;">
             <a href="${marketUrl}" target="_blank" onclick="audio.playViewMarket()" style="text-decoration: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-              ${r.image ? `<img src="${r.image}" style="max-width: 90%; max-height: 90%; display: block;">` : `<span style="font-size:60px; color:${rarityColor};">★</span>`}
+              ${r.image ? `<img src="${r.image}" style="max-width: 85%; max-height: 85%; display: block;">` : `<span style="font-size:60px; color:${rarityColor};">★</span>`}
             </a>
           </div>
         </div>

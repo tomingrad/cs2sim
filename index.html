@@ -23,17 +23,28 @@
 <canvas id="particlesCanvas"></canvas>
 
 <div class="page-container">
-  <header style="display:flex; justify-content:space-between; align-items:center; margin: 16px 0">
-    <h1 style="margin: 0; font-size: 36px;">CS2 Otevírací Simulátor <span style="font-weight:400; font-size:18px; color:var(--accent)">XD gamba</span></h1>
-    <button onclick="router.go('home')" class="btn-generic" id="backBtn">
-      <img src="assets/image/icon/back.png" class="filter-icon"> 
-      <span>Zpět na hlavní stránku</span>
+  <header style="display:flex; justify-content:space-between; align-items:center; margin: 16px 0; flex-wrap: wrap; gap: 10px;">
+  
+  <button onclick="router.go('home')" class="btn-generic" id="backBtn">
+    <img src="assets/image/icon/back.png" class="filter-icon"> 
+    <span>Zpět na hlavní stránku</span>
+  </button>
+
+  <h1 style="margin: 0; font-size: 36px;">CS2 Otevírací Simulátor <span style="font-weight:400; font-size:18px; color:var(--accent)">XD gamba</span></h1>
+  
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <button id="particlesBtn" onclick="particles.toggle()" class="btn-generic">
+      <img id="particlesBtnIcon" src="assets/image/icon/particles.png" class="filter-icon">
+      <span id="particlesBtnText">Částice zapnuté</span>
     </button>
+    
     <button id="muteBtn" onclick="audio.toggleMute()" class="btn-generic">
       <img id="muteBtnIcon" src="assets/image/icon/sound_on.png" class="filter-icon">
       <span id="muteBtnText">Zvuk zapnutý</span>
     </button>
-  </header>
+  </div>
+
+</header>
 
   <main id="view-home">
     <div style="margin-bottom:20px">
@@ -214,12 +225,40 @@ const particles = {
   canvas: document.getElementById('particlesCanvas'),
   ctx: document.getElementById('particlesCanvas').getContext('2d'),
   list: [],
+  enabled: localStorage.getItem('particlesEnabled') !== 'false',
+
   init() {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
+    this.updateBtnUI();
     this.loop();
   },
+  
+  toggle() {
+    this.enabled = !this.enabled;
+    localStorage.setItem('particlesEnabled', this.enabled);
+    if (!this.enabled) this.clear();
+    this.updateBtnUI();
+    audio.playMenuBack();
+  },
+
+  updateBtnUI() {
+    const pText = document.getElementById('particlesBtnText');
+    const pIcon = document.getElementById('particlesBtnIcon');
+    if (pText) pText.innerText = this.enabled ? 'Částice zapnuté' : 'Částice vypnuté';
+
+    const sText = document.getElementById('muteBtnText');
+    const sIcon = document.getElementById('muteBtnIcon');
+    
+    if (sText) sText.innerText = audio.muted ? 'Zvuk vypnutý' : 'Zvuk zapnutý';
+    
+    if (sIcon) {
+      sIcon.src = audio.muted ? 'assets/image/icon/sound_off.png' : 'assets/image/icon/sound_on.png';
+    }
+  },
+
   spinBurst(x, y, w, h) {
+    if (!this.enabled) return;
     const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00aeff';
     for (let i = 0; i < 300; i++) {
       this.list.push({
@@ -229,7 +268,9 @@ const particles = {
       });
     }
   },
+
   burst(x, y, color, count) {
+    if (!this.enabled) return;
     for (let i = 0; i < count; i++) {
       this.list.push({
         x, y, color, vx: (Math.random() - 0.5) * 32, vy: (Math.random() - 0.5) * 12 - 4,
@@ -238,6 +279,7 @@ const particles = {
       });
     }
   },
+
   loop() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.list = this.list.filter(p => {
@@ -257,6 +299,7 @@ const particles = {
     });
     requestAnimationFrame(() => this.loop());
   },
+  
   clear() { this.list = []; }
 };
 

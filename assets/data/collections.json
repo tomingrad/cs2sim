@@ -21579,6 +21579,7 @@
   "id": "collection-set-spy-tech",
   "name": "Kolekce Spy Tech",
   "first_sale_date": "08-07-2026",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -21779,6 +21780,7 @@
   "id": "collection-set-arabesque",
   "name": "Kolekce Arabesque",
   "first_sale_date": "08-07-2026",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -21979,6 +21981,7 @@
   "id": "collection-set-fruits-veggies",
   "name": "Kolekce samolepek Fruits And Veggies",
   "first_sale_date": "08-07-2026",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
@@ -22262,6 +22265,7 @@
   "id": "collection-set-auto-racing",
   "name": "Kolekce samolepek Auto Racing",
   "first_sale_date": "08-07-2026",
+  "tags": ["zbrojnice"],
   "crates": [],
   "contains": [
    {
